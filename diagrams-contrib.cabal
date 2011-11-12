@@ -1,0 +1,29 @@
+name:                diagrams-contrib
+version:             0.1.0.0
+synopsis:            Collection of user contributions to diagrams EDSL
+description:         A collection of user contributions for diagrams,
+                     an embedded domain-specific language for generation 
+                     of vector graphics.
+homepage:            http://projects.haskell.org/diagrams/
+license:             BSD3
+license-file:        LICENSE
+author:              Various
+maintainer:          diagrams-discuss@googlegroups.com
+-- copyright:           
+category:            Graphics
+build-type:          Simple
+cabal-version:       >=1.8
+Source-repository head
+  type:     darcs
+  location: http://patch-tag.com/r/byorgey/diagrams-contrib
+
+library
+  exposed-modules:     Diagrams.TwoD.Tilings
+  -- other-modules:       
+  build-depends:       base >= 4.3 && < 4.5, 
+                       mtl ==2.0.*, 
+                       containers ==0.4.*, 
+                       vector-space == 0.7.*, 
+                       colour >= 2.3.1 && < 2.4,
+                       diagrams-lib ==0.5.*
+  hs-source-dirs:      src

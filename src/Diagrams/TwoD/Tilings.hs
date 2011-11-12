@@ -3,6 +3,7 @@
            , ScopedTypeVariables
            , ViewPatterns
   #-}
+{-# OPTIONS_GHC -fno-warn-name-shadowing #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -72,7 +73,6 @@ import Control.Monad.Writer
 
 import Data.List   (mapAccumL, sort)
 import Data.Function (on)
-import Data.Ratio
 import Data.VectorSpace
 import Control.Arrow
 import Control.Applicative (liftA2)
@@ -80,8 +80,8 @@ import Control.Applicative (liftA2)
 import qualified Data.Set as S
 import qualified Data.Foldable as F
 
-import Diagrams.Prelude
-import Diagrams.Backend.Cairo.CmdLine
+import Data.Colour
+import Diagrams.Prelude hiding (e)
 
 ------------------------------------------------------------
 -- The ring Q[sqrt(2), sqrt(3)]
@@ -337,11 +337,12 @@ drawPoly :: Renderable (Path R2) b => (Polygon -> Style R2) -> Polygon -> Diagra
 drawPoly s p = applyStyle (s p) . fromVertices . map toP2 . polygonVertices $ p
 
 -- Simple per-polygon color scheme
+polyColor :: (Floating a, Ord a) => TilingPoly -> Colour a
 polyColor Triangle  = yellow
-polyColor Square    = green
-polyColor Hexagon   = purple
+polyColor Square    = mediumseagreen
+polyColor Hexagon   = blueviolet
 polyColor Octagon   = red
-polyColor Dodecagon = blue
+polyColor Dodecagon = cornflowerblue
 
 -- | Draw a tiling, with a given width and height and default colors
 --   for the polygons.
@@ -397,15 +398,18 @@ t6 = Tiling (replicate 3 Hexagon) (const t6)
 -- Semi-regular tilings
 
 -- | Create a tiling with the same 3 polygons surrounding each vertex.
+--   The argument is the number of sides of the polygons surrounding a vertex.
 mk3Tiling :: [Int] -> Tiling
 mk3Tiling (ps@[a,b,c])
       = Tiling 
           (map polyFromSides ps)
-          (\i -> case i of
+          (\i -> case i `mod` 3 of
                    0 -> mk3Tiling (reverse ps)
                    1 -> mk3Tiling [a,c,b]
                    2 -> mk3Tiling [b,a,c]
+                   _ -> error "i `mod` 3 is not 0, 1,or 2! the sky is falling!"
           )           
+mk3Tiling _ = error "mk3Tiling may only be called on a list of length 3."
 
 t4612 :: Tiling
 t4612 = mk3Tiling [4,6,12]
@@ -418,7 +422,8 @@ t31212 = mk3Tiling [3,12,12]
 
 t3636 :: Tiling
 t3636 = mkT [3,6,3,6]
-  where mkT ps = Tiling (map polyFromSides ps)
+  where mkT :: [Int] -> Tiling
+        mkT ps = Tiling (map polyFromSides ps)
                         (\i -> mkT $ if even i then reverse ps else ps)
 
 -- | Create a tiling where every vertex is the same up to rotation and
@@ -438,7 +443,9 @@ semiregular ps trans = mkT 0
                   (map polyFromSides (rot i ps))
                   (\j -> mkT $ rot i trans !! j)
 
-rot 0 xs = xs
+rot :: Num a => a -> [t] -> [t]
+rot 0 xs     = xs
+rot _ []     = []
 rot n (x:xs) = rot (n-1) (xs ++ [x])
 
 t3464 :: Tiling

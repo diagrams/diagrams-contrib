@@ -341,7 +341,7 @@ polyColor :: (Floating a, Ord a) => TilingPoly -> Colour a
 polyColor Triangle  = yellow
 polyColor Square    = mediumseagreen
 polyColor Hexagon   = blueviolet
-polyColor Octagon   = red
+polyColor Octagon   = lightsteelblue
 polyColor Dodecagon = cornflowerblue
 
 -- | Draw a tiling, with a given width and height and default colors

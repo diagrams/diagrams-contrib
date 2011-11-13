@@ -13,13 +13,13 @@ maintainer:          diagrams-discuss@googlegroups.com
 category:            Graphics
 build-type:          Simple
 cabal-version:       >=1.8
+extra-source-files:  README
 Source-repository head
   type:     darcs
   location: http://patch-tag.com/r/byorgey/diagrams-contrib
 
 library
   exposed-modules:     Diagrams.TwoD.Tilings
-  -- other-modules:       
   build-depends:       base >= 4.3 && < 4.5, 
                        mtl ==2.0.*, 
                        containers ==0.4.*, 

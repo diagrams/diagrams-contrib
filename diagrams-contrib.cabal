@@ -19,7 +19,8 @@ Source-repository head
   location: http://patch-tag.com/r/byorgey/diagrams-contrib
 
 library
-  exposed-modules:     Diagrams.TwoD.Tilings
+  exposed-modules:     Diagrams.TwoD.Tilings,
+                       Diagrams.TwoD.Apollonian
   build-depends:       base >= 4.3 && < 4.5, 
                        mtl ==2.0.*, 
                        containers ==0.4.*, 

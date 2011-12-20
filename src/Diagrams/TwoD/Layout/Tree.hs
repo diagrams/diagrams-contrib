@@ -54,8 +54,8 @@ module Diagrams.TwoD.Layout.Tree
 
        , uniqueXLayout
 
-         -- ** Force-based layout
-         -- $forcebased
+         -- ** Force-directed layout
+         -- $forcedirected
 
        , forceLayoutTree
        , ForceLayoutTreeOpts(..)
@@ -166,13 +166,13 @@ uniqueXLayout cSep lSep t = (fmap . fmap . second) (pos2Point cSep lSep)
         mkNode = get <* incHoriz
 
 --------------------------------------------------
---  Force-based layout of rose trees
+--  Force-directed layout of rose trees
 
--- $forcebased
--- Force-based layout of rose trees.
+-- $forcedirected
+-- Force-directed layout of rose trees.
 
 -- | Assign unique ID numbers to the nodes of a tree, and generate an
---   'Ensemble' suitable for simulating in order to do force-based
+--   'Ensemble' suitable for simulating in order to do force-directed
 --   layout of the tree.  In particular,
 --
 --   * edges are modeled as springs
@@ -261,7 +261,7 @@ defaultForceLayoutTreeOpts =
   , staticK = 0.1
   }
 
--- | Force-based layout of rose trees.  In particular,
+-- | Force-directed layout of rose trees.  In particular,
 --
 --   * edges are modeled as springs
 --

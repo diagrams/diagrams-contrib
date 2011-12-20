@@ -75,7 +75,6 @@ import Data.List   (mapAccumL, sort)
 import Data.Function (on)
 import Data.VectorSpace
 import Control.Arrow
-import Control.Applicative (liftA2)
 
 import qualified Data.Set as S
 import qualified Data.Foldable as F

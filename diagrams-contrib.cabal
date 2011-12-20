@@ -24,7 +24,7 @@ library
   build-depends:       base >= 4.3 && < 4.5, 
                        mtl ==2.0.*, 
                        containers ==0.4.*, 
-                       vector-space == 0.7.*, 
+                       vector-space >= 0.7 && < 0.9,
                        colour >= 2.3.1 && < 2.4,
                        diagrams-lib ==0.5.*
   hs-source-dirs:      src

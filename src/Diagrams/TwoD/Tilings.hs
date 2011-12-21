@@ -152,7 +152,7 @@ polySides Hexagon   = 6
 polySides Octagon   = 8
 polySides Dodecagon = 12
 
-polyFromSides :: Num a => a -> TilingPoly
+polyFromSides :: (Num a, Eq a, Show a) => a -> TilingPoly
 polyFromSides 3  = Triangle
 polyFromSides 4  = Square
 polyFromSides 6  = Hexagon
@@ -442,7 +442,7 @@ semiregular ps trans = mkT 0
                   (map polyFromSides (rot i ps))
                   (\j -> mkT $ rot i trans !! j)
 
-rot :: Num a => a -> [t] -> [t]
+rot :: (Num a, Eq a) => a -> [t] -> [t]
 rot 0 xs     = xs
 rot _ []     = []
 rot n (x:xs) = rot (n-1) (xs ++ [x])

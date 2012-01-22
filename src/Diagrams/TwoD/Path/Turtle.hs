@@ -3,7 +3,7 @@
 -- Module      :  Diagrams.TwoD.Path.Turtle
 -- Copyright   :  (c) 2011 Michael Sloan
 -- License     :  BSD-style (see LICENSE)
--- Maintainer  :  mgsloan@gmail.com
+-- Maintainer  :  Michael Sloan <mgsloan at gmail>
 --
 -- Stateful domain specific language for diagram paths, modelled after the
 -- classic \"turtle\" graphics language.

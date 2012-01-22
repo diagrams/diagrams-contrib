@@ -3,7 +3,7 @@
 -- Module      :  Diagrams.TwoD.Path.Turtle.Aliases
 -- Copyright   :  (c) 2011 Michael Sloan
 -- License     :  BSD-style (see LICENSE)
--- Maintainer  :  mgsloan@gmail.com
+-- Maintainer  :  Michael Sloan <mgsloan at gmail>
 --
 -- Adds compact aliases for turtle operations, to write code that looks even
 -- more Turtle-y.

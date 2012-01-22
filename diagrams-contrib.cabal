@@ -19,7 +19,8 @@ Source-repository head
   location: http://patch-tag.com/r/byorgey/diagrams-contrib
 
 library
-  exposed-modules:     Diagrams.TwoD.Tilings,
+  exposed-modules:     Diagrams.Layout.Wrap,
+                       Diagrams.TwoD.Tilings,
                        Diagrams.TwoD.Apollonian,
                        Diagrams.TwoD.Layout.Tree,
                        Diagrams.TwoD.Path.Turtle,

@@ -19,7 +19,7 @@ module Diagrams.Layout.Wrap where
 import Control.Arrow (first, (&&&))
 import Data.Foldable (foldMap)
 import Data.List (find, tails, inits)
-import Diagrams.Prelude
+import Diagrams.Prelude hiding (start)
 
 -- TODO: Take into account the negative bounds, and iteratively refine
 --   the list selection.
@@ -35,6 +35,8 @@ wrapDiagram = foldMap (uncurry translate) . fst
 
 -- | @wrapOutside@ is the same as @wrapInside@, but with an inverted
 --   predicate.
+wrapOutside :: (Boundable a, v ~ V a)
+            => (Point v -> Bool) -> [v] -> Point v -> [a] -> ([(v, a)], [a])
 wrapOutside f = wrapInside (not . f)
 
 -- | fillInside greedily wraps content to fill a space defined by a
@@ -47,7 +49,7 @@ wrapOutside f = wrapInside (not . f)
 --   points inside each positioned item for which the predicate is
 --   False.  Instead, only the corners of the bounds, along each axii,
 --   are used.
-wrapInside :: forall a v. (Boundable a, v ~ V a, HasLinearMap v)
+wrapInside :: forall a v. (Boundable a, v ~ V a)
            => (Point v -> Bool) -> [v] -> Point v
            -> [a] -> ([(v, a)], [a])
 wrapInside f axis start = rec zeros

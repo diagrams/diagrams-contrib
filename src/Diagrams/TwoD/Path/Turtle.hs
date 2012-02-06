@@ -124,15 +124,16 @@ pos = ST.gets
 
 -- Drawing control.
 
-penHop, penUp, penDown :: Turtle ()
-
 -- | Starts a new path at the current location.
+penHop :: Turtle ()
 penHop = pos >>= setPos
 
 -- | Ends the current path, and enters into "penUp" mode
+penUp :: Turtle ()
 penUp   = penHop >> ST.modify (\(TState _ a p) -> TState False a p)
 
 -- | Ends the current path, and enters into "penDown" mode
+penDown :: Turtle ()
 penDown = penHop >> ST.modify (\(TState _ a p) -> TState True a p)
 
 -- | Queries whether the pen is currently drawing a path or not.

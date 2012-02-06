@@ -68,18 +68,20 @@ runTurtle t = getPath . snd . ST.runState t
 
 -- Motion commands
 
-forward, backward, left, right, setHeading :: Double -> Turtle ()
-
 -- | Move the turtle forward, along the current heading.
+forward :: Double -> Turtle ()
 forward  x = logoseg $ Linear (x,          0)
 
 -- | Move the turtle backward, directly away from the current heading.
+backward :: Double -> Turtle ()
 backward x = logoseg $ Linear ((negate x), 0)
 
--- | Modify the current heading to the left by the specified amount.
+-- | Modify the current heading to the left by the specified angle in degrees.
+left :: Double -> Turtle ()
 left  a = modifyAngle (+        (Deg a))
 
--- | Modify the current heading to the right by the specified amount.
+-- | Modify the current heading to the right by the specified angle in degrees.
+right :: Double -> Turtle ()
 right a = modifyAngle (subtract (Deg a))
 
 
@@ -97,6 +99,7 @@ bezierFromSweepQ1 s = fmap (^-^ v) . rotate (s/2) $ Cubic p2 p1 p0
 -- State accessors / setters
 
 -- | Set the current turtle angle, in degrees.
+setHeading :: Double -> Turtle ()
 setHeading a = modifyAngle (const (Deg a))
 
 -- | Get the current turtle angle, in degrees.

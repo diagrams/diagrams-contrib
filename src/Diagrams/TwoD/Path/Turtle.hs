@@ -28,7 +28,7 @@ import Diagrams.Prelude
 
 import qualified Control.Monad.State as ST
 
-type Turtle a = ST.State TState a
+type Turtle = ST.State TState
 
 data TState = TState Bool Deg (Path R2)
 

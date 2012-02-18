@@ -83,11 +83,15 @@ wrapInside f axis start = rec zeros
 
 -- Updates the max bounds of an axis.
     maxB [_, b] (x, m) = (x, max m $ x + magnitude b)
+    maxB _ _ = error "Diagrams.Layout.Wrap.wrapInside:maxB: pattern-match failure.  Please report this as a bug."
 
 -- List of potential offsets to try, each paired with an updated list
 -- of current / maxbound scalar coefficients for the axis.
     potential = map (getVector . map fst &&& zipWith maxB curB)
 -- Try setting an axis to its max-seen bound, zeroing all preceding.
               . zipWith (++) (inits $ repeat (0, 0))
-              . map (\((_,x):xs) -> (x,x):xs)
+              . map dupFirstY
               . init $ tails scs
+
+    dupFirstY ((_,x):xs) = (x,x):xs
+    dupFirstY _          = error "Diagrams.Layout.Wrap.wrapInside:dupFirstY: pattern-match failure.  Please report this as a bug."

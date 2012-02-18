@@ -122,8 +122,9 @@ setPos p = ST.modify helper
 
 -- | Get the current turtle X/Y position.
 pos :: Turtle R2
-pos = ST.gets 
-  (\(TState _ _ (Path ((P p, t) : _))) -> p ^+^ trailOffset t)
+pos = ST.gets f
+  where f (TState _ _ (Path ((P p, t) : _))) = p ^+^ trailOffset t
+        f _ = error "Diagrams.TwoD.Path.Turtle.pos: no path.  Please report this as a bug."
 
 -- Drawing control.
 

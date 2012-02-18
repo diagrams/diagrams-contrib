@@ -376,8 +376,8 @@ drawTilingStyled eStyle pStyle t w h =
             (liftA2 (,) mempty (drawPoly pStyle))
   where
     inRect (toR2 -> (x,y)) = -w/2 <= x && x <= w/2 && -h/2 <= y && y <= h/2
-    mkDia (es, ps) = view $ (es <> ps)
-    view = withBounds (rect w h :: D R2)
+    mkDia (es, ps) = viewRect (es <> ps)
+    viewRect = withEnvelope (rect w h :: D R2)
 
 ------------------------------------------------------------
 -- Some pre-defined tilings

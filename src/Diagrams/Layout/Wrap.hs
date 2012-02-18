@@ -35,7 +35,7 @@ wrapDiagram = foldMap (uncurry translate) . fst
 
 -- | @wrapOutside@ is the same as @wrapInside@, but with an inverted
 --   predicate.
-wrapOutside :: (Boundable a, v ~ V a)
+wrapOutside :: (Enveloped a, v ~ V a)
             => (Point v -> Bool) -> [v] -> Point v -> [a] -> ([(v, a)], [a])
 wrapOutside f = wrapInside (not . f)
 
@@ -49,7 +49,7 @@ wrapOutside f = wrapInside (not . f)
 --   points inside each positioned item for which the predicate is
 --   False.  Instead, only the corners of the bounds, along each axii,
 --   are used.
-wrapInside :: forall a v. (Boundable a, v ~ V a)
+wrapInside :: forall a v. (Enveloped a, v ~ V a)
            => (Point v -> Bool) -> [v] -> Point v
            -> [a] -> ([(v, a)], [a])
 wrapInside f axis start = rec zeros

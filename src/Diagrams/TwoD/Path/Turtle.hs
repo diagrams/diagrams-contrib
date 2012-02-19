@@ -10,7 +10,10 @@
 --
 -----------------------------------------------------------------------------
 module Diagrams.TwoD.Path.Turtle
-  ( Turtle, runTurtle
+  ( Turtle, TurtleT
+
+    -- * Turtle control commands
+  , runTurtle, runTurtleT
 
     -- * Motion commands
   , forward, backward, left, right
@@ -27,8 +30,12 @@ module Diagrams.TwoD.Path.Turtle
 import Diagrams.Prelude
 
 import qualified Control.Monad.State as ST
+import Control.Monad.Identity
+import Control.Applicative ((<$>))
 
-type Turtle = ST.State TState
+type TurtleT = ST.StateT TState
+
+type Turtle = TurtleT Identity
 
 data TState = TState Bool Deg (Path R2)
 
@@ -38,19 +45,19 @@ data TState = TState Bool Deg (Path R2)
 -- TODO: consider keeping the output backwards, and always update the position?
 -- This would make the "position" query more efficient.
 getPath :: TState -> Path R2
-getPath (TState d _ (Path xs)) 
+getPath (TState d _ (Path xs))
   = Path . reverse
   $ map (\(p, (Trail ys c)) -> (p, Trail (reverse ys) c))
   $ if d then xs else tail xs
 
 -- Adds a segment to the accumulated path.
-logoseg :: (Segment R2) -> Turtle ()
+logoseg :: Monad m => (Segment R2) -> TurtleT m ()
 logoseg seg = ST.modify
   (\(TState d ang p) ->
      TState d ang $ modifyTrail
        (\(Trail xs c) -> Trail (rotate ang seg:xs) c) p)
 
-modifyAngle :: (Deg -> Deg) -> Turtle ()
+modifyAngle :: Monad m => (Deg -> Deg) -> TurtleT m ()
 modifyAngle f = ST.modify (\(TState d a p) -> TState d (f a) p)
 
 modifyPath :: (Path R2 -> Path R2) -> TState -> TState
@@ -60,34 +67,39 @@ modifyTrail :: (Trail v -> Trail v) -> Path v -> Path v
 modifyTrail f (Path ((p, t) : ps)) = Path $ (p, f t) : ps
 modifyTrail _ p = p
 
+-- | A more general way to run the turtle. Returns a computation in the
+-- underlying monad @m@ yielding a path consisting of the traced trails
+runTurtleT :: (Monad m, Functor m) => TurtleT m a -> m (Path R2)
+runTurtleT t = getPath . snd
+            <$> ST.runStateT t (TState True 0 (Path [(P (0,0), Trail [] False)]))
 
 -- | Run the turtle, yielding a path consisting of the traced trails.
 runTurtle :: Turtle a -> Path R2
-runTurtle t = getPath . snd . ST.runState t 
+runTurtle t = getPath . snd . ST.runState t
             $ TState True 0 (Path [(P (0,0), Trail [] False)])
 
 -- Motion commands
 
 -- | Move the turtle forward, along the current heading.
-forward :: Double -> Turtle ()
+forward :: Monad m => Double -> TurtleT m ()
 forward  x = logoseg $ Linear (x,          0)
 
 -- | Move the turtle backward, directly away from the current heading.
-backward :: Double -> Turtle ()
+backward :: Monad m => Double -> TurtleT m ()
 backward x = logoseg $ Linear ((negate x), 0)
 
 -- | Modify the current heading to the left by the specified angle in degrees.
-left :: Double -> Turtle ()
+left :: Monad m => Double -> TurtleT m ()
 left  a = modifyAngle (+        (Deg a))
 
 -- | Modify the current heading to the right by the specified angle in degrees.
-right :: Double -> Turtle ()
+right :: Monad m => Double -> TurtleT m ()
 right a = modifyAngle (subtract (Deg a))
 
 
 -- Based on "bezierFromSweepQ1" from Diagrams.TwoD.Arc
 {-
-smoothTurn f s = 
+smoothTurn f s =
   where (x,y) = rotate s (1, 0)
         (u,v) = ((4-x)/3, (1-x)*(3-x)/(3*y))
 
@@ -99,21 +111,21 @@ bezierFromSweepQ1 s = fmap (^-^ v) . rotate (s/2) $ Cubic p2 p1 p0
 -- State accessors / setters
 
 -- | Set the current turtle angle, in degrees.
-setHeading :: Double -> Turtle ()
+setHeading :: Monad m => Double -> TurtleT m ()
 setHeading a = modifyAngle (const (Deg a))
 
 -- | Get the current turtle angle, in degrees.
-heading :: Turtle Double
+heading :: Monad m => TurtleT m Double
 heading = ST.gets (\(TState _ (Deg x) _) -> x)
 
 -- | Sets the heading towards a given location.
-towards :: R2 -> Turtle ()
+towards :: Monad m => R2 -> TurtleT m ()
 towards pt = do
   p <- pos
   setHeading . uncurry atan2 $ pt ^-^ p
 
 -- | Set the current turtle X/Y position.
-setPos :: R2 -> Turtle ()
+setPos :: Monad m => R2 -> TurtleT m ()
 setPos p = ST.modify helper
  where
   helper (TState d a (Path ps))
@@ -121,7 +133,7 @@ setPos p = ST.modify helper
                              : if d then ps else tail ps
 
 -- | Get the current turtle X/Y position.
-pos :: Turtle R2
+pos ::  Monad m => TurtleT m R2
 pos = ST.gets f
   where f (TState _ _ (Path ((P p, t) : _))) = p ^+^ trailOffset t
         f _ = error "Diagrams.TwoD.Path.Turtle.pos: no path.  Please report this as a bug."
@@ -129,24 +141,24 @@ pos = ST.gets f
 -- Drawing control.
 
 -- | Starts a new path at the current location.
-penHop :: Turtle ()
+penHop :: Monad m => TurtleT m ()
 penHop = pos >>= setPos
 
 -- | Ends the current path, and enters into "penUp" mode
-penUp :: Turtle ()
+penUp :: Monad m => TurtleT m ()
 penUp   = penHop >> ST.modify (\(TState _ a p) -> TState False a p)
 
 -- | Ends the current path, and enters into "penDown" mode
-penDown :: Turtle ()
+penDown :: Monad m => TurtleT m ()
 penDown = penHop >> ST.modify (\(TState _ a p) -> TState True a p)
 
 -- | Queries whether the pen is currently drawing a path or not.
-isDown :: Turtle Bool
+isDown :: Monad m => TurtleT m Bool
 isDown = ST.gets (\(TState d _ _) -> d)
 
 -- | Closes the current path, to the last penDown / setPosition
 -- Maintains current position - does this make sense?
-closeCurrent :: Turtle ()
+closeCurrent :: Monad m => TurtleT m ()
 closeCurrent = do
   p <- pos
   ST.modify $ modifyPath $ modifyTrail close

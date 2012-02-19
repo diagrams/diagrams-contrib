@@ -62,7 +62,7 @@ wrapInside f axis start = rec zeros
   boundsScalars :: a -> [[v]]
   boundsScalars d
     = flip map norms
-    $ \v -> map (.-. origin) [boundary (negateV v) d, boundary v d]
+    $ \v -> map (.-. origin) [envelopeP (negateV v) d, envelopeP v d]
 
 -- Recurses on the list of items to lay out, maintaing a current set of
 -- coefficients for the different axii, each paired with the maximum

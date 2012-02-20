@@ -2,6 +2,7 @@
            , FlexibleContexts 
            , ScopedTypeVariables
            , ViewPatterns
+           , CPP
   #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
 
@@ -69,7 +70,11 @@ module Diagrams.TwoD.Tilings (
   ) where
     
 import Control.Monad.State
+#if __GLASGOW_HASKELL__ >= 704
 import Control.Monad.Writer hiding ((<>))
+#else
+import Control.Monad.Writer
+#endif
 
 import Data.List   (mapAccumL, sort)
 import Data.Function (on)

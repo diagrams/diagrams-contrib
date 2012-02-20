@@ -69,7 +69,7 @@ module Diagrams.TwoD.Tilings (
   ) where
     
 import Control.Monad.State
-import Control.Monad.Writer
+import Control.Monad.Writer hiding ((<>))
 
 import Data.List   (mapAccumL, sort)
 import Data.Function (on)

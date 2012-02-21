@@ -31,7 +31,6 @@ import Diagrams.Prelude
 
 import qualified Control.Monad.State as ST
 import Control.Monad.Identity
-import Control.Applicative ((<$>))
 
 type TurtleT = ST.StateT TState
 
@@ -71,22 +70,22 @@ modifyTrail _ p = p
 -- underlying monad @m@ yielding a path consisting of the traced trails
 runTurtleT :: (Monad m, Functor m) => TurtleT m a -> m (Path R2)
 runTurtleT t = getPath . snd
-            <$> ST.runStateT t (TState True 0 (Path [(P (0,0), Trail [] False)]))
+            <$> ST.runStateT t (TState True 0 (Path [(origin, Trail [] False)]))
 
 -- | Run the turtle, yielding a path consisting of the traced trails.
 runTurtle :: Turtle a -> Path R2
 runTurtle t = getPath . snd . ST.runState t
-            $ TState True 0 (Path [(P (0,0), Trail [] False)])
+            $ TState True 0 (Path [(origin, Trail [] False)])
 
 -- Motion commands
 
 -- | Move the turtle forward, along the current heading.
 forward :: Monad m => Double -> TurtleT m ()
-forward  x = logoseg $ Linear (x,          0)
+forward  x = logoseg $ Linear (r2 (x,          0))
 
 -- | Move the turtle backward, directly away from the current heading.
 backward :: Monad m => Double -> TurtleT m ()
-backward x = logoseg $ Linear ((negate x), 0)
+backward x = logoseg $ Linear (r2 ((negate x), 0))
 
 -- | Modify the current heading to the left by the specified angle in degrees.
 left :: Monad m => Double -> TurtleT m ()
@@ -119,23 +118,23 @@ heading :: Monad m => TurtleT m Double
 heading = ST.gets (\(TState _ (Deg x) _) -> x)
 
 -- | Sets the heading towards a given location.
-towards :: Monad m => R2 -> TurtleT m ()
+towards :: Monad m => P2 -> TurtleT m ()
 towards pt = do
   p <- pos
-  setHeading . uncurry atan2 $ pt ^-^ p
+  setHeading . (*360) . (/tau) . uncurry atan2 . unr2 $ pt .-. p
 
 -- | Set the current turtle X/Y position.
-setPos :: Monad m => R2 -> TurtleT m ()
+setPos :: Monad m => P2 -> TurtleT m ()
 setPos p = ST.modify helper
  where
   helper (TState d a (Path ps))
-    = TState d a $ Path $ (P p, Trail [] False)
-                             : if d then ps else tail ps
+    = TState d a $ Path $ (p, Trail [] False)
+                          : if d then ps else tail ps
 
 -- | Get the current turtle X/Y position.
-pos ::  Monad m => TurtleT m R2
+pos ::  Monad m => TurtleT m P2
 pos = ST.gets f
-  where f (TState _ _ (Path ((P p, t) : _))) = p ^+^ trailOffset t
+  where f (TState _ _ (Path ((p, t) : _))) = p .+^ trailOffset t
         f _ = error "Diagrams.TwoD.Path.Turtle.pos: no path.  Please report this as a bug."
 
 -- Drawing control.

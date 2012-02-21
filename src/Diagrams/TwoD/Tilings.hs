@@ -137,10 +137,10 @@ instance VectorSpace Q236 where
 type Q2 = (Q236, Q236)
 
 toR2 :: Q2 -> R2
-toR2 = toDouble *** toDouble
+toR2 = r2 . (toDouble *** toDouble)
 
 toP2 :: Q2 -> P2
-toP2 = P . toR2
+toP2 = p2 . (toDouble *** toDouble)
 
 ------------------------------------------------------------
 -- Polygons
@@ -380,7 +380,7 @@ drawTilingStyled eStyle pStyle t w h =
             (liftA2 (,) (drawEdge eStyle) mempty)
             (liftA2 (,) mempty (drawPoly pStyle))
   where
-    inRect (toR2 -> (x,y)) = -w/2 <= x && x <= w/2 && -h/2 <= y && y <= h/2
+    inRect ((unr2 . toR2) -> (x,y)) = -w/2 <= x && x <= w/2 && -h/2 <= y && y <= h/2
     mkDia (es, ps) = viewRect (es <> ps)
     viewRect = withEnvelope (rect w h :: D R2)
 

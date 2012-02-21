@@ -131,7 +131,7 @@ modLevel :: MonadState Pos m => (Int -> Int) -> m ()
 modLevel f = modify (L.modify level f)
 
 pos2Point :: Double -> Double -> Pos -> P2
-pos2Point cSep lSep (Pos l h) = P (fromIntegral h * cSep, -fromIntegral l * lSep)
+pos2Point cSep lSep (Pos l h) = p2 (fromIntegral h * cSep, -fromIntegral l * lSep)
 
 --------------------------------------------------
 -- Unique X layout for binary trees.  No
@@ -187,8 +187,8 @@ treeToEnsemble :: forall a. ForceLayoutTreeOpts
 treeToEnsemble opts t =
   ( fmap (first fst) lt
   , Ensemble
-      [ (edges, \p1 p2 -> project unitX (hookeForce (springK opts) (edgeLen opts) p1 p2))
-      , (sibs,  \p1 p2 -> project unitX (coulombForce (staticK opts) p1 p2))
+      [ (edges, \pt1 pt2 -> project unitX (hookeForce (springK opts) (edgeLen opts) pt1 pt2))
+      , (sibs,  \pt1 pt2 -> project unitX (coulombForce (staticK opts) pt1 pt2))
       ]
       particleMap
   )

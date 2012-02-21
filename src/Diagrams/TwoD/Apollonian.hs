@@ -1,5 +1,6 @@
 {-# LANGUAGE Rank2Types 
            , FlexibleContexts
+           , ViewPatterns
   #-}
 {-# OPTIONS_GHC -fno-warn-missing-methods #-}
 
@@ -74,12 +75,12 @@ data Circle = Circle { bend :: Double
 mkCircle :: Double -- ^ signed radius
          -> P2     -- ^ center
          -> Circle
-mkCircle r (P (x,y)) = Circle (1/r) (b*x :+ b*y)
+mkCircle r (unp2 -> (x,y)) = Circle (1/r) (b*x :+ b*y)
   where b = 1/r
 
 -- | Get the center of a circle.
 center :: Circle -> P2
-center (Circle b (cbx :+ cby)) = P (cbx / b, cby / b)
+center (Circle b (cbx :+ cby)) = p2 (cbx / b, cby / b)
 
 -- | Get the (unsigned) radius of a circle.
 radius :: Circle -> Double

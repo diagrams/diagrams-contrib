@@ -1,0 +1,18 @@
+0.1: XXX
+
+  Initial release, containing:
+
+  * Diagrams.Layout.Wrap, for laying out diagrams "wrapped" inside an
+    arbitrary region (Michael Sloan)
+
+  * Diagrams.TwoD.Tilings, for generating various 2D regular tilings
+    (Brent Yorgey)
+
+  * Diagrams.TwoD.Apollonian, for generating Apollonian gaskets (Brent
+    Yorgey)
+
+  * Diagrams.TwoD.Layout.Tree, tree layout and drawing algorithms
+    (Brent Yorgey)
+
+  * Diagrams.TwoD.Path.Turtle, creation of 2D paths using a stateful
+    "turtle" interface (Michael Sloan)

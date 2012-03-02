@@ -84,9 +84,10 @@ import qualified Data.Label            as L
 import           Data.Maybe
 import qualified Data.Traversable      as T
 import           Data.Tree
-import           Data.Tuple
 
 import           Diagrams.Prelude      hiding (e)
+
+
 
 ------------------------------------------------------------
 --  Binary trees
@@ -202,6 +203,7 @@ treeToEnsemble opts t =
                     . F.toList
                     . fmap (swap . first snd)
                     $ lt
+        swap (x,y) = (y,x)
 
         edges, sibs :: [Edge]
         edges       = extractEdges (fmap snd lt)

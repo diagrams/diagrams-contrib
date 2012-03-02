@@ -35,7 +35,9 @@ wrapDiagram = foldMap (uncurry translate) . fst
 
 -- | @wrapOutside@ is the same as @wrapInside@, but with an inverted
 --   predicate.
-wrapOutside :: (Enveloped a, v ~ V a)
+wrapOutside :: ( Enveloped a, v ~ V a
+               , InnerSpace v, OrderedField (Scalar v) -- See [6.12.3] note below
+               )
             => (Point v -> Bool) -> [v] -> Point v -> [a] -> ([(v, a)], [a])
 wrapOutside f = wrapInside (not . f)
 
@@ -49,7 +51,10 @@ wrapOutside f = wrapInside (not . f)
 --   points inside each positioned item for which the predicate is
 --   False.  Instead, only the corners of the bounds, along each axii,
 --   are used.
-wrapInside :: forall a v. (Enveloped a, v ~ V a)
+wrapInside :: forall a v.
+           ( Enveloped a, v ~ V a
+           , InnerSpace v, OrderedField (Scalar v) -- See [6.12.3] note below
+           )
            => (Point v -> Bool) -> [v] -> Point v
            -> [a] -> ([(v, a)], [a])
 wrapInside f axis start = rec zeros
@@ -95,3 +100,8 @@ wrapInside f axis start = rec zeros
 
     dupFirstY ((_,x):xs) = (x,x):xs
     dupFirstY _          = error "Diagrams.Layout.Wrap.wrapInside:dupFirstY: pattern-match failure.  Please report this as a bug."
+
+-- [6.12.3]: It should be possible to infer the InnerSpace v and
+--   OrderedField (Scalar v) constraints from Enveloped a, v ~ V a,
+--   but GHC 6.12.3 cannot, so we redundantly list them here to
+--   preserve support for 6.12.3.

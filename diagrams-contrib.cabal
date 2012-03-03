@@ -9,11 +9,11 @@ license:             BSD3
 license-file:        LICENSE
 author:              Various
 maintainer:          diagrams-discuss@googlegroups.com
--- copyright:           
 category:            Graphics
 build-type:          Simple
 cabal-version:       >=1.8
 extra-source-files:  README, CHANGES
+tested-with:         GHC == 6.12.3, GHC == 7.0.4, GHC == 7.2.1, GHC == 7.4.1
 Source-repository head
   type:     darcs
   location: http://patch-tag.com/r/byorgey/diagrams-contrib

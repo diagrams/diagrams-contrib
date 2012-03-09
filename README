@@ -1,9 +1,9 @@
 This package is a repository for user contributions to the diagrams
-project: generation of specialized diagrams, fun or instructive
-examples, half-baked ideas, stuff which is not sufficiently polished
-or general to go in the diagrams-lib package but is nonetheless worth
-sharing.  Any code is welcome, as long as it conforms to a few simple
-standards:
+project (http://projects.haskell.org/diagrams): generation of
+specialized diagrams, fun or instructive examples, half-baked ideas,
+stuff which is not sufficiently polished or general to go in the
+diagrams-lib package but is nonetheless worth sharing.  Any code is
+welcome, as long as it conforms to a few simple standards:
 
   - Code must be released under a BSD3 license (see the LICENSE).
 
@@ -24,9 +24,3 @@ standards:
     draconian, but you'll get over it.  If it makes you feel any
     better, you are welcome to turn off specific warnings for your
     module with an {-# OPTIONS_GHC -fno-warn-blah #-} pragma.
-
-For detailed help getting started as a contributor, see the
-Contributor Tutorial at
-
-  http://projects.haskell.org/diagrams/tutorial/Contributing.html
-

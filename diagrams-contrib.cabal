@@ -33,5 +33,6 @@ library
                        diagrams-lib ==0.5.*,
 
                        fclabels >= 1.0.4 && < 1.2,
-                       force-layout >= 0.1 && < 0.2
+                       force-layout >= 0.1 && < 0.2,
+                       data-default >= 0.3 && < 0.4
   hs-source-dirs:      src

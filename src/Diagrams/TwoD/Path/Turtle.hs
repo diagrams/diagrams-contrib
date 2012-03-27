@@ -30,7 +30,7 @@ module Diagrams.TwoD.Path.Turtle
 import Diagrams.Prelude
 
 import qualified Control.Monad.State as ST
-import Control.Monad.Identity
+import Control.Monad.Identity (Identity(..))
 
 type TurtleT = ST.StateT TState
 
@@ -70,12 +70,11 @@ modifyTrail _ p = p
 -- underlying monad @m@ yielding a path consisting of the traced trails
 runTurtleT :: (Monad m, Functor m) => TurtleT m a -> m (Path R2)
 runTurtleT t = getPath . snd
-            <$> ST.runStateT t (TState True 0 (Path [(origin, Trail [] False)]))
+           <$> ST.runStateT t (TState True 0 (Path [(origin, Trail [] False)]))
 
 -- | Run the turtle, yielding a path consisting of the traced trails.
 runTurtle :: Turtle a -> Path R2
-runTurtle t = getPath . snd . ST.runState t
-            $ TState True 0 (Path [(origin, Trail [] False)])
+runTurtle = runIdentity . runTurtleT
 
 -- Motion commands
 

@@ -464,8 +464,9 @@ forceLayoutTree' opts t = reconstruct (forceLayout (forceLayoutOpts opts) e) ti
 
 -- | Draw a tree annotated with node positions, given functions
 --   specifying how to draw nodes and edges.
-renderTree :: (a -> Diagram b R2) -> (P2 -> P2 -> Diagram b R2)
-           -> Tree (a, P2) -> Diagram b R2
+renderTree :: Monoid' m
+           => (a -> QDiagram b R2 m) -> (P2 -> P2 -> QDiagram b R2 m)
+           -> Tree (a, P2) -> QDiagram b R2 m
 renderTree renderNode renderEdge = alignT . centerX . renderTree'
   where
     renderTree' (Node (a,p) cs) =

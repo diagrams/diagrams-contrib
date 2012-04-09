@@ -99,6 +99,7 @@ module Diagrams.TwoD.Layout.Tree
          -- * Rendering
 
        , renderTree
+       , renderTree'
 
        ) where
 
@@ -110,6 +111,7 @@ import           Control.Monad.State
 
 import           Data.Default
 import qualified Data.Foldable         as F
+import           Data.Function         (on)
 import qualified Data.Map              as M
 import           Data.Label            (mkLabels)
 import qualified Data.Label            as L
@@ -467,9 +469,18 @@ forceLayoutTree' opts t = reconstruct (forceLayout (forceLayoutOpts opts) e) ti
 renderTree :: Monoid' m
            => (a -> QDiagram b R2 m) -> (P2 -> P2 -> QDiagram b R2 m)
            -> Tree (a, P2) -> QDiagram b R2 m
-renderTree renderNode renderEdge = alignT . centerX . renderTree'
+renderTree n e = renderTree' n (e `on` snd)
+
+-- | Draw a tree annotated with node positions, given functions
+--   specifying how to draw nodes and edges.  Unlike 'renderTree',
+--   this version gives the edge-drawing function access to the actual
+--   values stored at the nodes rather than just their positions.
+renderTree' :: Monoid' m
+           => (a -> QDiagram b R2 m) -> ((a,P2) -> (a,P2) -> QDiagram b R2 m)
+           -> Tree (a, P2) -> QDiagram b R2 m
+renderTree' renderNode renderEdge = alignT . centerX . renderTreeR
   where
-    renderTree' (Node (a,p) cs) =
+    renderTreeR (Node (a,p) cs) =
          renderNode a # moveTo p
-      <> mconcat (map renderTree' cs)
-      <> mconcat (map (renderEdge p . snd . rootLabel) cs)
+      <> mconcat (map renderTreeR cs)
+      <> mconcat (map (renderEdge (a,p) . rootLabel) cs)

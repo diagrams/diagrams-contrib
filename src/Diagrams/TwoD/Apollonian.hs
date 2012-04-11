@@ -48,7 +48,6 @@ import Data.Foldable (foldMap)
 import Diagrams.Prelude hiding (radius, center)
 
 import Control.Arrow (second)
-import Data.Colour   (transparent)
 
 ------------------------------------------------------------
 --  Circles

@@ -30,7 +30,6 @@ module Diagrams.TwoD.Path.Turtle
 import qualified Control.Monad.State as ST
 import Control.Monad.Identity (Identity(..))
 
-import Data.Colour(Colour)
 import Diagrams.Prelude
 import qualified Diagrams.TwoD.Path.Turtle.Internal as T
 

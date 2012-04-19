@@ -44,7 +44,6 @@ import Debug.Trace (traceShow)
 import Control.Arrow (second)
 
 import Diagrams.Prelude
-import Data.Colour hiding (atop)
 
 -- | Style attributes associated with the turtle pen
 data PenStyle = PenStyle

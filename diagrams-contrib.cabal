@@ -25,7 +25,8 @@ library
                        Diagrams.TwoD.Apollonian,
                        Diagrams.TwoD.Layout.Tree,
                        Diagrams.TwoD.Path.Turtle,
-                       Diagrams.TwoD.Path.Turtle.Aliases
+                       Diagrams.TwoD.Path.Turtle.Aliases,
+                       Diagrams.TwoD.Path.Turtle.Internal
   build-depends:       base >= 4.2 && < 4.6,
                        mtl >= 2.0 && < 2.2,
                        containers ==0.4.*,

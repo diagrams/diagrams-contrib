@@ -26,13 +26,13 @@ library
                        Diagrams.TwoD.Path.Turtle,
                        Diagrams.TwoD.Path.Turtle.Aliases
   build-depends:       base >= 4.2 && < 4.6,
-                       mtl ==2.0.*, 
-                       containers ==0.4.*, 
+                       mtl >= 2.0 && < 2.2,
+                       containers ==0.4.*,
                        vector-space >= 0.7 && < 0.9,
                        colour >= 2.3.1 && < 2.4,
                        diagrams-lib ==0.5.*,
 
                        fclabels >= 1.0.4 && < 1.2,
                        force-layout >= 0.1 && < 0.2,
-                       data-default >= 0.3 && < 0.4
+                       data-default >= 0.3 && < 0.5
   hs-source-dirs:      src

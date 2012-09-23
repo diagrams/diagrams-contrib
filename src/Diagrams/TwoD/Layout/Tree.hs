@@ -23,6 +23,7 @@
 -- > {-# LANGUAGE NoMonomorphismRestriction #-}
 -- > import Diagrams.Prelude
 -- > import Diagrams.TwoD.Layout.Tree
+-- > import Data.Tree
 -- >
 -- > t1 = Node 'A' [Node 'B' (map lf "CDE"), Node 'F' [Node 'G' (map lf "HIJ")]]
 -- >
@@ -37,6 +38,7 @@
 -- > {-# LANGUAGE NoMonomorphismRestriction #-}
 -- > import Diagrams.Prelude
 -- > import Diagrams.TwoD.Layout.Tree
+-- > import Data.Tree
 -- >
 -- > tD = Node (rect 1 3)
 -- >        [ Node (circle 0.2) []

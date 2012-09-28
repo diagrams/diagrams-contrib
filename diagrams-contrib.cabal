@@ -58,7 +58,7 @@ test-suite turtle-tests
                        -- Copied from regular dependencies
                        base >= 4.2 && < 4.7,
                        mtl >= 2.0 && < 2.2,
-                       containers >= 0.4 && < 0.6
+                       containers >= 0.4 && < 0.6,
                        vector-space >= 0.7 && < 0.9,
                        colour >= 2.3.1 && < 2.4,
                        diagrams-lib >= 0.6 && < 0.7,

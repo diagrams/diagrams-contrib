@@ -1,5 +1,5 @@
-{-# LANGUAGE TypeFamilies 
-           , FlexibleContexts 
+{-# LANGUAGE TypeFamilies
+           , FlexibleContexts
            , ScopedTypeVariables
            , ViewPatterns
            , CPP
@@ -18,57 +18,57 @@
 --
 -----------------------------------------------------------------------------
 module Diagrams.TwoD.Tilings (
-  
+
   -- * The ring Q[sqrt 2, sqrt 3]
-  
+
     Q236, rt2, rt3, rt6
-                  
+
   , toDouble
-    
+
   , Q2, toR2, toP2
-              
-  -- * Regular polygons              
-              
-  , TilingPoly(..)              
+
+  -- * Regular polygons
+
+  , TilingPoly(..)
   , polySides, polyFromSides
   , polyCos, polySin
   , polyRotation, polyExtRotation
-                  
-  -- * Tilings                
-                  
-  -- ** Types                  
+
+  -- * Tilings
+
+  -- ** Types
   , Tiling(..)
   , Edge, mkEdge
-          
+
   , Polygon(..)
-              
+
   -- ** Generation
-    
-  , TilingState(..), initTilingState  
+
+  , TilingState(..), initTilingState
   , TilingM
-    
+
   , generateTiling
-    
-  -- ** Pre-defined tilings  
-    
+
+  -- ** Pre-defined tilings
+
   , t3, t4, t6
   , mk3Tiling, t4612, t488, t31212
-                            
+
   , t3636
   , semiregular
   , rot
   , t3464, t33434, t33344, t33336L, t33336R
-              
-  -- * Diagrams  
-    
+
+  -- * Diagrams
+
   , drawEdge
   , drawPoly
   , polyColor
   , drawTiling
   , drawTilingStyled
-    
+
   ) where
-    
+
 import Control.Monad.State
 #if __GLASGOW_HASKELL__ >= 704
 import Control.Monad.Writer hiding ((<>))
@@ -102,9 +102,9 @@ data Q236 = Q236 Rational Rational Rational Rational
 
 -- | Convert a @Q236@ value to a @Double@.
 toDouble :: Q236 -> Double
-toDouble (Q236 a b c d) = fromRational a 
-                        + fromRational b * sqrt 2 
-                        + fromRational c * sqrt 3 
+toDouble (Q236 a b c d) = fromRational a
+                        + fromRational b * sqrt 2
+                        + fromRational c * sqrt 3
                         + fromRational d * sqrt 6
 
 rt2, rt3, rt6 :: Q236
@@ -123,13 +123,13 @@ instance Num Q236 where
   abs (Q236 a b c d) = Q236 (abs a) (abs b) (abs c) (abs d)
   fromInteger z = Q236 (fromInteger z) 0 0 0
   signum = error "no signum for Q236"
-  
+
 instance AdditiveGroup Q236 where
   zeroV = Q236 0 0 0 0
-  (Q236 a1 b1 c1 d1) ^+^ (Q236 a2 b2 c2 d2) 
+  (Q236 a1 b1 c1 d1) ^+^ (Q236 a2 b2 c2 d2)
     = Q236 (a1 + a2) (b1 + b2) (c1 + c2) (d1 + d2)
   negateV (Q236 a b c d) = Q236 (-a) (-b) (-c) (-d)
-  
+
 instance VectorSpace Q236 where
   type Scalar Q236 = Rational
   s *^ (Q236 a b c d) = Q236 (s * a) (s * b) (s * c) (s * d)
@@ -238,7 +238,7 @@ newtype Polygon = Polygon { polygonVertices :: [Q2] }
 
 instance Eq Polygon where
   (Polygon vs1) == (Polygon vs2) = sort vs1 == sort vs2
-  
+
 instance Ord Polygon where
   compare = compare `on` (sort . polygonVertices)
 
@@ -271,16 +271,16 @@ generateTiling :: forall w. Monoid w
                -> (Edge -> w)          -- ^ what to do with edges
                -> (Polygon -> w)       -- ^ what to do with polygons
                -> w
-generateTiling t v d vPred e p 
+generateTiling t v d vPred e p
   = evalState (execWriterT (generateTiling' t v d)) initTilingState where
-    
-  generateTiling' :: Tiling -> Q2 -> Q2 -> TilingM w ()  
+
+  generateTiling' :: Tiling -> Q2 -> Q2 -> TilingM w ()
   generateTiling' t v d
       -- stop if the current vertex fails the predicate
     | not (vPred v) = return ()
     | otherwise = do
         ts <- get
-        
+
         -- stop if we've seen this vertex before
         when (v `S.notMember` visitedVertices ts) $ do
 
@@ -309,23 +309,23 @@ generateTiling t v d vPred e p
 -- | Generate the neighboring vertices and polygons of a given vertex.
 genNeighbors :: Tiling -> Q2 -> Q2 -> ([Q2], S.Set Polygon)
 genNeighbors t v d = (neighbors, S.fromList polys) where
-  (neighbors, polys) 
+  (neighbors, polys)
     = unzip . snd
-      $ mapAccumL 
+      $ mapAccumL
           (\d' poly -> (polyRotation poly d', (v ^+^ d', genPolyVs poly v d')))
           (negateV d)
           (curConfig t)
-  
+
 -- | Generate the vertices of the given polygon, with one vertex at the given point
 --   and an adjacent vertex at the given offset.
-genPolyVs :: TilingPoly 
+genPolyVs :: TilingPoly
           -> Q2          -- ^ one vertex
           -> Q2          -- ^ vector to second vertex
           -> Polygon
 genPolyVs p v d = Polygon
-                . scanl (^+^) v 
+                . scanl (^+^) v
                 . take (polySides p - 1)
-                . iterate (polyExtRotation p) 
+                . iterate (polyExtRotation p)
                 $ d
 
 ------------------------------------------------------------
@@ -350,28 +350,28 @@ polyColor Dodecagon = cornflowerblue
 
 -- | Draw a tiling, with a given width and height and default colors
 --   for the polygons.
-drawTiling :: (Renderable (Path R2) b, Backend b R2) 
+drawTiling :: (Renderable (Path R2) b, Backend b R2)
            => Tiling -> Double -> Double -> Diagram b R2
-drawTiling = 
-  drawTilingStyled 
+drawTiling =
+  drawTilingStyled
     (mempty # lw 0.02)
-    (\p -> mempty 
+    (\p -> mempty
            # lw 0
-           # fc ( polyColor 
-                . polyFromSides 
-                . length 
+           # fc ( polyColor
+                . polyFromSides
+                . length
                 . polygonVertices
                 $ p
                 )
     )
-  
+
 -- | Draw a tiling with customizable styles for the polygons.  This is
 --   just an example, which you can use as the basis of your own
 --   tiling-drawing routine.
-drawTilingStyled :: (Renderable (Path R2) b, Backend b R2) 
+drawTilingStyled :: (Renderable (Path R2) b, Backend b R2)
                  => Style R2 -> (Polygon -> Style R2)
                  -> Tiling -> Double -> Double -> Diagram b R2
-drawTilingStyled eStyle pStyle t w h = 
+drawTilingStyled eStyle pStyle t w h =
   mkDia $ generateTiling t (0,0) (1,0) inRect
 
             -- draw the edges and polygons into separate
@@ -389,7 +389,7 @@ drawTilingStyled eStyle pStyle t w h =
 ------------------------------------------------------------
 
 -- Regular tilings
-    
+
 t3 :: Tiling
 t3 = Tiling (replicate 6 Triangle) (const t3)
 
@@ -405,14 +405,14 @@ t6 = Tiling (replicate 3 Hexagon) (const t6)
 --   The argument is the number of sides of the polygons surrounding a vertex.
 mk3Tiling :: [Int] -> Tiling
 mk3Tiling (ps@[a,b,c])
-      = Tiling 
+      = Tiling
           (map polyFromSides ps)
           (\i -> case i `mod` 3 of
                    0 -> mk3Tiling (reverse ps)
                    1 -> mk3Tiling [a,c,b]
                    2 -> mk3Tiling [b,a,c]
                    _ -> error "i `mod` 3 is not 0, 1,or 2! the sky is falling!"
-          )           
+          )
 mk3Tiling _ = error "mk3Tiling may only be called on a list of length 3."
 
 t4612 :: Tiling

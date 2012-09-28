@@ -1,3 +1,5 @@
+[![Build Status](https://secure.travis-ci.org/diagrams/diagrams-contrib.png)](http://travis-ci.org/diagrams/diagrams-contrib)
+
 This package is a repository for user contributions to the
 [diagrams project](http://projects.haskell.org/diagrams): generation
 of specialized diagrams, fun or instructive examples, half-baked

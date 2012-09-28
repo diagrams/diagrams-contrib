@@ -1,3 +1,23 @@
+0.6: XXX
+
+  * New features
+
+    - New pure implementation of Turtle library, in Turtle.Internals
+
+    - Diagrams.TwoD.Layout.Tree: 
+
+      - New renderTree' function which gives
+        the edge-drawing function access to the values stored at the
+        nodes instead of just the node positions.
+
+      - The type of renderTree is generalized to work with any
+        QDiagram b R2 m.
+
+  * Bug fixes
+
+    - Tiling generation code in Diagrams.TwoD.Tilings wasn't actually
+      checking whether vertexes had been already visited.
+
 0.1.1.1: 13 May 2012
 
   * bump mtl (< 2.2) and data-default (< 0.5) upper bounds

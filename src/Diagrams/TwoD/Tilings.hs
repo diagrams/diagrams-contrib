@@ -283,28 +283,28 @@ generateTiling t v d vPred e p
         
         -- stop if we've seen this vertex before
         when (v `S.notMember` visitedVertices ts) $ do
-          
-        -- otherwise, mark it as visited  
-        modify (\ts -> ts { visitedVertices = v `S.insert` visitedVertices ts })
-      
-        -- get the neighboring vertices and the polygons surrounding
-        -- this vertex, and filter out ones we've already generated
-        let (neighbors, polys) = genNeighbors t v d
-            edges  = S.fromList $ map (mkEdge v) neighbors
-            edges' = edges `S.difference` visitedEdges ts
-            polys' = polys `S.difference` visitedPolygons ts
-            
-        -- generate some edges and polygons
-        F.mapM_ (tell . e) edges'
-        F.mapM_ (tell . p) polys'
-        
-        -- remember that we generated them
-        modify (\ts -> ts { visitedEdges = edges' `S.union` visitedEdges ts })
-        modify (\ts -> ts { visitedPolygons = polys' `S.union` visitedPolygons ts })
-      
-        -- follow edges and continue recursively
-        zipWithM_ (\d i -> generateTiling' (follow t i) (v ^+^ d) d) 
-          (map (^-^ v) $ neighbors) [0..]
+
+          -- otherwise, mark it as visited
+          modify (\ts -> ts { visitedVertices = v `S.insert` visitedVertices ts })
+
+          -- get the neighboring vertices and the polygons surrounding
+          -- this vertex, and filter out ones we've already generated
+          let (neighbors, polys) = genNeighbors t v d
+              edges  = S.fromList $ map (mkEdge v) neighbors
+              edges' = edges `S.difference` visitedEdges ts
+              polys' = polys `S.difference` visitedPolygons ts
+
+          -- generate some edges and polygons
+          F.mapM_ (tell . e) edges'
+          F.mapM_ (tell . p) polys'
+
+          -- remember that we generated them
+          modify (\ts -> ts { visitedEdges = edges' `S.union` visitedEdges ts })
+          modify (\ts -> ts { visitedPolygons = polys' `S.union` visitedPolygons ts })
+
+          -- follow edges and continue recursively
+          zipWithM_ (\d i -> generateTiling' (follow t i) (v ^+^ d) d)
+            (map (^-^ v) $ neighbors) [0..]
 
 -- | Generate the neighboring vertices and polygons of a given vertex.
 genNeighbors :: Tiling -> Q2 -> Q2 -> ([Q2], S.Set Polygon)

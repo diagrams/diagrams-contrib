@@ -16,8 +16,8 @@
 -- tangent to all three.  This process can be repeated, generating a
 -- fractal circle packing.
 --
--- See J. Lagarias, C. Mallows, and A. Wilks, "Beyond the Descartes
--- circle theorem", Amer. Math. Monthly 109 (2002), 338--361.
+-- See J. Lagarias, C. Mallows, and A. Wilks, \"Beyond the Descartes
+-- circle theorem\", /Amer. Math. Monthly/ 109 (2002), 338--361.
 -- <http://arxiv.org/abs/math/0101066>.
 --
 -----------------------------------------------------------------------------

@@ -1,4 +1,4 @@
-{-# LANGUAGE Rank2Types 
+{-# LANGUAGE Rank2Types
            , FlexibleContexts
            , ViewPatterns
   #-}
@@ -22,24 +22,24 @@
 --
 -----------------------------------------------------------------------------
 
-module Diagrams.TwoD.Apollonian 
+module Diagrams.TwoD.Apollonian
        ( -- * Circles
-         
+
          Circle(..), mkCircle, center, radius
-                                       
-         -- * Descartes' Theorem                                       
+
+         -- * Descartes' Theorem
        , descartes, other, initialConfig
-                    
+
          -- * Apollonian gasket generation
-                    
+
        , apollonian
-         
+
          -- * Diagram generation
-         
+
        , drawCircle
        , drawGasket
        , apollonianGasket
-         
+
        ) where
 
 import Data.Complex
@@ -55,14 +55,14 @@ import Control.Arrow (second)
 
 -- | Representation for circles that lets us quickly compute an
 --   Apollonian gasket.
-data Circle = Circle { bend :: Double   
+data Circle = Circle { bend :: Double
                        -- ^ The bend is the reciprocal of signed
                        --   radius: a negative radius means the
                        --   outside and inside of the circle are
                        --   switched.  The bends of any four mutually
                        --   tangent circles satisfy Descartes'
                        --   Theorem.
-                     , cb   :: Complex Double  
+                     , cb   :: Complex Double
                        -- ^ /Product/ of bend and center represented
                        --   as a complex number.  Amazingly, these
                        --   products also satisfy the equation of
@@ -98,7 +98,7 @@ instance Num Circle where
   negate = liftF negate
   abs = liftF abs
   fromInteger n = Circle (fromInteger n) (fromInteger n)
-  
+
 instance Fractional Circle where
   (/) = liftF2 (/)
   recip = liftF recip
@@ -114,7 +114,7 @@ instance Floating Circle where
 ------------------------------------------------------------
 
 -- | Descartes' Theorem states that if @b1@, @b2@, @b3@ and @b4@ are
---   the bends of four mutually tangent circles, then 
+--   the bends of four mutually tangent circles, then
 --
 --   @
 --     b1^2 + b2^2 + b3^2 + b4^2 = 1/2 * (b1 + b2 + b3 + b4)^2.
@@ -177,19 +177,19 @@ select (x:xs) = (x,xs) : (map . second) (x:) (select xs)
 --   Stop the recursion when encountering a circle with an (unsigned)
 --   radius smaller than the threshold.
 apollonian :: Double -> [Circle] -> [Circle]
-apollonian thresh cs 
+apollonian thresh cs
   =  cs
   ++ (concat . map (\(c,cs') -> apollonian' thresh (other cs' c) cs') . select $ cs)
-  
+
 apollonian' :: Double -> Circle -> [Circle] -> [Circle]
 apollonian' thresh cur others
   | radius cur < thresh = []
-  | otherwise = cur 
+  | otherwise = cur
               : (concat $
                    map (\(c, cs') -> apollonian' thresh
-                                       (other (cur:cs') c) 
-                                       (cur:cs') 
-                       ) 
+                                       (other (cur:cs') c)
+                                       (cur:cs')
+                       )
                        (select others)
                 )
 
@@ -211,7 +211,7 @@ drawGasket cs = foldMap (drawCircle w) cs
 -- | Draw an Apollonian gasket: the first argument is the threshold;
 --   the recursion will stop upon reaching circles with radii less than
 --   it. The next three arguments are bends of three circles.
-apollonianGasket :: (Renderable (Path R2) b) 
+apollonianGasket :: (Renderable (Path R2) b)
                  => Double -> Double -> Double -> Double -> Diagram b R2
 apollonianGasket thresh b1 b2 b3 = drawGasket . apollonian thresh $ (initialConfig b1 b2 b3)
 

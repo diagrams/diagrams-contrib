@@ -109,7 +109,7 @@ import           Physics.ForceLayout
 
 import           Control.Applicative
 import           Control.Arrow         (first, second, (***), (&&&))
-import           Control.Lens          hiding (project, down, up)
+import           Control.Lens
 import           Control.Monad.State
 
 import           Data.Default

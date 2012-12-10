@@ -109,20 +109,19 @@ import           Physics.ForceLayout
 
 import           Control.Applicative
 import           Control.Arrow         (first, second, (***), (&&&))
+import           Control.Lens          hiding (project, down, up)
 import           Control.Monad.State
 
 import           Data.Default
 import qualified Data.Foldable         as F
 import           Data.Function         (on)
 import qualified Data.Map              as M
-import           Data.Label            (mkLabels)
-import qualified Data.Label            as L
 import           Data.List             (mapAccumL)
 import           Data.Maybe
 import qualified Data.Traversable      as T
 import           Data.Tree
 
-import           Diagrams.Prelude      hiding (e)
+import           Diagrams.Prelude      hiding (e, view)
 
 
 
@@ -159,15 +158,7 @@ data Pos = Pos { _level :: Int
                }
   deriving (Eq, Show)
 
-mkLabels [''Pos]
-
-incHoriz, up, down :: MonadState Pos m => m ()
-incHoriz   = modify (L.modify horiz (+1))
-up         = modLevel (subtract 1)
-down       = modLevel (+1)
-
-modLevel :: MonadState Pos m => (Int -> Int) -> m ()
-modLevel f = modify (L.modify level f)
+makeLenses ''Pos
 
 pos2Point :: Double -> Double -> Pos -> P2
 pos2Point cSep lSep (Pos l h) = p2 (fromIntegral h * cSep, -fromIntegral l * lSep)
@@ -198,7 +189,10 @@ uniqueXLayout cSep lSep t = (fmap . fmap . second) (pos2Point cSep lSep)
           r' <- uniqueXLayout' r
           up
           return $ Just (Node (a,p) (catMaybes [l', r']))
-        mkNode = get <* incHoriz
+        mkNode = get <* (horiz += 1)
+
+        down = level += 1
+        up   = level -= 1
 
 --------------------------------------------------
 -- "Symmetric" layout of rose trees.
@@ -411,7 +405,7 @@ label = flip evalState 0 . T.mapM (\a -> get >>= \i -> modify (+1) >> return (a,
 --   identifiers used in the 'Ensemble'.
 reconstruct :: Functor t => Ensemble R2 -> t (a, PID) -> t (a, P2)
 reconstruct e = (fmap . second)
-                  (fromMaybe origin . fmap (L.get pos) . flip M.lookup (L.get particles e))
+                  (fromMaybe origin . fmap (view pos) . flip M.lookup (e^.particles))
 
 data ForceLayoutTreeOpts =
   FLTOpts

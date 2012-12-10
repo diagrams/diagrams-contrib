@@ -64,6 +64,6 @@ test-suite turtle-tests
                        diagrams-lib >= 0.6 && < 0.7,
 
                        fclabels >= 1.0.4 && < 1.2,
-                       force-layout >= 0.1 && < 0.2,
+                       force-layout >= 0.2 && < 0.3,
                        data-default >= 0.3 && < 0.6
   default-language:    Haskell2010

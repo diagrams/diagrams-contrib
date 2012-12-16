@@ -25,6 +25,7 @@ library
                        Diagrams.TwoD.Tilings,
                        Diagrams.TwoD.Apollonian,
                        Diagrams.TwoD.Layout.Tree,
+                       Diagrams.TwoD.Path.IteratedSubset,
                        Diagrams.TwoD.Path.Turtle,
                        Diagrams.TwoD.Path.Turtle.Aliases,
                        Diagrams.TwoD.Path.Turtle.Internal
@@ -33,11 +34,14 @@ library
                        containers > 0.4 && < 0.6,
                        vector-space >= 0.7 && < 0.9,
                        colour >= 2.3.1 && < 2.4,
+                       split >= 0.2.1 && < 0.3,
+                       diagrams-core >= 0.6 && < 0.7,
                        diagrams-lib >= 0.6 && < 0.7,
 
                        lens >= 3.7 && < 4,
                        force-layout >= 0.2 && < 0.3,
-                       data-default >= 0.3 && < 0.6
+                       data-default >= 0.3 && < 0.6,
+                       MonadRandom >= 0.1.8 && < 0.2
   hs-source-dirs:      src
   default-language:    Haskell2010
 

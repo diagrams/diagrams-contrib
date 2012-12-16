@@ -42,6 +42,7 @@ module Diagrams.TwoD.Path.IteratedSubset
        , randIterGrid
        ) where
 
+import Diagrams.Core.Points ()  -- needed for V (Point a) instance on GHC < 7.6
 import Diagrams.Prelude
 
 import Control.Monad        ( replicateM )

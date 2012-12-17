@@ -11,6 +11,7 @@
 
 module Diagrams.TwoD.Layout.CirclePacking
        ( renderCirclePacking
+       , createCirclePacking
        , RadiusFunction
        , approxRadius
        , circleRadius ) where
@@ -25,14 +26,20 @@ import Diagrams.Core.Envelope
 -- 'RadiusFunction', so that they do not overlap (according to the radius
 -- function) and otherwise form, as far as possible, a tight circle.
 renderCirclePacking :: Monoid' m => RadiusFunction b m -> [QDiagram b R2 m] -> QDiagram b R2 m
-renderCirclePacking radiusFunc =
+renderCirclePacking radiusFunc = createCirclePacking radiusFunc id
+
+-- | More general version of 'renderCirclePacking'. You can use this if you
+-- have more information available in the values of type @a@ that allows you to
+-- calculate the radius better (or even exactly).
+createCirclePacking :: Monoid' m => (a -> Double) -> (a -> QDiagram b R2 m) -> [a] -> QDiagram b R2 m
+createCirclePacking radiusFunc diagramFunc =
     position .
-    map (\(o,(x,y)) -> (p2 (x,y),o)) .
+    map (\(o,(x,y)) -> (p2 (x,y), diagramFunc o)) .
     packCircles radiusFunc
 
--- | The type of radius-estimating functions. If you have better information
--- about your diagrams, you can of course always pass your own function to
--- 'renderCirclePacking'. Otherwise, use 'approxRadius' or 'circleRadius'.
+-- | The type of radius-estimating functions for Diagrams such as
+-- 'approxRadius' and 'circleRadius'. When you can calculate the radius better,
+-- but not any more once you converted your data to a diagram, use 'createCirclePacking'.
 type RadiusFunction b m = QDiagram b R2 m -> Double
 
 -- | A safe approximation. Calculates the outer radius of the smallest

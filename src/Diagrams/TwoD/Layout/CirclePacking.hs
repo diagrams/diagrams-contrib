@@ -5,7 +5,7 @@
 -- License     :  BSD-style (see LICENSE)
 -- Maintainer  :  mail@joachim-breitner.de
 --
--- A method for layoung out diagrams using a circle packing algorithm. For
+-- A method for layouting out diagrams using a circle packing algorithm. For
 -- details on the algorithm, see "Optimisation.CirclePacking" in the module
 -- circle-packing.
 

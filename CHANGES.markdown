@@ -1,3 +1,8 @@
+0.6.0.1: 17 December 2012
+-------------------------
+
+* Update dependencies of tests
+
 0.6: 11 December 2012
 ---------------------
 

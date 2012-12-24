@@ -45,6 +45,7 @@ module Diagrams.TwoD.Path.IteratedSubset
 import Diagrams.Core.Points ()  -- needed for V (Point a) instance on GHC < 7.6
 import Diagrams.Prelude
 
+import Data.Maybe           ( mapMaybe )
 import Control.Monad        ( replicateM )
 import Control.Monad.Random ( evalRandIO, getRandom, getRandomR )
 import Control.Monad.Random.Class ( MonadRandom )
@@ -63,13 +64,15 @@ import Data.List.Split      ( chunksOf )
 --   trail is equal to the previous with all segments replaced by the
 --   seed pattern.
 iterTrail :: Trail R2 -> [Trail R2]
-iterTrail t = iterate (mconcat . map (refineSegment t) . trailSegments)
+iterTrail t = iterate (mconcat . mapMaybe (refineSegment t) . trailSegments)
                       (fromOffsets [unitX])
 
 -- | Use a trail to \"refine\" a segment, returning a scaled and/or
 --   rotated copy of the trail with the same endpoint as the segment.
-refineSegment :: Trail R2 -> Segment R2 -> Trail R2
-refineSegment t seg = t # scale k # rotateBy r
+refineSegment :: Trail R2 -> Segment R2 -> Maybe (Trail R2)
+refineSegment t seg
+  | tOff == 0 || sOff == 0 = Nothing
+  | otherwise              = Just $ t # scale k # rotateBy r
   where
     sOff = segOffset seg
     tOff = trailOffset t

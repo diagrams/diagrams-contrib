@@ -22,8 +22,9 @@ Source-repository head
 library
   ghc-options:         -Wall
   exposed-modules:     Diagrams.Layout.Wrap,
-                       Diagrams.TwoD.Tilings,
                        Diagrams.TwoD.Apollonian,
+                       Diagrams.TwoD.Factorization,
+                       Diagrams.TwoD.Tilings,
                        Diagrams.TwoD.Layout.Tree,
                        Diagrams.TwoD.Layout.CirclePacking,
                        Diagrams.TwoD.Path.Turtle,
@@ -32,11 +33,12 @@ library
   build-depends:       base >= 4.2 && < 4.7,
                        mtl >= 2.0 && < 2.2,
                        containers > 0.4 && < 0.6,
+                       split >= 0.2.1 && < 0.3,
                        vector-space >= 0.7 && < 0.9,
                        colour >= 2.3.1 && < 2.4,
                        diagrams-core >= 0.6 && < 0.7,
                        diagrams-lib >= 0.6 && < 0.7,
-
+                       arithmoi >= 0.4 && < 0.5,
                        lens >= 3.7 && < 4,
                        force-layout >= 0.2 && < 0.3,
                        data-default >= 0.3 && < 0.6,

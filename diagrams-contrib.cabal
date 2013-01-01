@@ -22,9 +22,11 @@ Source-repository head
 library
   ghc-options:         -Wall
   exposed-modules:     Diagrams.Layout.Wrap,
-                       Diagrams.TwoD.Tilings,
                        Diagrams.TwoD.Apollonian,
+                       Diagrams.TwoD.Factorization,
+                       Diagrams.TwoD.Tilings,
                        Diagrams.TwoD.Layout.Tree,
+                       Diagrams.TwoD.Layout.CirclePacking,
                        Diagrams.TwoD.Path.IteratedSubset,
                        Diagrams.TwoD.Path.Turtle,
                        Diagrams.TwoD.Path.Turtle.Aliases,
@@ -32,16 +34,18 @@ library
   build-depends:       base >= 4.2 && < 4.7,
                        mtl >= 2.0 && < 2.2,
                        containers > 0.4 && < 0.6,
+                       split >= 0.2.1 && < 0.3,
                        vector-space >= 0.7 && < 0.9,
                        colour >= 2.3.1 && < 2.4,
                        split >= 0.2.1 && < 0.3,
                        diagrams-core >= 0.6 && < 0.7,
                        diagrams-lib >= 0.6 && < 0.7,
-
+                       arithmoi >= 0.4 && < 0.5,
                        lens >= 3.7 && < 4,
                        force-layout >= 0.2 && < 0.3,
                        data-default >= 0.3 && < 0.6,
-                       MonadRandom >= 0.1.8 && < 0.2
+                       MonadRandom >= 0.1.8 && < 0.2,
+                       circle-packing >= 0.1 && < 0.2
   hs-source-dirs:      src
   default-language:    Haskell2010
 
@@ -56,18 +60,11 @@ test-suite turtle-tests
   build-depends:       HUnit                      >= 1.2 && < 1.3,
                        QuickCheck                 >= 2.4 && < 2.6,
                        containers                 >= 0.3 && < 0.6,
-                       test-framework             >= 0.4 && < 0.7,
-                       test-framework-hunit       >= 0.2 && < 0.3,
-                       test-framework-quickcheck2 >= 0.2 && < 0.3,
-                       -- Copied from regular dependencies
-                       base >= 4.2 && < 4.7,
-                       mtl >= 2.0 && < 2.2,
-                       containers >= 0.4 && < 0.6,
-                       vector-space >= 0.7 && < 0.9,
-                       colour >= 2.3.1 && < 2.4,
-                       diagrams-lib >= 0.6 && < 0.7,
+                       test-framework             >= 0.4 && < 0.9,
+                       test-framework-hunit       >= 0.2 && < 0.4,
+                       test-framework-quickcheck2 >= 0.2 && < 0.4,
 
-                       fclabels >= 1.0.4 && < 1.2,
-                       force-layout >= 0.2 && < 0.3,
-                       data-default >= 0.3 && < 0.6
+                       base >= 4.2 && < 4.7,
+                       diagrams-lib >= 0.6 && < 0.7
+
   default-language:    Haskell2010

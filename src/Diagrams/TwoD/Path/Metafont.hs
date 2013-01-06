@@ -8,7 +8,7 @@ import Control.Lens
 import Diagrams.CubicSpline.Internal
 import Diagrams.Prelude hiding ((&))
 
-data PathJoin d j = PathJoin { _d1 :: d, _j :: j, _d2 :: d }
+data PathJoin d j = PJ { _d1 :: d, _j :: j, _d2 :: d }
   deriving (Functor)
 
 makeLenses ''PathJoin
@@ -30,9 +30,9 @@ getTension :: Tension -> Double
 getTension (TensionAmt t)     = t
 getTension (TensionAtLeast t) = t
 
-data TensionJoin = TensionJoin { _t1 :: Tension, _t2 :: Tension }
+data TensionJoin = TJ { _t1 :: Tension, _t2 :: Tension }
 
-data ControlJoin = ControlJoin { _c1 :: P2, _c2 :: P2 }
+data ControlJoin = CJ { _c1 :: P2, _c2 :: P2 }
 
 makeLenses ''TensionJoin
 makeLenses ''ControlJoin
@@ -47,7 +47,7 @@ data MFPathData a where
   MFPathPt   :: P2 -> MFPathData J -> MFPathData P
   MFPathJoin :: PathJoin (Maybe PathDir) BasicJoin -> MFPathData P -> MFPathData J
 
-data MetafontSegment d j = MFSegment { _x1 :: P2, _pj :: (PathJoin d j), _x2 :: P2 }
+data MetafontSegment d j = MFS { _x1 :: P2, _pj :: (PathJoin d j), _x2 :: P2 }
   deriving (Functor)
 
 makeLenses ''MetafontSegment
@@ -57,7 +57,7 @@ mfPathToSegments = snd . mfPathToSegments'
   where
     mfPathToSegments' :: MFPathData P -> (P2, [MetafontSegment (Maybe PathDir) BasicJoin])
     mfPathToSegments' (MFPathEnd p0) = (p0, [])
-    mfPathToSegments' (MFPathPt p0 (MFPathJoin j path)) = (p0, MFSegment p0 j p1 : segs)
+    mfPathToSegments' (MFPathPt p0 (MFPathJoin j path)) = (p0, MFS p0 j p1 : segs)
       where
         (p1, segs) = mfPathToSegments' path
 
@@ -84,14 +84,14 @@ mfPathToSegments = snd . mfPathToSegments'
 
 -- rule 3
 copyDirsL :: [MetafontSegment (Maybe PathDir) BasicJoin] -> [MetafontSegment (Maybe PathDir) BasicJoin]
-copyDirsL (s1@(MFSegment _ (PathJoin _ _ Nothing) _) : segs@(MFSegment _ (PathJoin (Just d) _ _) _ : _))
+copyDirsL (s1@(MFS _ (PJ _ _ Nothing) _) : segs@(MFS _ (PJ (Just d) _ _) _ : _))
   = (s1 & pj.d2 .~ Just d) : copyDirsL segs
 copyDirsL (s1 : segs) = s1 : copyDirsL segs
 copyDirsL segs = segs
 
 -- rule 4
 copyDirsR :: [MetafontSegment (Maybe PathDir) BasicJoin] -> [MetafontSegment (Maybe PathDir) BasicJoin]
-copyDirsR (s1@(MFSegment _ (PathJoin _ (Left _) (Just d)) _) : s2@(MFSegment _ (PathJoin Nothing _ _) _) : segs)
+copyDirsR (s1@(MFS _ (PJ _ (Left _) (Just d)) _) : s2@(MFS _ (PJ Nothing _ _) _) : segs)
   = s1 : copyDirsR ((s2 & pj.d1 .~ Just d) : segs)
 copyDirsR (s1 : segs) = s1 : copyDirsR segs
 copyDirsR segs = segs
@@ -113,10 +113,10 @@ inheritDirs = undefined
 computeControls
   :: MetafontSegment Dir (Either TensionJoin ControlJoin)
   -> MetafontSegment ()  ControlJoin
-computeControls (MFSegment z0 (PathJoin _ (Right cj) _) z1)
-  = MFSegment z0 (PathJoin () cj ()) z1
-computeControls (MFSegment z0 (PathJoin w0 (Left (TensionJoin a b)) w1) z1)
-  = MFSegment z0 (PathJoin () (ControlJoin u v) ()) z1
+computeControls (MFS z0 (PJ _ (Right cj) _) z1)
+  = MFS z0 (PJ () cj ()) z1
+computeControls (MFS z0 (PJ w0 (Left (TJ a b)) w1) z1)
+  = MFS z0 (PJ () (CJ u v) ()) z1
   where
     (u,v) = ctrlPts z0 w0 (getTension a) (getTension b) w1 z1
 

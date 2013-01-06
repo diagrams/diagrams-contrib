@@ -1,28 +1,26 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE TemplateHaskell #-}
 module Diagrams.TwoD.Path.Metafont where
 
-import Diagrams.CubicSpline.Internal
-import Diagrams.Prelude
+import Control.Lens
 
-data PathJoin d j = PathJoin d j d
+import Diagrams.CubicSpline.Internal
+import Diagrams.Prelude hiding ((&))
+
+data PathJoin d j = PathJoin { _d1 :: d, _j :: j, _d2 :: d }
   deriving (Functor)
 
+makeLenses ''PathJoin
+
 data PathDir
-  = PathDirEmpty
-  | PathDirCurl Curl
+  = PathDirCurl Curl
   | PathDirDir  Dir
 
 type Curl = Double
 type Dir  = R2
 
-data BasicJoin
-  = Simple   -- &
-  | Free     -- ..
-  | Tense    TensionJoin
-  | Ctrl     ControlJoin
-
-data TensionJoin = TensionJoin Tension Tension
+type BasicJoin = Either TensionJoin ControlJoin
 
 data Tension
   = TensionAmt Double
@@ -32,17 +30,75 @@ getTension :: Tension -> Double
 getTension (TensionAmt t)     = t
 getTension (TensionAtLeast t) = t
 
-data ControlJoin = ControlJoin P2 P2
+data TensionJoin = TensionJoin { _t1 :: Tension, _t2 :: Tension }
+
+data ControlJoin = ControlJoin { _c1 :: P2, _c2 :: P2 }
+
+makeLenses ''TensionJoin
+makeLenses ''ControlJoin
 
 data MetafontPath = MetafontPath Bool (MFPathData P2)
 
-data MFPathData a where
-  MFPathEnd  :: P2 -> MFPathData P2
-  MFPathPt   :: P2 -> MFPathData (PathJoin PathDir BasicJoin) -> MFPathData P2
-  MFPathJoin :: PathJoin PathDir BasicJoin -> MFPathData P2 -> MFPathData (PathJoin PathDir BasicJoin)
+data P
+data J
 
-data MetafontSegment d j = MFSegment P2 (PathJoin d j) P2
+data MFPathData a where
+  MFPathEnd  :: P2 -> MFPathData P
+  MFPathPt   :: P2 -> MFPathData J -> MFPathData P
+  MFPathJoin :: PathJoin (Maybe PathDir) BasicJoin -> MFPathData P -> MFPathData J
+
+data MetafontSegment d j = MFSegment { _x1 :: P2, _pj :: (PathJoin d j), _x2 :: P2 }
   deriving (Functor)
+
+makeLenses ''MetafontSegment
+
+mfPathToSegments :: MFPathData P -> [MetafontSegment (Maybe PathDir) BasicJoin]
+mfPathToSegments = snd . mfPathToSegments'
+  where
+    mfPathToSegments' :: MFPathData P -> (P2, [MetafontSegment (Maybe PathDir) BasicJoin])
+    mfPathToSegments' (MFPathEnd p0) = (p0, [])
+    mfPathToSegments' (MFPathPt p0 (MFPathJoin j path)) = (p0, MFSegment p0 j p1 : segs)
+      where
+        (p1, segs) = mfPathToSegments' path
+
+{-
+
+1. [ ] Empty direction @ beginning or end of path -> curl 1. (Implement
+       in direction solving code.)  Note cyclic paths have no
+       beginning/end; will use cyclic tridiagonal.
+
+2. [ ] Empty direction next to & -> curl 1.  (Should implement in & method.)
+
+3. [ ] empty P nonempty -> replace empty with nonempty.
+
+4. [ ] nonempty P empty -> replace " " " UNLESS nonempty follows explicit control pts.
+
+       i.e. direction after control pts is always ignored.
+
+5. [ ] .. z .. controls u and ...  -> {u - z} z ... controls if (u /=
+       z), or {curl 1} if u = z
+
+       Similarly  controls u and v ... z ... ->  z {z - v} (or curl 1)
+
+-}
+
+-- rule 3
+copyDirsL :: [MetafontSegment (Maybe PathDir) BasicJoin] -> [MetafontSegment (Maybe PathDir) BasicJoin]
+copyDirsL (s1@(MFSegment _ (PathJoin _ _ Nothing) _) : segs@(MFSegment _ (PathJoin (Just d) _ _) _ : _))
+  = (s1 & pj.d2 .~ Just d) : copyDirsL segs
+copyDirsL (s1 : segs) = s1 : copyDirsL segs
+copyDirsL segs = segs
+
+-- rule 4
+copyDirsR :: [MetafontSegment (Maybe PathDir) BasicJoin] -> [MetafontSegment (Maybe PathDir) BasicJoin]
+copyDirsR (s1@(MFSegment _ (PathJoin _ (Left _) (Just d)) _) : s2@(MFSegment _ (PathJoin Nothing _ _) _) : segs)
+  = s1 : copyDirsR ((s2 & pj.d1 .~ Just d) : segs)
+copyDirsR (s1 : segs) = s1 : copyDirsR segs
+copyDirsR segs = segs
+
+-- rule 5
+inheritDirs :: [MetafontSegment (Maybe PathDir) BasicJoin] -> [MetafontSegment (Maybe PathDir) BasicJoin]
+inheritDirs = undefined
 
 -- | Take a segment whose endpoint directions have been fully
 --   determined, and compute the control points to realize it as a

@@ -34,8 +34,7 @@ library
                        vector-space >= 0.7 && < 0.9,
                        colour >= 2.3.1 && < 2.4,
                        diagrams-lib >= 0.6 && < 0.7,
-
-                       lens >= 3.7 && < 4,
+                       lens >= 3.8 && < 4,
                        force-layout >= 0.2 && < 0.3,
                        data-default >= 0.3 && < 0.6
   hs-source-dirs:      src

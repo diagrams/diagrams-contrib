@@ -1,3 +1,8 @@
+0.6.0.3: 27 January 2013
+------------------------
+
+* Switch to explicit import list for Control.Lens to avoid name conflicts
+
 0.6.0.2: 24 January 2013
 ------------------------
 

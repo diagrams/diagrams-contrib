@@ -109,7 +109,7 @@ import           Physics.ForceLayout
 
 import           Control.Applicative
 import           Control.Arrow         (first, second, (***), (&&&))
-import           Control.Lens          hiding (moveTo)
+import           Control.Lens          (makeLenses, (+=), (-=), view, (^.))
 import           Control.Monad.State
 
 import           Data.Default

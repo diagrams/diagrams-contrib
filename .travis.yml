@@ -8,7 +8,7 @@ before_install:
   - cd ..
 
 install:
-  - cabal install -v3 --only-dependencies --enable-tests
+  - cabal install -v3 --only-dependencies --enable-tests --constraint='mtl >= 2.1'
 
 notifications:
   irc:

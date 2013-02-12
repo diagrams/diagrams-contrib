@@ -1,5 +1,6 @@
 language: haskell
 before_install:
+  - ghc-pkg list
   - git clone --quiet git://github.com/diagrams/diagrams-core.git diagrams/diagrams-core
   - git clone --quiet git://github.com/diagrams/diagrams-lib.git diagrams/diagrams-lib
   - cabal update
@@ -8,7 +9,7 @@ before_install:
   - cd ..
 
 install:
-  - cabal install -v3 --only-dependencies --enable-tests --constraint='mtl >= 2.1'
+  - cabal install -v3 --only-dependencies --enable-tests
 
 notifications:
   irc:

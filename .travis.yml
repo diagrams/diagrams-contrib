@@ -1,6 +1,5 @@
 language: haskell
 before_install:
-  - ghc-pkg list
   - git clone --quiet git://github.com/diagrams/diagrams-core.git diagrams/diagrams-core
   - git clone --quiet git://github.com/diagrams/diagrams-lib.git diagrams/diagrams-lib
 
@@ -20,7 +19,7 @@ install:
   - cd diagrams
   - cabal install diagrams-core/ diagrams-lib/ --constraint='transformers >= 0.3' --constraint='mtl >= 2.1'
   - cd ..
-  - cabal install -v3 --only-dependencies --enable-tests --constraint='transformers >= 0.3' --constraint='mtl >= 2.1'
+  - cabal install --only-dependencies --enable-tests --constraint='transformers >= 0.3' --constraint='mtl >= 2.1'
 
 notifications:
   irc:

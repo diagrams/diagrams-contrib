@@ -13,8 +13,8 @@ install:
   - sudo ghc-pkg --global unregister parsec
   - sudo ghc-pkg --global unregister regex-base
   - sudo ghc-pkg --global unregister fgl
-  - sudo ghc-pkg --global unregister mtl
   - sudo ghc-pkg --global unregister MonadCatchIO-mtl
+  - sudo ghc-pkg --global unregister mtl
   - sudo ghc-pkg --global unregister transformers
   - cabal install transformers-0.3.0.0 mtl-2.1.1 parsec-3.1.2
   - cd diagrams

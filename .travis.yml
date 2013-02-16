@@ -10,11 +10,12 @@ install:
   - sudo ghc-pkg --global unregister network
   - sudo ghc-pkg --global unregister regex-compat
   - sudo ghc-pkg --global unregister regex-posix
+  - sudo ghc-pkg --global unregister transformers
   - cabal install --force-reinstalls transformers-0.3.0.0 mtl-2.1.1 parsec-3.1.2
   - cd diagrams
-  - cabal install diagrams-core/ diagrams-lib/
+  - cabal install diagrams-core/ diagrams-lib/ --constraint='transformers >= 0.3' --constraint='mtl >= 2.1'
   - cd ..
-  - cabal install -v3 --only-dependencies --enable-tests
+  - cabal install -v3 --only-dependencies --enable-tests --constraint='transformers >= 0.3' --constraint='mtl >= 2.1'
 
 notifications:
   irc:

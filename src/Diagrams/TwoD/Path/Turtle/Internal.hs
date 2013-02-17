@@ -31,7 +31,7 @@ module Diagrams.TwoD.Path.Turtle.Internal
   , setPenPos
 
     -- * Drawing control
-  , penUp, penDown, penHop, closeCurrent 
+  , penUp, penDown, penHop, closeCurrent
 
     -- * Debugging
   , traceTurtle
@@ -188,8 +188,8 @@ closeCurrent :: TurtleState
              -> TurtleState
 closeCurrent t
   | isPenDown t = t # setPenPos startPos # closeTrail # makeNewTrail
-  | otherwise   = t 
- where startPos = fst . currTrail $ t 
+  | otherwise   = t
+ where startPos = fst . currTrail $ t
        closeTrail t'  = t' { currTrail = second close $ currTrail t }
 
 -- | Set the turtle X/Y position.

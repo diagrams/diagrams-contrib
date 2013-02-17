@@ -22,7 +22,7 @@ tests =
   , testProperty "Moves right correctly" movesRight
   , testProperty "Current trail is empty when pen is up" trailEmptyWhenPenUp
   , testProperty "penHop creates a new path when pen is down" verifyPenHopWhenPenDown
-  , testProperty "penHop does not create new path when pen is up" verifyPenHopWhenPenUp 
+  , testProperty "penHop does not create new path when pen is up" verifyPenHopWhenPenUp
   , testProperty "closeCurrent works correctly when no trail has started and pen is down" verifyCloseCurrent
   ]
 
@@ -117,7 +117,7 @@ trailEmptyWhenPenUp t = isPenDown t ==> trailIsEmpty
 verifyPenHopWhenPenDown :: TurtleState
                         -> Property
 verifyPenHopWhenPenDown t = isPenDown t ==> (numPaths t') - (numPaths t) == 1
- where 
+ where
   t' = t # forward 2.0 # penHop
   numPaths = length . paths
 
@@ -126,7 +126,7 @@ verifyPenHopWhenPenDown t = isPenDown t ==> (numPaths t') - (numPaths t) == 1
 verifyPenHopWhenPenUp :: TurtleState
                       -> Property
 verifyPenHopWhenPenUp t = not (isPenDown t) && (null . trailSegments . snd . currTrail $ t) ==>  (numPaths t') == (numPaths t)
- where 
+ where
   t' = t # forward 2.0 # penHop
   numPaths = length . paths
 

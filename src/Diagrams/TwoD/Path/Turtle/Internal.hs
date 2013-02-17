@@ -1,4 +1,7 @@
-{-# LANGUAGE FlexibleContexts, TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE TypeFamilies #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Diagrams.TwoD.Path.Turtle
@@ -38,6 +41,7 @@ module Diagrams.TwoD.Path.Turtle.Internal
 
     -- * Diagram related
   , getTurtleDiagram
+  , getTurtlePath
   ) where
 
 import Debug.Trace (traceShow)
@@ -236,6 +240,10 @@ getTurtleDiagram t =
   map turtlePathToStroke .
   paths $ t # penUp -- Do a penUp to add @currTrail@ to @paths@
 
+-- | Creates a path from a turtle, ignoring the styles.
+getTurtlePath :: TurtleState -> Path R2
+getTurtlePath = mconcat . map turtlePathToPathLike . paths . penUp
+
 -- * Helper functions
 
 -- Makes a "TurtlePath" from a "Turtle"’s @currTrail@ field
@@ -260,13 +268,17 @@ modifyCurrStyle :: (PenStyle -> PenStyle)
                 -> TurtleState
 modifyCurrStyle f t =  t # makeNewTrail # \t' -> t' { currPenStyle = (f . currPenStyle) t' }
 
+-- Creates any PathLike from a TurtlePath.
+turtlePathToPathLike :: (V p ~ R2, PathLike p) => TurtlePath -> p
+turtlePathToPathLike (TurtlePath _ (p, Trail xs c)) = pathLike p c (reverse xs)
+
 -- Creates a diagram from a TurtlePath using the provided styles
 turtlePathToStroke :: (Renderable (Path R2) b) => TurtlePath
                    -> (P2, Diagram b R2)
-turtlePathToStroke (TurtlePath (PenStyle lineWidth_  lineColor_) (p,Trail xs c)) = (p,d)
+turtlePathToStroke t@(TurtlePath (PenStyle lineWidth_  lineColor_) (p,_)) = (p,d)
  where d = lc lineColor_ .
            lw lineWidth_ .
-           stroke $ pathFromTrail (Trail (reverse xs) c)
+           stroke $ turtlePathToPathLike t
 
 -- | Prints out turtle representation and returns it. Use for debugging
 traceTurtle :: TurtleState

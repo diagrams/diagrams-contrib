@@ -34,7 +34,7 @@ import Diagrams.Prelude
 import qualified Diagrams.TwoD.Path.Turtle.Internal as T
 
 
-type TurtleT = ST.StateT T.Turtle
+type TurtleT = ST.StateT T.TurtleState
 
 type Turtle = TurtleT Identity
 

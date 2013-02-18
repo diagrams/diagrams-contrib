@@ -22,13 +22,13 @@ tests =
   , testProperty "Moves right correctly" movesRight
   , testProperty "Current trail is empty when pen is up" trailEmptyWhenPenUp
   , testProperty "penHop creates a new path when pen is down" verifyPenHopWhenPenDown
-  , testProperty "penHop does not create new path when pen is up" verifyPenHopWhenPenUp 
+  , testProperty "penHop does not create new path when pen is up" verifyPenHopWhenPenUp
   , testProperty "closeCurrent works correctly when no trail has started and pen is down" verifyCloseCurrent
   ]
 
 
 -- | The turtle moves forward by the right distance
-movesForward :: Turtle
+movesForward :: TurtleState
              -> Property
 movesForward t =  isPenDown t ==>
      diffPos      == round x  -- position is set correctly
@@ -42,7 +42,7 @@ movesForward t =  isPenDown t ==>
   lenCurrTrail = round $ flip arcLength 0.0001 . head . trailSegments . snd . currTrail $ t'
 
 -- | The turtle moves forward by the right distance
-movesBackward :: Turtle
+movesBackward :: TurtleState
              -> Property
 movesBackward t =  isPenDown t ==>
      diffPos      == round x  -- position is set correctly
@@ -57,7 +57,7 @@ movesBackward t =  isPenDown t ==>
 
 -- | The turtle moves forward and backward by the same distance and returns to
 -- the same position
-movesBackwardAndForward :: Turtle
+movesBackwardAndForward :: TurtleState
                         -> Property
 movesBackwardAndForward t = isPenDown t ==>
      abs(endX - startX) < 0.0001
@@ -72,7 +72,7 @@ movesBackwardAndForward t = isPenDown t ==>
   getTrailLength             = (length . trailSegments . snd . currTrail)
 
 -- | The turtle moves left four times and returns to the same position
-movesLeft  :: Turtle
+movesLeft  :: TurtleState
            -> Property
 movesLeft t = isPenDown t ==>
      abs(endX - startX) < 0.0001
@@ -88,7 +88,7 @@ movesLeft t = isPenDown t ==>
   (unp2 -> (endX, endY))     = penPos t'
 
 -- | The turtle moves right four times and returns to the same position
-movesRight  :: Turtle
+movesRight  :: TurtleState
             -> Property
 movesRight t = isPenDown t ==>
      abs(endX - startX) < 0.0001
@@ -105,7 +105,7 @@ movesRight t = isPenDown t ==>
 
 -- | When the trail is empty, @currTrail@ always remains empty and no new paths
 -- are added
-trailEmptyWhenPenUp :: Turtle
+trailEmptyWhenPenUp :: TurtleState
                     -> Property
 trailEmptyWhenPenUp t = isPenDown t ==> trailIsEmpty
  where
@@ -114,43 +114,44 @@ trailEmptyWhenPenUp t = isPenDown t ==> trailIsEmpty
 
 -- | Verify that the turtle adds a trail to @paths@ when pen is down
 -- and @penHop@ is called.
-verifyPenHopWhenPenDown :: Turtle
+verifyPenHopWhenPenDown :: TurtleState
                         -> Property
 verifyPenHopWhenPenDown t = isPenDown t ==> (numPaths t') - (numPaths t) == 1
- where 
+ where
   t' = t # forward 2.0 # penHop
   numPaths = length . paths
 
 -- | Verify that the turtle does not add a trail to @paths@ when pen is up
 -- and @penHop@ is called.
-verifyPenHopWhenPenUp :: Turtle
+verifyPenHopWhenPenUp :: TurtleState
                       -> Property
 verifyPenHopWhenPenUp t = not (isPenDown t) && (null . trailSegments . snd . currTrail $ t) ==>  (numPaths t') == (numPaths t)
- where 
+ where
   t' = t # forward 2.0 # penHop
   numPaths = length . paths
 
 -- | Verify that calling @closeCurrent@ updates the turtle position to the beginning to the trail
-verifyCloseCurrent :: Turtle
+verifyCloseCurrent :: TurtleState
                    -> Property
 verifyCloseCurrent t = (isPenDown t)  && (null . trailSegments . snd . currTrail $ t) ==> (penPos t') == origin
  where
   t' = t # setPenPos origin # forward 2.0 # right 90 # forward 3.0 # closeCurrent
--- | Arbitrary instance for the Turtle type.
+-- | Arbitrary instance for the TurtleState type.
 --
 -- FIXME this arbitrary instance can generate
 -- invalid turtle. For e.g. when pen is up, and
 -- the current trail is not empty.
 --
 -- Currently we filter these out in the tests
-instance Arbitrary Turtle where
+instance Arbitrary TurtleState where
    arbitrary =
-     Turtle <$> arbitrary
-            <*> arbitrary
-            <*> (Deg <$> arbitrary)
-            <*> arbitrary
-            <*> arbitrary
-            <*> arbitrary
+     TurtleState
+       <$> arbitrary
+       <*> arbitrary
+       <*> (Deg <$> arbitrary)
+       <*> arbitrary
+       <*> arbitrary
+       <*> arbitrary
 
 -- | Arbitrary instance for Diagrams type P2
 instance Arbitrary P2 where

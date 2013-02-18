@@ -236,7 +236,7 @@ getTurtleDiagram :: (Renderable (Path R2) b)
                  => TurtleState
                  -> Diagram b R2
 getTurtleDiagram t =
-  position .
+  mconcat .
   map turtlePathToStroke .
   paths $ t # penUp -- Do a penUp to add @currTrail@ to @paths@
 
@@ -274,8 +274,8 @@ turtlePathToPathLike (TurtlePath _ (p, Trail xs c)) = pathLike p c (reverse xs)
 
 -- Creates a diagram from a TurtlePath using the provided styles
 turtlePathToStroke :: (Renderable (Path R2) b) => TurtlePath
-                   -> (P2, Diagram b R2)
-turtlePathToStroke t@(TurtlePath (PenStyle lineWidth_  lineColor_) (p,_)) = (p,d)
+                   -> Diagram b R2
+turtlePathToStroke t@(TurtlePath (PenStyle lineWidth_  lineColor_) _) = d
  where d = lc lineColor_ .
            lw lineWidth_ .
            stroke $ turtlePathToPathLike t

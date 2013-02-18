@@ -15,6 +15,8 @@ module Diagrams.TwoD.Path.Turtle
 
     -- * Turtle control commands
   , runTurtle, runTurtleT
+  , drawTurtle, drawTurtleT
+  , sketchTurtle, sketchTurtleT
 
     -- * Motion commands
   , forward, backward, left, right
@@ -34,19 +36,39 @@ import Diagrams.Prelude
 import qualified Diagrams.TwoD.Path.Turtle.Internal as T
 
 
-type TurtleT = ST.StateT T.Turtle
+type TurtleT = ST.StateT T.TurtleState
 
 type Turtle = TurtleT Identity
 
 -- | A more general way to run the turtle. Returns a computation in the
--- underlying monad @m@ yielding a path consisting of the traced trails
-runTurtleT :: (Monad m, Functor m, (Renderable (Path R2) b)) => TurtleT m a -> m (Diagram b R2)
-runTurtleT t = T.getTurtleDiagram . snd
-           <$> ST.runStateT t T.startTurtle
+-- underlying monad @m@ yielding the final turtle state.
+runTurtleT :: Monad m => TurtleT m a -> m T.TurtleState
+runTurtleT t = ST.execStateT t T.startTurtle
 
--- | Run the turtle, yielding a path consisting of the traced trails.
-runTurtle :: (Renderable (Path R2) b) => Turtle a -> Diagram b R2
+-- | Run the turtle, yielding the final turtle state.
+runTurtle :: Turtle a -> T.TurtleState
 runTurtle = runIdentity . runTurtleT
+
+-- | A more general way to run the turtle.  Returns a computation in
+--   the underlying monad @m@ yielding the final diagram.
+drawTurtleT :: (Monad m, Functor m, Renderable (Path R2) b)
+            => TurtleT m a -> m (Diagram b R2)
+drawTurtleT = fmap T.getTurtleDiagram . runTurtleT
+
+-- | Run the turtle, yielding a diagram.
+drawTurtle :: (Renderable (Path R2) b) => Turtle a -> Diagram b R2
+drawTurtle = runIdentity . drawTurtleT
+
+-- | A more general way to run the turtle. Returns a computation in
+--   the underlying monad @m@, ignoring any pen style commands and
+--   yielding a 2D path.
+sketchTurtleT :: (Functor m, Monad m) => TurtleT m a -> m (Path R2)
+sketchTurtleT = fmap T.getTurtlePath . runTurtleT
+
+-- | Run the turtle, ignoring any pen style commands and yielding a
+--   2D path.
+sketchTurtle :: Turtle a -> Path R2
+sketchTurtle = runIdentity . sketchTurtleT
 
 -- Motion commands
 

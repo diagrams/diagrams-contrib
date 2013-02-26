@@ -1,4 +1,5 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Diagrams.TwoD.Path.Turtle
@@ -29,10 +30,10 @@ module Diagrams.TwoD.Path.Turtle
   , penUp, penDown, penHop, closeCurrent
   ) where
 
-import qualified Control.Monad.State as ST
-import Control.Monad.Identity (Identity(..))
+import           Control.Monad.Identity             (Identity (..))
+import qualified Control.Monad.State                as ST
 
-import Diagrams.Prelude
+import           Diagrams.Prelude
 import qualified Diagrams.TwoD.Path.Turtle.Internal as T
 
 

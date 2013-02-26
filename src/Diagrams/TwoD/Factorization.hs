@@ -1,4 +1,5 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Diagrams.TwoD.Factorization
@@ -19,11 +20,11 @@
 
 module Diagrams.TwoD.Factorization where
 
-import Diagrams.Prelude
-import Data.List.Split  ( chunksOf   )
-import Data.Char        ( digitToInt )
+import           Data.Char                              (digitToInt)
+import           Data.List.Split                        (chunksOf)
+import           Diagrams.Prelude
 
-import Math.NumberTheory.Primes.Factorisation (factorise)
+import           Math.NumberTheory.Primes.Factorisation (factorise)
 
 -- | @primeLayout@ takes a positive integer p (the idea is for it to
 --   be prime, though it doesn't really matter) and a diagram, and lays

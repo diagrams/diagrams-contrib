@@ -1,7 +1,7 @@
-{-# LANGUAGE Rank2Types
-           , FlexibleContexts
-           , ViewPatterns
-  #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE Rank2Types            #-}
+{-# LANGUAGE ViewPatterns          #-}
 {-# OPTIONS_GHC -fno-warn-missing-methods #-}
 
 -----------------------------------------------------------------------------
@@ -42,12 +42,12 @@ module Diagrams.TwoD.Apollonian
 
        ) where
 
-import Data.Complex
-import Data.Foldable (foldMap)
+import           Data.Complex
+import           Data.Foldable    (foldMap)
 
-import Diagrams.Prelude hiding (radius, center)
+import           Diagrams.Prelude hiding (center, radius)
 
-import Control.Arrow (second)
+import           Control.Arrow    (second)
 
 ------------------------------------------------------------
 --  Circles

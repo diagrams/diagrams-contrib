@@ -1,7 +1,8 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeSynonymInstances #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE FlexibleInstances     #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE TypeSynonymInstances  #-}
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Diagrams.TwoD.Path.Turtle
@@ -44,10 +45,10 @@ module Diagrams.TwoD.Path.Turtle.Internal
   , getTurtlePath
   ) where
 
-import Debug.Trace (traceShow)
-import Control.Arrow (second)
+import           Control.Arrow    (second)
+import           Debug.Trace      (traceShow)
 
-import Diagrams.Prelude
+import           Diagrams.Prelude
 
 -- | Style attributes associated with the turtle pen
 data PenStyle = PenStyle
@@ -72,19 +73,19 @@ data TurtlePath = TurtlePath
 data TurtleState = TurtleState
   { -- | State of the pen. @False@ means that turtle movements will not draw
     -- anything
-    isPenDown  :: Bool
+    isPenDown    :: Bool
      -- | Current position. This is updated everytime the turtle moves
-  , penPos     :: P2
+  , penPos       :: P2
      -- | Orientation of the turtle in 2D space, given in degrees
-  , heading    :: Deg
+  , heading      :: Deg
      -- | Path traversed by the turtle so far, without any style or pen
      -- attributes changing
-  , currTrail  :: (P2, Trail R2)
+  , currTrail    :: (P2, Trail R2)
      -- | Current style of the pen
-  , currPenStyle  :: PenStyle
+  , currPenStyle :: PenStyle
      -- | List of paths along with style information, traversed by the turtle
      -- previously
-  , paths      :: [TurtlePath]
+  , paths        :: [TurtlePath]
   } deriving Show
 
 -- | Default pen style, with @penWidth@ set to 1.0 and @penColor@ set to black

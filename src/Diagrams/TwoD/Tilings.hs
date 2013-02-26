@@ -1,9 +1,9 @@
-{-# LANGUAGE TypeFamilies
-           , FlexibleContexts
-           , ScopedTypeVariables
-           , ViewPatterns
-           , CPP
-  #-}
+{-# LANGUAGE CPP                   #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
+{-# LANGUAGE TypeFamilies          #-}
+{-# LANGUAGE ViewPatterns          #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
 
 -----------------------------------------------------------------------------
@@ -69,23 +69,23 @@ module Diagrams.TwoD.Tilings (
 
   ) where
 
-import Control.Monad.State
+import           Control.Monad.State
 #if __GLASGOW_HASKELL__ >= 704
-import Control.Monad.Writer hiding ((<>))
+import           Control.Monad.Writer hiding ((<>))
 #else
-import Control.Monad.Writer
+import           Control.Monad.Writer
 #endif
 
-import Data.List   (mapAccumL, sort)
-import Data.Function (on)
-import Data.VectorSpace
-import Control.Arrow
+import           Control.Arrow
+import           Data.Function        (on)
+import           Data.List            (mapAccumL, sort)
+import           Data.VectorSpace
 
-import qualified Data.Set as S
-import qualified Data.Foldable as F
+import qualified Data.Foldable        as F
+import qualified Data.Set             as S
 
-import Data.Colour
-import Diagrams.Prelude hiding (e)
+import           Data.Colour
+import           Diagrams.Prelude     hiding (e)
 
 ------------------------------------------------------------
 -- The ring Q[sqrt(2), sqrt(3)]

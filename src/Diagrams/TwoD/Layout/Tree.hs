@@ -1,11 +1,10 @@
-{-# LANGUAGE DeriveFunctor
-           , DeriveFoldable
-           , DeriveTraversable
-           , TemplateHaskell
-           , NoMonomorphismRestriction
-           , ScopedTypeVariables
-           , FlexibleContexts
-  #-}
+{-# LANGUAGE DeriveFoldable            #-}
+{-# LANGUAGE DeriveFunctor             #-}
+{-# LANGUAGE DeriveTraversable         #-}
+{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE ScopedTypeVariables       #-}
+{-# LANGUAGE TemplateHaskell           #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -117,20 +116,20 @@ module Diagrams.TwoD.Layout.Tree
 import           Physics.ForceLayout
 
 import           Control.Applicative
-import           Control.Arrow         (first, second, (***), (&&&))
-import           Control.Lens          (makeLenses, (+=), (-=), view, (^.))
+import           Control.Arrow       (first, second, (&&&), (***))
+import           Control.Lens        (makeLenses, view, (+=), (-=), (^.))
 import           Control.Monad.State
 
 import           Data.Default
-import qualified Data.Foldable         as F
-import           Data.Function         (on)
-import qualified Data.Map              as M
-import           Data.List             (mapAccumL)
+import qualified Data.Foldable       as F
+import           Data.Function       (on)
+import           Data.List           (mapAccumL)
+import qualified Data.Map            as M
 import           Data.Maybe
-import qualified Data.Traversable      as T
+import qualified Data.Traversable    as T
 import           Data.Tree
 
-import           Diagrams.Prelude      hiding (e, view)
+import           Diagrams.Prelude    hiding (e, view)
 
 
 

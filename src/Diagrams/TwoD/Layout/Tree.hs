@@ -20,25 +20,27 @@
 --
 -- Laying out a rose tree using a symmetric layout:
 --
--- > {-# LANGUAGE NoMonomorphismRestriction #-}
--- > import Diagrams.Prelude
--- > import Diagrams.TwoD.Layout.Tree
 -- > import Data.Tree
+-- > import Diagrams.TwoD.Layout.Tree
 -- >
 -- > t1 = Node 'A' [Node 'B' (map lf "CDE"), Node 'F' [Node 'G' (map lf "HIJ")]]
+-- >   where lf x = Node x []
 -- >
--- > example =
--- >   renderTree ((<> circle 1 # fc white) . text . show)
+-- > exampleSymmTree =
+-- >   renderTree ((<> circle 1 # fc white) . text . (:[]))
 -- >              (~~)
 -- >              (symmLayout' with { slHSep = 4, slVSep = 4 } t1)
+-- >   # lw 0.03
+-- >   # centerXY # pad 1.1
+--
+-- <<diagrams/exampleSymmTree.svg#diagram=exampleSymmTree&width=300>>
 --
 -- Laying out a rose tree of diagrams, with spacing automatically
 -- adjusted for the size of the diagrams:
 --
--- > {-# LANGUAGE NoMonomorphismRestriction #-}
--- > import Diagrams.Prelude
--- > import Diagrams.TwoD.Layout.Tree
 -- > import Data.Tree
+-- > import Data.Maybe (fromMaybe)
+-- > import Diagrams.TwoD.Layout.Tree
 -- >
 -- > tD = Node (rect 1 3)
 -- >        [ Node (circle 0.2) []
@@ -46,11 +48,15 @@
 -- >        , Node (eqTriangle 5) []
 -- >        ]
 -- >
--- > example =
+-- > exampleSymmTreeWithDs =
 -- >   renderTree id (~~)
 -- >   (symmLayout' with { slWidth  = fromMaybe (0,0) . extentX
 -- >                     , slHeight = fromMaybe (0,0) . extentY }
 -- >      tD)
+-- >   # lw 0.03
+-- >   # centerXY # pad 1.1
+--
+-- <<diagrams/exampleSymmTreeWithDs.svg#diagram=exampleSymmTreeWithDs&width=300>>
 --
 -- Using force-based layout on a binary tree:
 --
@@ -62,10 +68,13 @@
 -- >
 -- > Just t' = uniqueXLayout 1 1 t
 -- >
--- > example = renderTree (\n -> (text (show n) # fontSize 0.5
+-- > fblEx = renderTree (\n -> (text (show n) # fontSize 0.5
 -- >                             <> circle 0.3 # fc white))
 -- >             (~~)
 -- >             (forceLayoutTree t')
+-- >         # centerXY # pad 1.1
+--
+-- <<diagrams/fblEx.svg#diagram=fblEx&width=300>>
 
 module Diagrams.TwoD.Layout.Tree
        ( -- * Binary trees

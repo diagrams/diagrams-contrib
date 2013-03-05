@@ -16,7 +16,7 @@
 -- prime factorization of n by drawing n dots recursively grouped
 -- according to the factors.
 --
--- <<diagrams/grid100.svg#diagram=grid100&width=600>>
+-- <<diagrams/grid100Big.svg#diagram=grid100Big&width=600>>
 --
 -----------------------------------------------------------------------------
 
@@ -166,6 +166,7 @@ fdGrid  = vcat . map hcat . (map . map) (ensquare 1 . factorDiagram)
 --   Monthly, <http://hackermonthly.com/issue-31.html>).
 --
 --   > grid100 = fdGridList 10
+--   > grid100Big = grid100
 --
 --   <<diagrams/grid100.svg#diagram=grid100&width=400>>
 fdGridList

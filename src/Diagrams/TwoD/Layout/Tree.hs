@@ -206,7 +206,7 @@ uniqueXLayout cSep lSep t = (fmap . fmap . second) (pos2Point cSep lSep)
 -- "Symmetric" layout of rose trees.
 
 -- $symmetric
--- "Symmetric" layout of rose trees, based on the algorithm described in:
+-- \"Symmetric\" layout of rose trees, based on the algorithm described in:
 --
 -- Andrew J. Kennedy. /Drawing Trees/, J Func. Prog. 6 (3): 527-534,
 -- May 1996.
@@ -218,11 +218,11 @@ uniqueXLayout cSep lSep t = (fmap . fmap . second) (pos2Point cSep lSep)
 --
 --   2. Parent nodes are centered with respect to their immediate
 --   offspring (though /not/ necessarily with respect to the entire
---   subtrees under them)
+--   subtrees under them).
 --
 --   3. Layout commutes with mirroring: that is, the layout of a given
 --   tree is the mirror image of the layout of the tree's mirror
---   image.
+--   image.  Put another way, there is no inherent left or right bias.
 --
 --   4. Identical subtrees are always rendered identically.  Put
 --   another way, the layout of any subtree is independent of the rest
@@ -298,7 +298,7 @@ symmLayoutR opts (Node a ts) = (rt, ext)
         ext              = slWidth opts a : mergeExtentList pExtents
         rt               = Node (a, 0) pTrees
 
--- | Options for controlling the
+-- | Options for controlling the symmetric tree layout algorithm.
 data SymmLayoutOpts a =
   SLOpts { slHSep   :: Double           -- ^ Minimum horizontal
                                         --   separation between sibling
@@ -365,7 +365,8 @@ symmLayout = symmLayout' def
 --
 --   * nodes are constrained to keep the same y-coordinate.
 --
---   The input to @treeToEnsemble@
+--   The input to @treeToEnsemble@ could be a tree already laid out by
+--   some other method, such as 'uniqueXLayout'.
 treeToEnsemble :: forall a. ForceLayoutTreeOpts
                -> Tree (a, P2) -> (Tree (a, PID), Ensemble R2)
 treeToEnsemble opts t =
@@ -417,7 +418,7 @@ reconstruct e = (fmap . second)
 
 data ForceLayoutTreeOpts =
   FLTOpts
-  { forceLayoutOpts :: ForceLayoutOpts R2 -- ^ Options to the force layout simulator, including damping
+  { forceLayoutOpts :: ForceLayoutOpts R2 -- ^ Options to the force layout simulator, including damping.
   , edgeLen         :: Double             -- ^ How long edges should be, ideally.
                                           --   This will be the resting length for
                                           --   the springs.

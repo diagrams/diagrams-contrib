@@ -30,6 +30,7 @@ module Diagrams.TwoD.Path.IteratedSubset
        , zag
        , sqUp
        , sqUpDown
+       , sqUpDown'
 
          -- ** Other stuff
          -- $other

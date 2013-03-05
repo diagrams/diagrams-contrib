@@ -1,12 +1,11 @@
-{-# LANGUAGE FlexibleContexts
-           , ScopedTypeVariables
-           , TypeFamilies
-  #-}
+{-# LANGUAGE FlexibleContexts    #-}
+{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TypeFamilies        #-}
 
 ------------------------------------------------------------------------
 -- |
 -- Module      :  Diagrams.Layout.Wrap
--- Copyright   :  (c) 2012 Michael Sloan 
+-- Copyright   :  (c) 2012 Michael Sloan
 -- License     :  BSD-style (see the LICENSE file)
 -- Maintainer  :  Michael Sloan <mgsloan at gmail>
 --
@@ -16,10 +15,10 @@
 
 module Diagrams.Layout.Wrap where
 
-import Control.Arrow (first, (&&&))
-import Data.Foldable (foldMap)
-import Data.List (find, tails, inits)
-import Diagrams.Prelude hiding (start)
+import           Control.Arrow    (first, (&&&))
+import           Data.Foldable    (foldMap)
+import           Data.List        (find, inits, tails)
+import           Diagrams.Prelude hiding (start)
 
 -- TODO: Take into account the negative bounds, and iteratively refine
 --   the list selection.
@@ -74,7 +73,7 @@ wrapInside f axis start = rec zeros
 -- boundary seen in that direction.
   rec :: [(Scalar v, Scalar v)] -> [a] -> ([(v, a)], [a])
   rec _ [] = (mempty, [])
-  rec scs (d:ds) 
+  rec scs (d:ds)
 -- Recurse a satisfactory position can be found, otherwise yields the
 -- list of the remaining diagrams to be laid out.
     = maybe (mempty, d:ds)
@@ -105,3 +104,17 @@ wrapInside f axis start = rec zeros
 --   OrderedField (Scalar v) constraints from Enveloped a, v ~ V a,
 --   but GHC 6.12.3 cannot, so we redundantly list them here to
 --   preserve support for 6.12.3.
+
+
+--   Attempt at diagrams-haddock example, but I don't understand how Wrap works
+--
+--   > import Diagrams.Layout.Wrap
+--   > import Control.Arrow (first)
+--   > wrapInsideEx = position ((map . first $ (origin .+^)) ds)
+--   >   where (ds,_) = wrapInside
+--   >                    (getAny . (runQuery . query $ (circle 15 :: D R2)))
+--   >                    [unitX, unitY]
+--   >                    (origin)
+--   >                    (repeat (circle 1 # fc black))
+--
+--   <diagrams/wrapInsideEx.svg#diagram=wrapInsideEx&width=200>

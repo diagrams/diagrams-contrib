@@ -1,6 +1,6 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE TypeFamilies          #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -42,15 +42,16 @@ module Diagrams.TwoD.Path.IteratedSubset
        , randIterGrid
        ) where
 
-import Diagrams.Core.Points ()  -- needed for V (Point a) instance on GHC < 7.6
-import Diagrams.Prelude
+-- Diagrams.Core.Points needed for V (Point a) instance on GHC < 7.6
+import           Diagrams.Core.Points       ()
+import           Diagrams.Prelude
 
-import Data.Maybe           ( mapMaybe )
-import Control.Monad        ( replicateM )
-import Control.Monad.Random ( evalRandIO, getRandom, getRandomR )
-import Control.Monad.Random.Class ( MonadRandom )
-import Data.Colour.SRGB     ( sRGB )
-import Data.List.Split      ( chunksOf )
+import           Control.Monad              (replicateM)
+import           Control.Monad.Random       (evalRandIO, getRandom, getRandomR)
+import           Control.Monad.Random.Class (MonadRandom)
+import           Data.Colour.SRGB           (sRGB)
+import           Data.List.Split            (chunksOf)
+import           Data.Maybe                 (mapMaybe)
 
 ------------------------------------------------------------
 -- Iterated subset algorithm
@@ -156,9 +157,9 @@ sqUpDownOverlay
 -- Generating random iterated subset fractals
 
 -- | Parameters to generate an iterated subset fractal.
-data IterTrailConfig = ITC { seed   :: Trail R2       -- ^ The seed trail
-                           , color  :: Colour Double  -- ^ The line color to use
-                           , iters  :: Int            -- ^ Number of iterations
+data IterTrailConfig = ITC { seed  :: Trail R2       -- ^ The seed trail
+                           , color :: Colour Double  -- ^ The line color to use
+                           , iters :: Int            -- ^ Number of iterations
                            }
 
 -- | Generate a random 'IterTrailConfig'.  This features many

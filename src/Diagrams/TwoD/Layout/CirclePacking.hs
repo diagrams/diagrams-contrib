@@ -5,9 +5,30 @@
 -- License     :  BSD-style (see LICENSE)
 -- Maintainer  :  mail@joachim-breitner.de
 --
--- A method for layouting out diagrams using a circle packing algorithm. For
+-- A method for laying out diagrams using a circle packing algorithm. For
 -- details on the algorithm, see "Optimisation.CirclePacking" in the module
 -- circle-packing.
+--
+-- Here is an example:
+--
+-- > import Optimisation.CirclePacking
+-- >
+-- > colorize = zipWith fc $
+-- >     cycle [red,blue,yellow,magenta,cyan,bisque,firebrick,indigo]
+-- >
+-- > objects = colorize $
+-- >     [ circle r  | r <- [0.1,0.2..1.6] ] ++
+-- >     [ hexagon r | r <- [0.1,0.2..0.7] ] ++
+-- >     [ decagon r | r <- [0.1,0.2..0.7] ]
+-- >
+-- > -- Just a approximation, diagram objects do not have an exact radius
+-- > radiusApproximation o = maximum [ radius (e (CircleFrac alpha)) o | alpha <- [0,0.1..1.0]]
+-- >
+-- > circlePackingExample =
+-- >     position $ map (\(o,(x,y)) -> (p2 (x,y),o)) $
+-- >     packCircles radiusApproximation objects
+--
+-- <<diagrams/circlePackingExample.svg#diagram=circlePackingExample&width=400>>
 
 module Diagrams.TwoD.Layout.CirclePacking
        ( renderCirclePacking
@@ -16,10 +37,10 @@ module Diagrams.TwoD.Layout.CirclePacking
        , approxRadius
        , circleRadius ) where
 
-import Optimisation.CirclePacking
+import           Optimisation.CirclePacking
 
-import Diagrams.Prelude
-import Diagrams.Core.Envelope
+import           Diagrams.Core.Envelope
+import           Diagrams.Prelude
 
 
 -- | Combines the passed objects, whose radius is estimated using the given
@@ -65,4 +86,3 @@ approxRadius n =
 -- all diagrams and exact for circles.
 circleRadius :: RadiusFunction b m
 circleRadius o = maximum [ envelopeS (e (CircleFrac alpha)) o | alpha <- [0,0.25,0.5,0.75]]
-

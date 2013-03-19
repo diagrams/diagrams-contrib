@@ -1,3 +1,8 @@
+0.6.0.4 (19 March 2013)
+-----------------------
+
+* bump upper bound to allow QuickCheck-2.6
+
 0.6.0.3: 27 January 2013
 ------------------------
 

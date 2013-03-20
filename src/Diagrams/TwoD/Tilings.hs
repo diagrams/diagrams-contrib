@@ -401,12 +401,14 @@ t3 = Tiling (replicate 6 Triangle) (const t3)
 t4 :: Tiling
 t4 = Tiling (replicate 4 Square) (const t4)
 
+-- > import Diagrams.TwoD.Tilings
 -- > t4D = drawTiling t4 10 10
 
 -- | <<diagrams/t6D.svg#diagram=t6D&width=300>>
 t6 :: Tiling
 t6 = Tiling (replicate 3 Hexagon) (const t6)
 
+-- > import Diagrams.TwoD.Tilings
 -- > t6D = drawTiling t6 10 10
 
 -- Semi-regular tilings
@@ -429,18 +431,21 @@ mk3Tiling _ = error "mk3Tiling may only be called on a list of length 3."
 t4612 :: Tiling
 t4612 = mk3Tiling [4,6,12]
 
+-- > import Diagrams.TwoD.Tilings
 -- > t4612D = drawTiling t4612 10 10
 
 -- | <<diagrams/t488D.svg#diagram=t488D&width=300>>
 t488 :: Tiling
 t488 = mk3Tiling [4,8,8]
 
+-- > import Diagrams.TwoD.Tilings
 -- > t488D = drawTiling t488 10 10
 
 -- | <<diagrams/t31212D.svg#diagram=t31212D&width=300>>
 t31212 :: Tiling
 t31212 = mk3Tiling [3,12,12]
 
+-- > import Diagrams.TwoD.Tilings
 -- > t31212D = drawTiling t31212 10 10
 
 -- | <<diagrams/t3636D.svg#diagram=t3636D&width=300>>
@@ -450,6 +455,7 @@ t3636 = mkT [3,6,3,6]
         mkT ps = Tiling (map polyFromSides ps)
                         (\i -> mkT $ if even i then reverse ps else ps)
 
+-- > import Diagrams.TwoD.Tilings
 -- > t3636D = drawTiling t3636 10 10
 
 -- | Create a tiling where every vertex is the same up to rotation and
@@ -478,6 +484,7 @@ rot n (x:xs) = rot (n-1) (xs ++ [x])
 t3464 :: Tiling
 t3464 = semiregular [4,3,4,6] [3,2,1,0]
 
+-- > import Diagrams.TwoD.Tilings
 -- > t3464D = drawTiling t3464 10 10
 
 {-
@@ -500,22 +507,26 @@ The tilings below are worked out in a similar manner.
 t33434 :: Tiling
 t33434  = semiregular [3,4,3,4,3] [0,2,1,4,3]
 
+-- > import Diagrams.TwoD.Tilings
 -- > t33434D = drawTiling t33434 10 10
 
 -- | <<diagrams/t33344D.svg#diagram=t33344D&width=300>>
 t33344 :: Tiling
 t33344  = semiregular [4,3,3,3,4] [0,4,2,3,1]
 
+-- > import Diagrams.TwoD.Tilings
 -- > t33344D = drawTiling t33344 10 10
 
 -- | <<diagrams/t33336LD.svg#diagram=t33336LD&width=300>>
 t33336L :: Tiling
 t33336L = semiregular [3,3,3,3,6] [4,1,3,2,0]
 
+-- > import Diagrams.TwoD.Tilings
 -- > t33336LD = drawTiling t33336L 10 10
 
 -- | <<diagrams/t33336RD.svg#diagram=t33336RD&width=300>>
 t33336R :: Tiling
 t33336R = semiregular [3,3,3,3,6] [4,2,1,3,0]
 
+-- > import Diagrams.TwoD.Tilings
 -- > t33336RD = drawTiling t33336R 10 10

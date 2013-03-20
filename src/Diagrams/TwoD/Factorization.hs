@@ -81,6 +81,7 @@ primeLayout colors p d
 --   decimal expansion of @p@, using the provided list of colors to
 --   represent the digits 0-9.
 --
+--   > import Diagrams.TwoD.Factorization
 --   > colorBarsEx = colorBars defaultColors 3526 (square 1)
 --
 --   <<diagrams/colorBarsEx.svg#diagram=colorBarsEx&width=200>>
@@ -106,6 +107,7 @@ defaultColors :: [Colour Double]
 defaultColors = map (blend 0.1 white)
   [black,red,orange,yellow,green,blue,gray,purple,white,brown]
 
+-- > import Diagrams.TwoD.Factorization
 -- > showDefaultColors = hcat $ zipWith showColor defaultColors [0..]
 -- >   where
 -- >     showColor c d = text (show d) <> square 1 # fc c # lw 0
@@ -116,6 +118,7 @@ defaultColors = map (blend 0.1 white)
 --   folding according to 'primeLayout', with the 'defaultColors' and
 --   a base case of a black circle.
 --
+--   > import Diagrams.TwoD.Factorization
 --   > factorDiagram'Ex = factorDiagram' [2,5,6]
 --
 --   <<diagrams/factorDiagram'Ex.svg#diagram=factorDiagram'Ex&height=200>>
@@ -128,6 +131,7 @@ factorDiagram' = centerXY . foldr (primeLayout defaultColors) (circle 1 # fc bla
 --   factorization (with the factors ordered from smallest to
 --   biggest).
 --
+--   > import Diagrams.TwoD.Factorization
 --   > factorDiagramEx = factorDiagram 700
 --
 --   <<diagrams/factorDiagramEx.svg#diagram=factorDiagramEx&width=400>>
@@ -140,6 +144,7 @@ factorDiagram = factorDiagram'
 -- | Place a diagram inside a square with the given side length,
 --   centering and scaling it to fit with a bit of padding.
 --
+--   > import Diagrams.TwoD.Factorization
 --   > ensquareEx = ensquare 1 (circle 25) ||| ensquare 1 (factorDiagram 30)
 --
 --   <<diagrams/ensquareEx.svg#diagram=ensquareEx&width=200>>
@@ -152,6 +157,7 @@ ensquare n d = d # centerXY # sized (Dims (0.8*n) (0.8*n)) <> square n
 --   of lists of integers: the inner lists represent L-R rows, which
 --   are laid out from top to bottom.
 --
+--   > import Diagrams.TwoD.Factorization
 --   > fdGridEx = fdGrid [[7,6,5],[4,19,200],[1,10,50]]
 --
 --   <<diagrams/fdGridEx.svg#diagram=fdGridEx&width=200>>
@@ -165,6 +171,7 @@ fdGrid  = vcat . map hcat . (map . map) (ensquare 1 . factorDiagram)
 --   right, top to bottom (like the grid seen on the cover of Hacker
 --   Monthly, <http://hackermonthly.com/issue-31.html>).
 --
+--   > import Diagrams.TwoD.Factorization
 --   > grid100 = fdGridList 10
 --   > grid100Big = grid100
 --
@@ -179,6 +186,7 @@ fdGridList n = fdGrid . chunksOf (fromIntegral n) $ [1..n*n]
 --   and left column, and the diagram for @m*n@ in row @m@ and column
 --   @n@.
 --
+--   > import Diagrams.TwoD.Factorization
 --   > fdMultTableEx = fdMultTable 13
 --
 --   <<diagrams/fdMultTableEx.svg#diagram=fdMultTableEx&width=600>>

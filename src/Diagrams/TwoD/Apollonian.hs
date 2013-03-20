@@ -27,10 +27,12 @@
 --
 -- <<diagrams/apollonian1.svg#diagram=apollonian1&width=400>>
 --
+-- > import Diagrams.TwoD.Apollonian
 -- > apollonian2 = apollonianGasket 0.01 2 3 3
 --
 -- <<diagrams/apollonian2.svg#diagram=apollonian2&width=400>>
 --
+-- > import Diagrams.TwoD.Apollonian
 -- > apollonian3 = apollonianGasket 0.01 2 4 7
 --
 -- <<diagrams/apollonian3.svg#diagram=apollonian3&width=400>>

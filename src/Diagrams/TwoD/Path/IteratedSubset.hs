@@ -99,16 +99,17 @@ refineSegment t seg
 -- results, but by no means the only ones!  Use them directly, or use
 -- them as inspiration for creating your own seed trails.
 
+-- > import Diagrams.TwoD.Path.IteratedSubset
+-- > showTrail n t = hcat' with { sep = 0.2 } [ iters !! 1, iters !! n ]
+-- >             # centerXY # pad 1.1
+-- >   where iters = map strokeT $ iterTrail t
+
 -- | Seed for the Koch curve (side of the famous Koch 'snowflake').
 --
 --   <<diagrams/kochD.svg#diagram=kochD&width=400>>
 koch :: (PathLike p, V p ~ R2) => p
 koch = fromOffsets [unitX, unitX # rotateBy (1/6), unitX # rotateBy (-1/6), unitX]
 
--- > showTrail n t = hcat' with { sep = 0.2 } [ iters !! 1, iters !! n ]
--- >             # centerXY # pad 1.1
--- >   where iters = map strokeT $ iterTrail t
--- >
 -- > kochD = showTrail 4 koch
 
 -- | Seed for the Lévy dragon curve.
@@ -175,6 +176,7 @@ snowflake n = iterateN 3 (rotateBy (-1/3)) edge
             # close
   where edge = iterTrail koch !! n
 
+-- > import Diagrams.TwoD.Path.IteratedSubset
 -- > snowflake4 = snowflake 4 # strokeT # centerXY # pad 1.1
 
 -- | A cool diagram featuring successive iterations of @sqUpDown'@
@@ -191,6 +193,7 @@ sqUpDownOverlay
   . iterTrail
   $ sqUpDown'
 
+-- > import Diagrams.TwoD.Path.IteratedSubset
 -- > sqUpDownOverlayD = sqUpDownOverlay
 
 --------------------------------------------------

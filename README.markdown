@@ -21,7 +21,12 @@ conforms to a few simple standards:
   separate package rather than including it in diagrams-contrib.
 
 * There should at minimum be a Haddock comment on the module itself,
-  explaining the purpose, giving some examples of use, *etc.*
+  explaining the purpose, giving some examples of use, *etc.* You may
+  also want to use
+  [`diagrams-haddock`](http://github.com/diagrams/diagrams-haddock/)
+  to include some example images in the Haddock documentation; see the
+  [`diagrams-haddock` documentation](http://github.com/diagrams/diagrams-haddock/)
+  and take a look at other modules in the package for examples.
 
 * It must compile with no warnings under `-Wall`. This may seem a bit
   draconian, but you'll get over it.  If it makes you feel any

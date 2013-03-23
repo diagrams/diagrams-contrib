@@ -1,3 +1,30 @@
+0.6.1 (23 March 2013)
+---------------------
+
+* **New features**
+
+    - New `Diagrams.TwoD.Path.IteratedSubset` module, for constructing
+      paths using an "iterated subset" algorithm (repeatedly replacing
+      segments with a given path).
+
+    - New `Diagrams.TwoD.Layout.CirclePacking` module for
+      circle-packing layout
+
+    - New `Diagrams.TwoD.Factorization` module, for creating
+      "factorization diagrams" as seen at
+      http://mathlesstraveled.com/2012/11/05/more-factorization-diagrams/
+      and on the cover of Hacker Monthly
+      (http://mathlesstraveled.com/2012/10/05/factorization-diagrams/).
+
+    - `Diagrams.TwoD.Path.Turtle`: generalize `runTurtle` function,
+      and add new functions `drawTurtle` and `sketchTurtle`.
+      `drawTurtle` results in a diagram (like the old `runTurtle`),
+      and `sketchTurtle` yields a path (ignoring pen style commands).
+
+* **Documentation**
+
+    - Added lots of example images using `diagrams-haddock`
+
 0.6.0.4 (19 March 2013)
 -----------------------
 
@@ -25,7 +52,7 @@
 
     - New pure implementation of Turtle library, in `Turtle.Internals`
 
-    - `Diagrams.TwoD.Layout.Tree`: 
+    - `Diagrams.TwoD.Layout.Tree`:
 
 	- New `renderTree'` function which gives
 	  the edge-drawing function access to the values stored at the
@@ -38,7 +65,7 @@
 
     - Tiling generation code in `Diagrams.TwoD.Tilings` wasn't actually
       checking whether vertexes had been already visited.
-      
+
 * **Dependency/version changes**
 
     - Switch from `fclabels` to `lens`

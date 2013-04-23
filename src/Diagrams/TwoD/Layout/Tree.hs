@@ -77,9 +77,10 @@
 -- > import Diagrams.Prelude
 -- > import Diagrams.TwoD.Layout.Tree
 -- >
--- > t = BNode 1 (BNode 8 (leaf 7) (leaf 2)) (BNode 6 (leaf 3) (leaf 4))
+-- > t 0 = Empty
+-- > t n = BNode n (t (n-1)) (t (n-1))
 -- >
--- > Just t' = uniqueXLayout 1 1 t
+-- > Just t' = uniqueXLayout 1 1 (t 4)
 -- >
 -- > fblEx = renderTree (\n -> (text (show n) # fontSize 0.5
 -- >                             <> circle 0.3 # fc white))

@@ -84,15 +84,17 @@ module Diagrams.TwoD.Layout.Tree
 
          -- * Layout algorithms
 
-         -- ** Binary tree layout
+         -- ** Unique-x layout
 
        , uniqueXLayout
 
-         -- ** Symmetric rose tree layout
+         -- ** Symmetric layout
 
          -- $symmetric
        , symmLayout
        , symmLayout'
+       , symmLayoutBin
+       , symmLayoutBin'
        , SymmLayoutOpts(..)
 
          -- ** Force-directed layout
@@ -233,49 +235,61 @@ uniqueXLayout cSep lSep t = (fmap . fmap . second) (pos2Point cSep lSep)
 
 -- | A tree with /relative/ positioning information.  The Double
 --   at each node is the horizontal /offset/ from its parent.
-type RelTree a = Tree (a, Double)
+type Rel t a = t (a, Double)
 
 -- | Shift a RelTree horizontally.
-moveTree :: Double -> RelTree a -> RelTree a
+moveTree :: Double -> Rel Tree a -> Rel Tree a
 moveTree x' (Node (a, x) ts) = Node (a, x+x') ts
 
 -- | An /extent/ is a list of pairs, recording the leftmost and
 --   rightmost (absolute) horizontal positions of a tree at each
 --   depth.
-type Extent = [(Double, Double)]
+newtype Extent = Extent { getExtent :: [(Double, Double)] }
+
+extent :: ([(Double, Double)] -> [(Double, Double)]) -> Extent -> Extent
+extent f = Extent . f . getExtent
+
+consExtent :: (Double, Double) -> Extent -> Extent
+consExtent = extent . (:)
 
 -- | Shift an extent horizontally.
 moveExtent :: Double -> Extent -> Extent
-moveExtent x = map ((+x) *** (+x))
+moveExtent x = (extent . map) ((+x) *** (+x))
 
 -- | Reflect an extent about the vertical axis.
 flipExtent :: Extent -> Extent
-flipExtent = map (\(p,q) -> (-q, -p))
+flipExtent = (extent . map) (\(p,q) -> (-q, -p))
 
 -- | Merge two non-overlapping extents.
 mergeExtents :: Extent -> Extent -> Extent
-mergeExtents [] qs = qs
-mergeExtents ps [] = ps
-mergeExtents ((p,_) : ps) ((_,q) : qs) = (p,q) : mergeExtents ps qs
+mergeExtents (Extent e1) (Extent e2) = Extent $ mergeExtents' e1 e2
+  where
+    mergeExtents' [] qs = qs
+    mergeExtents' ps [] = ps
+    mergeExtents' ((p,_) : ps) ((_,q) : qs) = (p,q) : mergeExtents' ps qs
 
-mergeExtentList :: [Extent] -> Extent
-mergeExtentList = foldr mergeExtents []
+instance Semigroup Extent where
+  (<>) = mergeExtents
+
+instance Monoid Extent where
+  mempty  = Extent []
+  mappend = (<>)
 
 -- | Determine the amount to shift in order to \"fit\" two extents
 --   next to one another.  The first argument is the separation to
 --   leave between them.
 fit :: Double -> Extent -> Extent -> Double
-fit hSep ps qs = maximum (0 : zipWith (\(_,p) (q,_) -> p - q + hSep) ps qs)
+fit hSep (Extent ps) (Extent qs) = maximum (0 : zipWith (\(_,p) (q,_) -> p - q + hSep) ps qs)
 
 -- | Fit a list of subtree extents together using a left-biased
 --   algorithm.  Compute a list of positions (relative to the leftmost
 --   subtree which is considered to have position 0).
 fitListL :: Double -> [Extent] -> [Double]
-fitListL hSep = snd . mapAccumL fitOne []
+fitListL hSep = snd . mapAccumL fitOne mempty
   where
     fitOne acc e =
       let x = fit hSep acc e
-      in  (mergeExtents acc (moveExtent x e), x)
+      in  (acc <> moveExtent x e, x)
 
 -- | Fit a list of subtree extents together with a right bias.
 fitListR :: Double -> [Extent] -> [Double]
@@ -289,14 +303,30 @@ fitList hSep = uncurry (zipWith mean) . (fitListL hSep &&& fitListR hSep)
 
 -- | Actual recursive tree layout algorithm, which returns a tree
 --   layout as well as an extent.
-symmLayoutR :: SymmLayoutOpts a -> Tree a -> (RelTree a, Extent)
+symmLayoutR :: SymmLayoutOpts a -> Tree a -> (Rel Tree a, Extent)
 symmLayoutR opts (Node a ts) = (rt, ext)
   where (trees, extents) = unzip (map (symmLayoutR opts) ts)
         positions        = fitList (slHSep opts) extents
         pTrees           = zipWith moveTree positions trees
         pExtents         = zipWith moveExtent positions extents
-        ext              = slWidth opts a : mergeExtentList pExtents
+        ext              = slWidth opts a `consExtent` mconcat pExtents
         rt               = Node (a, 0) pTrees
+
+-- | Symmetric tree layout algorithm specialized to binary trees.
+--   Returns a tree layout as well as an extent.
+symmLayoutBinR :: SymmLayoutOpts a -> BTree a -> (Maybe (Rel Tree a), Extent)
+symmLayoutBinR _    Empty         = (Nothing, mempty)
+symmLayoutBinR opts (BNode a l r) = (Just rt, ext)
+  where (l', extL) = symmLayoutBinR opts l
+        (r', extR) = symmLayoutBinR opts r
+        positions  = case (l', r') of
+                       (Nothing, _) -> [0, slHSep opts / 2]
+                       (_, Nothing) -> [-slHSep opts / 2, 0]
+                       _          -> fitList (slHSep opts) [extL, extR]
+        pTrees   = catMaybes $ zipWith (fmap . moveTree) positions [l',r']
+        pExtents = zipWith moveExtent positions [extL, extR]
+        ext = slWidth opts a `consExtent` mconcat pExtents
+        rt  = Node (a, 0) pTrees
 
 -- | Options for controlling the symmetric tree layout algorithm.
 data SymmLayoutOpts a =
@@ -335,19 +365,40 @@ instance Default (SymmLayoutOpts a) where
 symmLayout' :: SymmLayoutOpts a -> Tree a -> Tree (a, P2)
 symmLayout' opts = unRelativize opts origin . fst . symmLayoutR opts
 
-unRelativize :: SymmLayoutOpts a -> P2 -> RelTree a -> Tree (a, P2)
+-- | Run the symmetric rose tree layout algorithm on a given tree
+--   using default options, resulting in the same tree annotated with
+--   node positions.
+symmLayout :: Tree a -> Tree (a, P2)
+symmLayout = symmLayout' def
+
+-- | Lay out a binary tree using a slight variant of the symmetric
+--   layout algorithm.  In particular, if a node has only a left child
+--   but no right child (or vice versa), the child will be offset from
+--   the parent horizontally by half the horizontal separation
+--   parameter. Note that the result will be @Nothing@ if and only if
+--   the input tree is @Empty@.
+symmLayoutBin' :: SymmLayoutOpts a -> BTree a -> Maybe (Tree (a,P2))
+symmLayoutBin' opts = fmap (unRelativize opts origin) . fst . symmLayoutBinR opts
+
+-- | Lay out a binary tree using a slight variant of the symmetric
+--   layout algorithm, using default options.  In particular, if a
+--   node has only a left child but no right child (or vice versa),
+--   the child will be offset from the parent horizontally by half the
+--   horizontal separation parameter. Note that the result will be
+--   @Nothing@ if and only if the input tree is @Empty@.
+symmLayoutBin :: BTree a -> Maybe (Tree (a,P2))
+symmLayoutBin = symmLayoutBin' def
+
+-- | Given a fixed location for the root, turn a tree with
+--   \"relative\" positioning into one with absolute locations
+--   associated to all the nodes.
+unRelativize :: SymmLayoutOpts a -> P2 -> Rel Tree a -> Tree (a, P2)
 unRelativize opts curPt (Node (a,hOffs) ts)
     = Node (a, rootPt) (map (unRelativize opts (rootPt .+^ (vOffs *^ unit_Y))) ts)
   where rootPt = curPt .+^ (hOffs *^ unitX)
         vOffs  = - fst (slHeight opts a)
                + (maximum . map (snd . slHeight opts . fst . rootLabel) $ ts)
                + slVSep opts
-
--- | Run the symmetric rose tree layout algorithm on a given tree
---   using default options, resulting in the same tree annotated with
---   node positions.
-symmLayout :: Tree a -> Tree (a, P2)
-symmLayout = symmLayout' def
 
 --------------------------------------------------
 --  Force-directed layout of rose trees

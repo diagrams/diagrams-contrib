@@ -57,6 +57,20 @@
 --
 -- <<diagrams/exampleSymmTreeWithDs.svg#diagram=exampleSymmTreeWithDs&width=300>>
 --
+-- Using a variant symmetric layout algorithm specifically for binary trees:
+--
+-- > import Diagrams.TwoD.Layout.Tree
+-- >
+-- > drawT = maybe mempty (renderTree (const (circle 0.05 # fc black)) (~~))
+-- >       . symmLayoutBin' with { slVSep = 0.5 }
+-- >
+-- > tree500 = drawT t # centerXY # pad 1.1 # sized (Width 4)
+-- >   where t = genTree 500 0.05
+-- >         -- genTree 500 0.05 randomly generates trees of size 500 +/- 5%,
+-- >         -- definition not shown
+--
+-- <<diagrams/tree500.svg#diagram=tree500&width=400>>
+--
 -- Using force-based layout on a binary tree:
 --
 -- > {-# LANGUAGE NoMonomorphismRestriction #-}
@@ -74,6 +88,7 @@
 -- >         # centerXY # pad 1.1
 --
 -- <<diagrams/fblEx.svg#diagram=fblEx&width=300>>
+--
 
 module Diagrams.TwoD.Layout.Tree
        ( -- * Binary trees
@@ -540,3 +555,49 @@ renderTree' renderNode renderEdge = alignT . centerX . renderTreeR
          renderNode a # moveTo p
       <> mconcat (map renderTreeR cs)
       <> mconcat (map (renderEdge (a,p) . rootLabel) cs)
+
+
+-- > -- Critical size-limited Boltzmann generator for binary trees (used in example)
+-- >
+-- > import           Control.Applicative
+-- > import           Control.Lens                   hiding (( # ))
+-- > import           Control.Monad.Random
+-- > import           Control.Monad.Reader
+-- > import           Control.Monad.State
+-- >
+-- > genTreeCrit :: ReaderT Int (StateT Int (RandT StdGen Maybe)) (BTree ())
+-- > genTreeCrit = do
+-- >   r <- getRandom
+-- >   if r <= (1/2 :: Double)
+-- >     then return Empty
+-- >     else atom >> (BNode () <$> genTreeCrit <*> genTreeCrit)
+-- >
+-- > atom :: ReaderT Int (StateT Int (RandT StdGen Maybe)) ()
+-- > atom = do
+-- >   targetSize <- ask
+-- >   curSize <- get
+-- >   when (curSize >= targetSize) mzero
+-- >   put (curSize + 1)
+-- >
+-- > genOneTree :: Int -> Int -> Double -> Maybe (BTree ())
+-- > genOneTree seed size eps =
+-- >   case mt of
+-- >     Nothing -> Nothing
+-- >     Just (t,sz) -> if sz >= minSz then Just t else Nothing
+-- >
+-- >   where
+-- >     g          = mkStdGen seed
+-- >     sizeWiggle = floor $ fromIntegral size * eps
+-- >     maxSz = size + sizeWiggle
+-- >     minSz = size - sizeWiggle
+-- >     mt = (evalRandT ?? g) . (runStateT ?? 0) . (runReaderT ?? maxSz)
+-- >        $ genTreeCrit
+-- >
+-- > genTree' :: Int -> Int -> Double -> BTree ()
+-- > genTree' seed size eps =
+-- >   case (genOneTree seed size eps) of
+-- >     Nothing -> genTree' (seed+1) size eps
+-- >     Just t  -> t
+-- >
+-- > genTree :: Int -> Double -> BTree ()
+-- > genTree = genTree' 0

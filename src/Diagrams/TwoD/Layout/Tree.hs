@@ -565,15 +565,16 @@ renderTree' renderNode renderEdge = alignT . centerX . renderTreeR
 -- > import           Control.Monad.Random
 -- > import           Control.Monad.Reader
 -- > import           Control.Monad.State
+-- > import           Control.Monad.Trans.Maybe
 -- >
--- > genTreeCrit :: ReaderT Int (StateT Int (RandT StdGen Maybe)) (BTree ())
+-- > genTreeCrit :: ReaderT Int (StateT Int (MaybeT (Rand StdGen))) (BTree ())
 -- > genTreeCrit = do
 -- >   r <- getRandom
 -- >   if r <= (1/2 :: Double)
 -- >     then return Empty
 -- >     else atom >> (BNode () <$> genTreeCrit <*> genTreeCrit)
 -- >
--- > atom :: ReaderT Int (StateT Int (RandT StdGen Maybe)) ()
+-- > atom :: ReaderT Int (StateT Int (MaybeT (Rand StdGen))) ()
 -- > atom = do
 -- >   targetSize <- ask
 -- >   curSize <- get
@@ -591,7 +592,7 @@ renderTree' renderNode renderEdge = alignT . centerX . renderTreeR
 -- >     sizeWiggle = floor $ fromIntegral size * eps
 -- >     maxSz = size + sizeWiggle
 -- >     minSz = size - sizeWiggle
--- >     mt = (evalRandT ?? g) . (runStateT ?? 0) . (runReaderT ?? maxSz)
+-- >     mt = (evalRand ?? g) . runMaybeT . (runStateT ?? 0) . (runReaderT ?? maxSz)
 -- >        $ genTreeCrit
 -- >
 -- > genTree' :: Int -> Int -> Double -> BTree ()

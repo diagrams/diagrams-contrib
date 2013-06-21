@@ -18,6 +18,7 @@ module Diagrams.Example.Logo where
 -- > import Diagrams.Example.Logo
 -- > diaLogo = logo
 
+import           Diagrams.Coordinates      ((&))
 import           Diagrams.Prelude
 
 import           Diagrams.TwoD.Layout.Tree

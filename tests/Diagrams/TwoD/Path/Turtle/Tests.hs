@@ -1,17 +1,21 @@
-{-# LANGUAGE TypeSynonymInstances, FlexibleInstances, ViewPatterns  #-}
+{-# LANGUAGE FlexibleContexts     #-}
+{-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE UndecidableInstances #-}
+{-# LANGUAGE ViewPatterns         #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 module Diagrams.TwoD.Path.Turtle.Tests
   ( tests
   ) where
 
-import Control.Arrow ((***))
+import           Control.Arrow                        ((***))
 
-import Test.Framework
-import Test.Framework.Providers.QuickCheck2
-import Test.QuickCheck
+import           Test.Framework
+import           Test.Framework.Providers.QuickCheck2
+import           Test.QuickCheck
 
-import Diagrams.Prelude
-import Diagrams.TwoD.Path.Turtle.Internal
+import           Diagrams.Prelude
+import           Diagrams.TwoD.Path.Turtle.Internal
 
 tests :: [Test]
 tests =
@@ -39,7 +43,7 @@ movesForward t =  isPenDown t ==>
   diffPos :: Int
   diffPos      = round $ magnitude $ penPos t' .-. penPos t
   lenCurrTrail :: Int
-  lenCurrTrail = round $ flip arcLength 0.0001 . head . trailSegments . snd . currTrail $ t'
+  lenCurrTrail = round $ flip arcLength 0.0001 . last . lineSegments . unLoc . currTrail $ t'
 
 -- | The turtle moves forward by the right distance
 movesBackward :: TurtleState
@@ -53,7 +57,7 @@ movesBackward t =  isPenDown t ==>
   diffPos :: Int
   diffPos      = round $ magnitude $ penPos t' .-. penPos t
   lenCurrTrail :: Int
-  lenCurrTrail = round $ flip arcLength 0.0001 . head . trailSegments . snd . currTrail $ t'
+  lenCurrTrail = round $ flip arcLength 0.0001 . last . lineSegments . unLoc . currTrail $ t'
 
 -- | The turtle moves forward and backward by the same distance and returns to
 -- the same position
@@ -69,7 +73,7 @@ movesBackwardAndForward t = isPenDown t ==>
   (unp2 -> (startX, startY)) = penPos t
   (unp2 -> (endX, endY))     = penPos t'
   totalSegmentsAdded         = (uncurry (-)) . (getTrailLength *** getTrailLength) $ (t',t)
-  getTrailLength             = (length . trailSegments . snd . currTrail)
+  getTrailLength             = (length . lineSegments . unLoc . currTrail)
 
 -- | The turtle moves left four times and returns to the same position
 movesLeft  :: TurtleState
@@ -107,10 +111,9 @@ movesRight t = isPenDown t ==>
 -- are added
 trailEmptyWhenPenUp :: TurtleState
                     -> Property
-trailEmptyWhenPenUp t = isPenDown t ==> trailIsEmpty
+trailEmptyWhenPenUp t = isPenDown t ==> currEmpty t'
  where
   t'           = t # penUp # forward 4 # backward 3
-  trailIsEmpty = null . trailSegments . snd . currTrail $ t'
 
 -- | Verify that the turtle adds a trail to @paths@ when pen is down
 -- and @penHop@ is called.
@@ -125,7 +128,7 @@ verifyPenHopWhenPenDown t = isPenDown t ==> (numPaths t') - (numPaths t) == 1
 -- and @penHop@ is called.
 verifyPenHopWhenPenUp :: TurtleState
                       -> Property
-verifyPenHopWhenPenUp t = not (isPenDown t) && (null . trailSegments . snd . currTrail $ t) ==>  (numPaths t') == (numPaths t)
+verifyPenHopWhenPenUp t = (not (isPenDown t) && currEmpty t) ==>  (numPaths t') == (numPaths t)
  where
   t' = t # forward 2.0 # penHop
   numPaths = length . paths
@@ -133,9 +136,13 @@ verifyPenHopWhenPenUp t = not (isPenDown t) && (null . trailSegments . snd . cur
 -- | Verify that calling @closeCurrent@ updates the turtle position to the beginning to the trail
 verifyCloseCurrent :: TurtleState
                    -> Property
-verifyCloseCurrent t = (isPenDown t)  && (null . trailSegments . snd . currTrail $ t) ==> (penPos t') == origin
+verifyCloseCurrent t = (isPenDown t && currEmpty t) ==> (penPos t') == origin
  where
   t' = t # setPenPos origin # forward 2.0 # right 90 # forward 3.0 # closeCurrent
+
+currEmpty :: TurtleState -> Bool
+currEmpty = null . lineSegments . unLoc . currTrail
+
 -- | Arbitrary instance for the TurtleState type.
 --
 -- FIXME this arbitrary instance can generate
@@ -177,11 +184,17 @@ instance Arbitrary PenStyle where
 -- | Arbitrary instance of Segment
 --
 -- Currently this only generates linear segments only
-instance Arbitrary (Segment R2)  where
+instance Arbitrary (Segment Closed R2)  where
   arbitrary = do
     h <- Deg <$> arbitrary
     x <- r2 <$> arbitrary
-    return $ rotate h (Linear x)
+    return $ rotate h (straight x)
+
+instance Arbitrary (Trail' Line R2) where
+  arbitrary = lineFromSegments <$> arbitrary
+
+instance (Arbitrary a, Arbitrary (Point (V a))) => Arbitrary (Located a) where
+  arbitrary = at <$> arbitrary <*> arbitrary
 
 instance Arbitrary (Trail R2) where
-  arbitrary = Trail <$> arbitrary <*> (return False)
+  arbitrary = wrapLine <$> arbitrary

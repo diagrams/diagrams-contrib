@@ -44,6 +44,7 @@ module Diagrams.TwoD.Path.IteratedSubset
        ) where
 
 -- Diagrams.Core.Points needed for V (Point a) instance on GHC < 7.6
+import           Diagrams.Coordinates       ((&))
 import           Diagrams.Core.Points       ()
 import           Diagrams.Prelude
 
@@ -67,22 +68,23 @@ import           Data.Maybe                 (mapMaybe)
 --   seed pattern.
 --
 --   > import Diagrams.TwoD.Path.IteratedSubset
---   > iterTrailEx = vcat' with { sep = 0.3 } . map strokeT . take 5 $ iterTrail koch
+--   > iterTrailEx = vcat' with { sep = 0.3 } . map strokeLine . take 5
+--   >             $ iterTrail koch
 --
 --   <<diagrams/iterTrailEx.svg#diagram=iterTrailEx&width=200>>
-iterTrail :: Trail R2 -> [Trail R2]
-iterTrail t = iterate (mconcat . mapMaybe (refineSegment t) . trailSegments)
+iterTrail :: Trail' Line R2 -> [Trail' Line R2]
+iterTrail t = iterate (mconcat . mapMaybe (refineSegment t) . lineSegments)
                       (fromOffsets [unitX])
 
 -- | Use a trail to \"refine\" a segment, returning a scaled and/or
 --   rotated copy of the trail with the same endpoint as the segment.
-refineSegment :: Trail R2 -> Segment R2 -> Maybe (Trail R2)
+refineSegment :: Trail' Line R2 -> Segment Closed R2 -> Maybe (Trail' Line R2)
 refineSegment t seg
   | tOff == 0 || sOff == 0 = Nothing
   | otherwise              = Just $ t # scale k # rotateBy r
   where
     sOff = segOffset seg
-    tOff = trailOffset t
+    tOff = lineOffset t
     k    = magnitude sOff / magnitude tOff
     r    = direction sOff - direction tOff
 
@@ -102,12 +104,12 @@ refineSegment t seg
 -- > import Diagrams.TwoD.Path.IteratedSubset
 -- > showTrail n t = hcat' with { sep = 0.2 } [ iters !! 1, iters !! n ]
 -- >             # centerXY # pad 1.1
--- >   where iters = map strokeT $ iterTrail t
+-- >   where iters = map strokeLine $ iterTrail t
 
 -- | Seed for the Koch curve (side of the famous Koch 'snowflake').
 --
 --   <<diagrams/kochD.svg#diagram=kochD&width=400>>
-koch :: (PathLike p, V p ~ R2) => p
+koch :: (TrailLike t, V t ~ R2) => t
 koch = fromOffsets [unitX, unitX # rotateBy (1/6), unitX # rotateBy (-1/6), unitX]
 
 -- > kochD = showTrail 4 koch
@@ -115,7 +117,7 @@ koch = fromOffsets [unitX, unitX # rotateBy (1/6), unitX # rotateBy (-1/6), unit
 -- | Seed for the Lévy dragon curve.
 --
 --   <<diagrams/levyD.svg#diagram=levyD&width=400>>
-levy :: (PathLike p, V p ~ R2) => p
+levy :: (TrailLike t, V t ~ R2) => t
 levy = fromOffsets [unitY, unitX]
 
 -- > levyD = showTrail 9 levy
@@ -124,7 +126,7 @@ levy = fromOffsets [unitY, unitX]
 --   of triangles.
 --
 --   <<diagrams/zagD.svg#diagram=zagD&width=400>>
-zag :: (PathLike p, V p ~ R2) => p
+zag :: (TrailLike t, V t ~ R2) => t
 zag = fromOffsets [unitX, (-0.5) & 1, unitX]
 
 -- > zagD = showTrail 5 zag
@@ -133,7 +135,7 @@ zag = fromOffsets [unitX, (-0.5) & 1, unitX]
 --   curve.
 --
 --   <<diagrams/sqUpD.svg#diagram=sqUpD&width=400>>
-sqUp :: (PathLike p, V p ~ R2) => p
+sqUp :: (TrailLike t, V t ~ R2) => t
 sqUp = fromOffsets [unitX, unitY, unitX, unit_Y, unitX]
 
 -- > sqUpD = showTrail 3 sqUp
@@ -142,7 +144,7 @@ sqUp = fromOffsets [unitX, unitY, unitX, unit_Y, unitX]
 --   rectilinear spiral patterns.
 --
 --   <<diagrams/sqUpDownD.svg#diagram=sqUpDownD&width=400>>
-sqUpDown :: (PathLike p, V p ~ R2) => p
+sqUpDown :: (TrailLike t, V t ~ R2) => t
 sqUpDown = fromOffsets [unitX, unitY, unitX, 2 *^ unit_Y, unitX, unitY, unitX]
 
 -- > sqUpDownD = showTrail 3 sqUpDown
@@ -151,7 +153,7 @@ sqUpDown = fromOffsets [unitX, unitY, unitX, 2 *^ unit_Y, unitX, unitY, unitX]
 --   version.
 --
 --   <<diagrams/sqUpDownD2.svg#diagram=sqUpDownD2&width=400>>
-sqUpDown' :: (PathLike p, V p ~ R2) => p
+sqUpDown' :: (TrailLike t, V t ~ R2) => t
 sqUpDown' = cubicSpline False sqUpDown
 
 -- > sqUpDownD2 = showTrail 3 sqUpDown'
@@ -173,7 +175,8 @@ sqUpDown' = cubicSpline False sqUpDown
 snowflake :: Int -> Trail R2
 snowflake n = iterateN 3 (rotateBy (-1/3)) edge
             # mconcat
-            # close
+            # glueLine
+            # wrapTrail
   where edge = iterTrail koch !! n
 
 -- > import Diagrams.TwoD.Path.IteratedSubset
@@ -188,7 +191,7 @@ sqUpDownOverlay
   = sized (Width 4)
   . mconcat
   . zipWith lc (iterate (blend 0.1 white) blue)
-  . map strokeT
+  . map strokeLine
   . take 5
   . iterTrail
   $ sqUpDown'
@@ -200,7 +203,7 @@ sqUpDownOverlay
 -- Generating random iterated subset fractals
 
 -- | Parameters to generate an iterated subset fractal.
-data IterTrailConfig = ITC { seed  :: Trail R2       -- ^ The seed trail
+data IterTrailConfig = ITC { seed  :: Trail' Line R2 -- ^ The seed trail
                            , color :: Colour Double  -- ^ The line color to use
                            , iters :: Int            -- ^ Number of iterations
                            }
@@ -235,7 +238,7 @@ randITC = do
 
 -- | Generate an iterated subset fractal based on the given parameters.
 drawITC :: Renderable (Path R2) b => IterTrailConfig -> Diagram b R2
-drawITC (ITC s c i) = (iterTrail s !! i) # strokeT # lc c
+drawITC (ITC s c i) = (iterTrail s !! i) # strokeLine # lc c
 
 -- | Like 'drawITC', but also scales, centers, and pads the result so
 -- that it fits nicely inside a 4x4 box.

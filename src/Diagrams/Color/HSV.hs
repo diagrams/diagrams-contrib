@@ -23,6 +23,8 @@ import           Data.Colour              (Colour)
 import           Data.Colour.RGBSpace     (uncurryRGB)
 import           Data.Colour.RGBSpace.HSV (hsv, hsvView)
 import           Data.Colour.SRGB         (sRGB, toSRGB)
+import           Data.List                (minimumBy)
+import           Data.Ord                 (comparing)
 import           Data.VectorSpace         (Scalar, VectorSpace, lerp)
 
 -- | Blend two colors in HSV space---that is, linearly interpolate
@@ -34,17 +36,16 @@ import           Data.VectorSpace         (Scalar, VectorSpace, lerp)
 --   between results in a blend.
 hsvBlend :: (Floating a, RealFrac a, VectorSpace a)
          => Scalar a -> Colour a -> Colour a -> Colour a
-hsvBlend t c1 c2 = uncurryRGB sRGB . hsv3 $ (lerpWrap h1 h2 360 t, lerp s1 s2 t, lerp v1 v2 t)
+hsvBlend t c1 c2 = uncurryRGB sRGB . hsv3
+                 $ (lerpWrap h1 h2 360 t, lerp s1 s2 t, lerp v1 v2 t)
   where
     [(h1,s1,v1), (h2,s2,v2)] = map (hsvView . toSRGB) [c1,c2]
     hsv3 (h,s,v) = hsv h s v
 
-lerpWrap a b m t
-  | (d_ab <= d_ba && a <= b) || (d_ba <= d_ab && b <= a) = lerp a b t
-  | a < b     = lerp (a + m) b t `dmod` m
-  | otherwise = lerp a (b + m) t `dmod` m
+lerpWrap :: (RealFrac a, VectorSpace a) => a -> a -> a -> Scalar a -> a
+lerpWrap a b m t = lerp a b' t `dmod` m
   where
-    d_ab = (b - a) `dmod` m
-    d_ba = (a - b) `dmod` m
+    b' = minimumBy (comparing (abs . subtract a)) [b - m, b, b + m]
 
-dmod a m = a - m * fromIntegral (floor (a/m))
+dmod :: RealFrac a => a -> a -> a
+dmod a m = a - m * fromIntegral (floor (a/m) :: Integer)

@@ -28,6 +28,7 @@ tests =
   , testProperty "penHop creates a new path when pen is down" verifyPenHopWhenPenDown
   , testProperty "penHop does not create new path when pen is up" verifyPenHopWhenPenUp
   , testProperty "closeCurrent works correctly when no trail has started and pen is down" verifyCloseCurrent
+  , testProperty "closeCurrent only produces a single new path" closeCurrentSingle
   ]
 
 
@@ -139,6 +140,12 @@ verifyCloseCurrent :: TurtleState
 verifyCloseCurrent t = (isPenDown t && currEmpty t) ==> (penPos t') == origin
  where
   t' = t # setPenPos origin # forward 2.0 # right 90 # forward 3.0 # closeCurrent
+
+-- | Verify that closeCurrent only produces a single new path (not two; see #13).
+closeCurrentSingle :: TurtleState -> Property
+closeCurrentSingle t = (isPenDown t) ==> ((length . paths $ t') == (succ . length . paths $ t))
+  where
+  t' = t # closeCurrent
 
 currEmpty :: TurtleState -> Bool
 currEmpty = null . lineSegments . unLoc . currTrail

@@ -186,17 +186,18 @@ penHop :: TurtleState
        -> TurtleState
 penHop t = t # makeNewTrail
 
--- Closes the current path , to the starting position of the current
--- trail. Has no effect when the pen position is up
+-- Closes the current path, to the starting position of the current
+-- trail. Has no effect when the pen is up.
 closeCurrent :: TurtleState
              -> TurtleState
 closeCurrent t
-  | isPenDown t = t # setPenPos startPos # closeTTrail
+  | isPenDown t = t # closeTTrail
   | otherwise   = t
  where startPos = loc . currTrail $ t
-       closeTTrail t'  = t' { currTrail = mempty `at` penPos t'
-                            , paths = addTrailToPath t'
-                                        (mapLoc (wrapTrail . closeLine) $ currTrail t)
+       closeTTrail t'  = t' { penPos    = startPos
+                            , currTrail = mempty `at` startPos
+                            , paths     = addTrailToPath t'
+                                            (mapLoc (wrapTrail . closeLine) $ currTrail t)
                             }
 
 -- | Set the turtle X/Y position.

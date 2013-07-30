@@ -22,7 +22,7 @@
 -- >     [ decagon r | r <- [0.1,0.2..0.7] ]
 -- >
 -- > -- Just a approximation, diagram objects do not have an exact radius
--- > radiusApproximation o = maximum [ radius (e (CircleFrac alpha)) o | alpha <- [0,0.1..1.0]]
+-- > radiusApproximation o = maximum [ radius (e (alpha :: Turn)) o | alpha <- [0,0.1..1.0]]
 -- >
 -- > circlePackingExample =
 -- >     position $ map (\(o,(x,y)) -> (p2 (x,y),o)) $
@@ -72,7 +72,8 @@ approxRadius n =
     then error "circleRadius: n needs to be at least 3"
     else \o -> outByIn * maximum [ envelopeS (e alpha) o
                           | i <- [1..n]
-                          , let alpha = CircleFrac ((fromIntegral i + 0.5) / fromIntegral n)
+                          , let alpha :: Turn
+                                alpha = (fromIntegral i + 0.5) / fromIntegral n
                           ]
     -- incircle radius: a / (2 * tan (tau/n))
     -- outcircle radius: a / (2 * sin (tau /n))
@@ -85,4 +86,4 @@ approxRadius n =
 -- It is, however, exact for circles, and there is no function that is safe for
 -- all diagrams and exact for circles.
 circleRadius :: RadiusFunction b m
-circleRadius o = maximum [ envelopeS (e (CircleFrac alpha)) o | alpha <- [0,0.25,0.5,0.75]]
+circleRadius o = maximum [ envelopeS (e (alpha :: Turn)) o | alpha <- [0,0.25,0.5,0.75]]

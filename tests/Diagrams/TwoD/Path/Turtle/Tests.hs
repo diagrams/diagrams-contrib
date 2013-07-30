@@ -43,7 +43,7 @@ movesForward t =  isPenDown t ==>
   diffPos :: Int
   diffPos      = round $ magnitude $ penPos t' .-. penPos t
   lenCurrTrail :: Int
-  lenCurrTrail = round $ flip arcLength 0.0001 . last . lineSegments . unLoc . currTrail $ t'
+  lenCurrTrail = round $ arcLength 0.0001 . last . lineSegments . unLoc . currTrail $ t'
 
 -- | The turtle moves forward by the right distance
 movesBackward :: TurtleState
@@ -57,7 +57,7 @@ movesBackward t =  isPenDown t ==>
   diffPos :: Int
   diffPos      = round $ magnitude $ penPos t' .-. penPos t
   lenCurrTrail :: Int
-  lenCurrTrail = round $ flip arcLength 0.0001 . last . lineSegments . unLoc . currTrail $ t'
+  lenCurrTrail = round $ arcLength 0.0001 . last . lineSegments . unLoc . currTrail $ t'
 
 -- | The turtle moves forward and backward by the same distance and returns to
 -- the same position

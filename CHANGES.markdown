@@ -1,3 +1,21 @@
+0.7: XXX
+--------
+
+* **New features**
+
+    - New module `Diagrams.Color.HSV` with an `hsvBlend` function for
+      blending colors in HSV space.
+
+    - Diagrams logo code is now in `Diagrams.Example.Logo`.
+
+    - New symmetric layout algorithm for binary trees in
+      `Diagrams.TwoD.Layout.Tree`.
+
+* **Bug fixes**
+
+    - Fix a bug in `Diagrams.TwoD.Path.Turtle` which sometimes caused
+      it to output a doubled path (#13).
+
 0.6.1 (23 March 2013)
 ---------------------
 

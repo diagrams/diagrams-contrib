@@ -25,6 +25,9 @@ module Diagrams.Lens
   -- * Diagrams.Align
   , _envelopeVMove
   , _alignedVMove
+  -- * Diagrams.BoundingBox
+  , _corners
+  , _boxExtents
   -- * Diagrams.Core.Style
   , _attr
   , _mkAttr
@@ -34,13 +37,12 @@ module Diagrams.Lens
   , _envelope
   , _location
   , _mkSubdiagram
-  -- * Diagrams.BoundingBox
-  , _corners
-  , _boxExtents
   -- * Diagrams.Located
   , _Loc
   -- * Diagrams.Parametric
   , _arcLength
+  -- * Diagrams.Path
+  , _pathVertices
   -- * Diagrams.Segment
   , _mkFixedSeg
   , _straight
@@ -49,8 +51,6 @@ module Diagrams.Lens
   , _lineVertices
   , _lineOffsets
   , _lineSegments
-  -- * Diagrams.Path
-  , _pathVertices
   -- * Diagrams.TwoD.Types
   , _toTurn
   ) where
@@ -130,6 +130,28 @@ _traceMove p v f x = case appTrace (trace x) p v of
 -}
 
 
+-- * Diagrams.BoundingBox
+
+-- | A traversal that either has 0 (empty box) or 2 points.  These points are
+--   the lower and upper corners, respectively.
+_corners
+  :: ( HasBasis v, Ord (Basis v), AdditiveGroup (Scalar v), Ord (Scalar v)
+     , HasBasis v', Ord (Basis v'), AdditiveGroup (Scalar v'), Ord (Scalar v'))
+  => Traversal (BoundingBox v) (BoundingBox v') (Point v) (Point v')
+_corners f (getCorners -> Just (l, t)) = fromCorners <$> f l <*> f t
+_corners _ _ = pure emptyBox
+
+-- | A lens that gets the extents of the box.  In order to change the extents,
+--   this modifies the upper corner.
+_boxExtents
+  :: (HasBasis v, Ord (Basis v), AdditiveGroup (Scalar v), Ord (Scalar v))
+  => Lens' (BoundingBox v) v
+_boxExtents = lens boxExtents setExtent
+  where
+    setExtent (getCorners -> Just (l, _)) x = fromCorners l (l .+^ x)
+    setExtent _ _ = emptyBox
+
+
 -- * Diagrams.Core.Style
 
 _attr :: AttributeClass a => Lens' (Style v) (Maybe a)
@@ -173,28 +195,6 @@ _mkSubdiagram
 _mkSubdiagram = iso mkSubdiagram getSub
 
 
--- * Diagrams.BoundingBox
-
--- | A traversal that either has 0 (empty box) or 2 points.  These points are
---   the lower and upper corners, respectively.
-_corners
-  :: ( HasBasis v, Ord (Basis v), AdditiveGroup (Scalar v), Ord (Scalar v)
-     , HasBasis v', Ord (Basis v'), AdditiveGroup (Scalar v'), Ord (Scalar v'))
-  => Traversal (BoundingBox v) (BoundingBox v') (Point v) (Point v')
-_corners f (getCorners -> Just (l, t)) = fromCorners <$> f l <*> f t
-_corners _ _ = pure emptyBox
-
--- | A lens that gets the extents of the box.  In order to change the extents,
---   this modifies the upper corner.
-_boxExtents
-  :: (HasBasis v, Ord (Basis v), AdditiveGroup (Scalar v), Ord (Scalar v))
-  => Lens' (BoundingBox v) v
-_boxExtents = lens boxExtents setExtent
-  where
-    setExtent (getCorners -> Just (l, _)) x = fromCorners l (l .+^ x)
-    setExtent _ _ = emptyBox
-
-
 -- * Diagrams.Located
 
 _Loc :: Iso (Located a) (Located a') (Point (V a), a) (Point (V a'), a')
@@ -223,6 +223,17 @@ _arcLength side eps = lens (arcLength eps) adjustArcLength
       , adjEps = eps
       , adjOptsvProxy__ = Proxy
       }
+
+
+-- * Diagrams.Path
+
+_pathVertices
+  :: ( InnerSpace v, OrderedField (Scalar v)
+     , InnerSpace v', OrderedField (Scalar v'))
+  => Iso
+    (Path v) (Path v')
+    [[Point v]] [[Point v']]
+_pathVertices = iso pathVertices (mconcat . map (pathFromTrail . fromVertices))
 
 
 -- * Diagrams.Segment
@@ -278,17 +289,6 @@ _lineSegments
     (Trail' Line v) (Trail' Line v')
     [Segment Closed v] [Segment Closed v']
 _lineSegments = iso lineSegments lineFromSegments
-
-
--- * Diagrams.Path
-
-_pathVertices
-  :: ( InnerSpace v, OrderedField (Scalar v)
-     , InnerSpace v', OrderedField (Scalar v'))
-  => Iso
-    (Path v) (Path v')
-    [[Point v]] [[Point v']]
-_pathVertices = iso pathVertices (mconcat . map (pathFromTrail . fromVertices))
 
 
 -- * Diagrams.TwoD.Types

@@ -94,8 +94,9 @@ _P = iso P $ \(P x) -> x
 --
 --   This is the same as '_alignedVMove' with @1@ as the interpolation
 --   parameter.
-_envelopeVMove :: (Monoid a, HasOrigin a, Enveloped a, Num (Scalar (V a)))
-               => V a -> Traversal' a (V a)
+_envelopeVMove
+  :: (Monoid a, HasOrigin a, Enveloped a, Num (Scalar (V a)))
+  => V a -> Traversal' a (V a)
 _envelopeVMove v f x = case envelopeVMay v x of
   (Just p) -> (\p' -> moveOriginBy (p ^-^ p') x) <$> f p
   Nothing -> pure x
@@ -110,8 +111,9 @@ _envelopeVMove v f x = case envelopeVMay v x of
 --   away from the vector.
 --
 --   If you need a 'Point' instead of a vector, then compose with '_P'.
-_alignedVMove :: (Monoid a, HasOrigin a, Enveloped a, Num (Scalar (V a)))
-              => V a -> Scalar (V a) -> Traversal' a (V a)
+_alignedVMove
+  :: (Monoid a, HasOrigin a, Enveloped a, Num (Scalar (V a)))
+  => V a -> Scalar (V a) -> Traversal' a (V a)
 _alignedVMove v d f x = case appEnvelope $ getEnvelope x of
   (Just env) -> (\p' -> moveOriginBy (p ^-^ p') x) <$> f p
     where
@@ -149,27 +151,24 @@ _mkTAttr = prism' mkTAttr unwrapAttr
 -- * Diagrams.Core.Types
 
 _trace
-  :: (OrderedField (Scalar v), InnerSpace v, HasLinearMap v, Semigroup m)
+  :: (InnerSpace v, HasLinearMap v, OrderedField (Scalar v), Semigroup m)
   => Lens' (QDiagram b v m) (Trace v)
 _trace = lens trace $ flip setTrace
 
 _envelope
-  :: (OrderedField (Scalar v), InnerSpace v, HasLinearMap v, Monoid' m)
+  :: (HasLinearMap v, InnerSpace v, OrderedField (Scalar v), Monoid' m)
   => Lens' (QDiagram b v m) (Envelope v)
 _envelope = lens envelope $ flip setEnvelope
 
 -- | Gets or set the 'location' of a 'Subdiagram'.
 _location
-  :: ( HasLinearMap v, InnerSpace v
-     , Ord (Scalar v), Fractional (Scalar v), Floating (Scalar v))
+  :: (HasLinearMap v, InnerSpace v, OrderedField (Scalar v))
   => Lens' (Subdiagram b v m) (Point v)
 --TODO: Is this correct??
 _location = lens location (flip Diagrams.Prelude.moveTo)
 
 _mkSubdiagram
-  :: ( HasLinearMap v, InnerSpace v
-     , AdditiveGroup (Scalar v), Ord (Scalar v), Floating (Scalar v)
-     , Semigroup m)
+  :: (HasLinearMap v, InnerSpace v, OrderedField (Scalar v), Semigroup m)
   => Iso' (QDiagram b v m) (Subdiagram b v m)
 _mkSubdiagram = iso mkSubdiagram getSub
 
@@ -213,8 +212,9 @@ _arcLength eps curve
 
 -}
 
-_arcLength :: (s ~ Scalar (V p), HasArcLength p, Sectionable p, Fractional s)
-           => AdjustSide -> s -> Lens' p s
+_arcLength
+  :: (s ~ Scalar (V p), HasArcLength p, Sectionable p, Fractional s)
+  => AdjustSide -> s -> Lens' p s
 _arcLength side eps = lens (arcLength eps) adjustArcLength
   where
     adjustArcLength s x = adjust s AO
@@ -227,7 +227,9 @@ _arcLength side eps = lens (arcLength eps) adjustArcLength
 
 -- * Diagrams.Segment
 
-_mkFixedSeg :: (AdditiveGroup v, AdditiveGroup v') => Iso
+_mkFixedSeg
+  :: (AdditiveGroup v, AdditiveGroup v')
+  => Iso
     (Located (Segment Closed v))
     (Located (Segment Closed v'))
     (FixedSegment v)

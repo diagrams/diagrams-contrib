@@ -80,7 +80,7 @@ iterTrail t = iterate (mconcat . mapMaybe (refineSegment t) . lineSegments)
 --   rotated copy of the trail with the same endpoint as the segment.
 refineSegment :: Trail' Line R2 -> Segment Closed R2 -> Maybe (Trail' Line R2)
 refineSegment t seg
-  | tOff == 0 || sOff == 0 = Nothing
+  | tOff == zeroV || sOff == zeroV = Nothing
   | otherwise              = Just $ t # scale k # rotateBy r
   where
     sOff = segOffset seg

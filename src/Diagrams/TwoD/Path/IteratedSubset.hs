@@ -214,14 +214,14 @@ data IterTrailConfig = ITC { seed  :: Trail' Line R2 -- ^ The seed trail
 randITC :: (MonadRandom m, Applicative m) => m IterTrailConfig
 randITC = do
   -- use between two and five segments for the seed pattern
-  numSegs <- getRandomR (2,5)
+  nSegs <- getRandomR (2,5)
 
   -- should we make the seed pattern a cubic spline?
   spline  <- getRandom
 
   -- generate a random list of linear segments drawn from (-1,1)^2.
   s       <- fromOffsets <$>
-                replicateM numSegs ((&) <$> getRandomR (-1,1) <*> getRandomR (-1,1))
+                replicateM nSegs ((&) <$> getRandomR (-1,1) <*> getRandomR (-1,1))
 
   -- generate a random color.
   c       <- sRGB <$> getRandom <*> getRandom <*> getRandom
@@ -230,7 +230,7 @@ randITC = do
   -- (since fewer is not very interesting) and an upper bound chosen
   -- to ensure we won't get more than 10000 segments in the final
   -- path.
-  i       <- getRandomR (3, floor (logBase (fromIntegral numSegs :: Double) 10000))
+  i       <- getRandomR (3, floor (logBase (fromIntegral nSegs :: Double) 10000))
   let s'
         | spline    = cubicSpline False s
         | otherwise = fromVertices s

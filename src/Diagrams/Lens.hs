@@ -72,7 +72,7 @@ $(concat <$> mapM makeWrapped
   , ''Path
   , ''Point
   , ''QDiagram
-  , ''R2
+--  , ''R2
   , ''R3
   , ''Rad
   , ''SubMap

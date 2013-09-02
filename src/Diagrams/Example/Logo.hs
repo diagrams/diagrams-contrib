@@ -10,7 +10,7 @@
 --
 -- Source code for creating the diagrams logo.
 --
--- <<diagrams/diaLogo.svg#diagram=diaLogo&height=100>>
+-- <<diagrams/src_Diagrams_Example_Logo_diaLogo.svg#diagram=diaLogo&height=100>>
 --
 -----------------------------------------------------------------------------
 module Diagrams.Example.Logo where

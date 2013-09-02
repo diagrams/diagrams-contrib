@@ -28,7 +28,7 @@
 -- >     position $ map (\(o,(x,y)) -> (p2 (x,y),o)) $
 -- >     packCircles radiusApproximation objects
 --
--- <<diagrams/circlePackingExample.svg#diagram=circlePackingExample&width=400>>
+-- <<diagrams/src_Diagrams_TwoD_Layout_CirclePacking_circlePackingExample.svg#diagram=circlePackingExample&width=400>>
 
 module Diagrams.TwoD.Layout.CirclePacking
        ( renderCirclePacking

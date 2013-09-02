@@ -32,7 +32,7 @@
 -- >   # lw 0.03
 -- >   # centerXY # pad 1.1
 --
--- <<diagrams/exampleSymmTree.svg#diagram=exampleSymmTree&width=300>>
+-- <<diagrams/src_Diagrams_TwoD_Layout_Tree_exampleSymmTree.svg#diagram=exampleSymmTree&width=300>>
 --
 -- Laying out a rose tree of diagrams, with spacing automatically
 -- adjusted for the size of the diagrams:
@@ -55,7 +55,7 @@
 -- >   # lw 0.03
 -- >   # centerXY # pad 1.1
 --
--- <<diagrams/exampleSymmTreeWithDs.svg#diagram=exampleSymmTreeWithDs&width=300>>
+-- <<diagrams/src_Diagrams_TwoD_Layout_Tree_exampleSymmTreeWithDs.svg#diagram=exampleSymmTreeWithDs&width=300>>
 --
 -- Using a variant symmetric layout algorithm specifically for binary trees:
 --
@@ -69,7 +69,7 @@
 -- >         -- genTree 500 0.05 randomly generates trees of size 500 +/- 5%,
 -- >         -- definition not shown
 --
--- <<diagrams/tree500.svg#diagram=tree500&width=400>>
+-- <<diagrams/src_Diagrams_TwoD_Layout_Tree_tree500.svg#diagram=tree500&width=400>>
 --
 -- Using force-based layout on a binary tree:
 --
@@ -88,7 +88,7 @@
 -- >             (forceLayoutTree t')
 -- >         # centerXY # pad 1.1
 --
--- <<diagrams/fblEx.svg#diagram=fblEx&width=300>>
+-- <<diagrams/src_Diagrams_TwoD_Layout_Tree_fblEx.svg#diagram=fblEx&width=300>>
 --
 
 module Diagrams.TwoD.Layout.Tree

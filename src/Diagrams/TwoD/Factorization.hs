@@ -16,7 +16,7 @@
 -- prime factorization of n by drawing n dots recursively grouped
 -- according to the factors.
 --
--- <<diagrams/grid100Big.svg#diagram=grid100Big&width=600>>
+-- <<diagrams/src_Diagrams_TwoD_Factorization_grid100Big.svg#diagram=grid100Big&width=600>>
 --
 -----------------------------------------------------------------------------
 
@@ -54,7 +54,7 @@ import           Math.NumberTheory.Primes.Factorisation (factorise)
 --   >     , primeLayout (repeat white) 13 (circle 1 # lc orange)
 --   >     ]
 --
---   <<diagrams/plExample.svg#diagram=plExample&width=400>>
+--   <<diagrams/src_Diagrams_TwoD_Factorization_plExample.svg#diagram=plExample&width=400>>
 primeLayout :: (Backend b R2, Renderable (Path R2) b)
             => [Colour Double] -> Integer -> Diagram b R2 -> Diagram b R2
 primeLayout _ 2 d
@@ -84,7 +84,7 @@ primeLayout colors p d
 --   > import Diagrams.TwoD.Factorization
 --   > colorBarsEx = colorBars defaultColors 3526 (square 1)
 --
---   <<diagrams/colorBarsEx.svg#diagram=colorBarsEx&width=200>>
+--   <<diagrams/src_Diagrams_TwoD_Factorization_colorBarsEx.svg#diagram=colorBarsEx&width=200>>
 colorBars :: (Renderable (Path R2) b)
           => [Colour Double] -> Integer -> Path R2 -> Diagram b R2
 colorBars colors p poly | p <= 11 = stroke poly
@@ -102,7 +102,7 @@ colorBars colors p poly = bars # clipBy poly
 --   code for resistors (<http://en.wikipedia.org/wiki/Electronic_color_code>),
 --   lightened up a bit by blending with white.
 --
---   <<diagrams/showDefaultColors.svg#diagram=showDefaultColors&height=50>>
+--   <<diagrams/src_Diagrams_TwoD_Factorization_showDefaultColors.svg#diagram=showDefaultColors&height=50>>
 defaultColors :: [Colour Double]
 defaultColors = map (blend 0.1 white)
   [black,red,orange,yellow,green,blue,gray,purple,white,brown]
@@ -121,7 +121,7 @@ defaultColors = map (blend 0.1 white)
 --   > import Diagrams.TwoD.Factorization
 --   > factorDiagram'Ex = factorDiagram' [2,5,6]
 --
---   <<diagrams/factorDiagram'Ex.svg#diagram=factorDiagram'Ex&height=200>>
+--   <<diagrams/src_Diagrams_TwoD_Factorization_factorDiagram'Ex.svg#diagram=factorDiagram'Ex&height=200>>
 factorDiagram' :: (Backend b R2, Renderable (Path R2) b)
                => [Integer] -> Diagram b R2
 factorDiagram' = centerXY . foldr (primeLayout defaultColors) (circle 1 # fc black)
@@ -134,7 +134,7 @@ factorDiagram' = centerXY . foldr (primeLayout defaultColors) (circle 1 # fc bla
 --   > import Diagrams.TwoD.Factorization
 --   > factorDiagramEx = factorDiagram 700
 --
---   <<diagrams/factorDiagramEx.svg#diagram=factorDiagramEx&width=400>>
+--   <<diagrams/src_Diagrams_TwoD_Factorization_factorDiagramEx.svg#diagram=factorDiagramEx&width=400>>
 factorDiagram :: (Backend b R2, Renderable (Path R2) b)
               => Integer -> Diagram b R2
 factorDiagram = factorDiagram'
@@ -147,7 +147,7 @@ factorDiagram = factorDiagram'
 --   > import Diagrams.TwoD.Factorization
 --   > ensquareEx = ensquare 1 (circle 25) ||| ensquare 1 (factorDiagram 30)
 --
---   <<diagrams/ensquareEx.svg#diagram=ensquareEx&width=200>>
+--   <<diagrams/src_Diagrams_TwoD_Factorization_ensquareEx.svg#diagram=ensquareEx&width=200>>
 ensquare
   :: (Backend b R2, Renderable (Path R2) b)
   => Double -> Diagram b R2 -> Diagram b R2
@@ -160,7 +160,7 @@ ensquare n d = d # centerXY # sized (Dims (0.8*n) (0.8*n)) <> square n
 --   > import Diagrams.TwoD.Factorization
 --   > fdGridEx = fdGrid [[7,6,5],[4,19,200],[1,10,50]]
 --
---   <<diagrams/fdGridEx.svg#diagram=fdGridEx&width=200>>
+--   <<diagrams/src_Diagrams_TwoD_Factorization_fdGridEx.svg#diagram=fdGridEx&width=200>>
 fdGrid
   :: (Renderable (Path R2) b, Backend b R2)
   => [[Integer]] -> Diagram b R2
@@ -175,7 +175,7 @@ fdGrid  = vcat . map hcat . (map . map) (ensquare 1 . factorDiagram)
 --   > grid100 = fdGridList 10
 --   > grid100Big = grid100
 --
---   <<diagrams/grid100.svg#diagram=grid100&width=400>>
+--   <<diagrams/src_Diagrams_TwoD_Factorization_grid100.svg#diagram=grid100&width=400>>
 fdGridList
   :: (Renderable (Path R2) b, Backend b R2)
   => Integer -> Diagram b R2
@@ -189,7 +189,7 @@ fdGridList n = fdGrid . chunksOf (fromIntegral n) $ [1..n*n]
 --   > import Diagrams.TwoD.Factorization
 --   > fdMultTableEx = fdMultTable 13
 --
---   <<diagrams/fdMultTableEx.svg#diagram=fdMultTableEx&width=600>>
+--   <<diagrams/src_Diagrams_TwoD_Factorization_fdMultTableEx.svg#diagram=fdMultTableEx&width=600>>
 fdMultTable
   :: (Renderable (Path R2) b, Backend b R2)
   => Integer -> Diagram b R2

@@ -71,7 +71,7 @@ import           Data.Maybe                 (mapMaybe)
 --   > iterTrailEx = vcat' with { sep = 0.3 } . map strokeLine . take 5
 --   >             $ iterTrail koch
 --
---   <<diagrams/iterTrailEx.svg#diagram=iterTrailEx&width=200>>
+--   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_iterTrailEx.svg#diagram=iterTrailEx&width=200>>
 iterTrail :: Trail' Line R2 -> [Trail' Line R2]
 iterTrail t = iterate (mconcat . mapMaybe (refineSegment t) . lineSegments)
                       (fromOffsets [unitX])
@@ -108,7 +108,7 @@ refineSegment t seg
 
 -- | Seed for the Koch curve (side of the famous Koch 'snowflake').
 --
---   <<diagrams/kochD.svg#diagram=kochD&width=400>>
+--   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_kochD.svg#diagram=kochD&width=400>>
 koch :: (TrailLike t, V t ~ R2) => t
 koch = fromOffsets [unitX, unitX # rotateBy (1/6), unitX # rotateBy (-1/6), unitX]
 
@@ -116,7 +116,7 @@ koch = fromOffsets [unitX, unitX # rotateBy (1/6), unitX # rotateBy (-1/6), unit
 
 -- | Seed for the Lévy dragon curve.
 --
---   <<diagrams/levyD.svg#diagram=levyD&width=400>>
+--   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_levyD.svg#diagram=levyD&width=400>>
 levy :: (TrailLike t, V t ~ R2) => t
 levy = fromOffsets [unitY, unitX]
 
@@ -125,7 +125,7 @@ levy = fromOffsets [unitY, unitX]
 -- | Strange zig-zag seed that produces a dense fractal path with lots
 --   of triangles.
 --
---   <<diagrams/zagD.svg#diagram=zagD&width=400>>
+--   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_zagD.svg#diagram=zagD&width=400>>
 zag :: (TrailLike t, V t ~ R2) => t
 zag = fromOffsets [unitX, (-0.5) & 1, unitX]
 
@@ -134,7 +134,7 @@ zag = fromOffsets [unitX, (-0.5) & 1, unitX]
 -- | A \"square impulse\" seed which produces a quadratic von Koch
 --   curve.
 --
---   <<diagrams/sqUpD.svg#diagram=sqUpD&width=400>>
+--   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_sqUpD.svg#diagram=sqUpD&width=400>>
 sqUp :: (TrailLike t, V t ~ R2) => t
 sqUp = fromOffsets [unitX, unitY, unitX, unit_Y, unitX]
 
@@ -143,7 +143,7 @@ sqUp = fromOffsets [unitX, unitY, unitX, unit_Y, unitX]
 -- | A \"double square impulse\" seed which produces fantastic
 --   rectilinear spiral patterns.
 --
---   <<diagrams/sqUpDownD.svg#diagram=sqUpDownD&width=400>>
+--   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_sqUpDownD.svg#diagram=sqUpDownD&width=400>>
 sqUpDown :: (TrailLike t, V t ~ R2) => t
 sqUpDown = fromOffsets [unitX, unitY, unitX, 2 *^ unit_Y, unitX, unitY, unitX]
 
@@ -152,7 +152,7 @@ sqUpDown = fromOffsets [unitX, unitY, unitX, 2 *^ unit_Y, unitX, unitY, unitX]
 -- | Like 'sqUpDown' but with 'cubicSpline' applied to produce a curvy
 --   version.
 --
---   <<diagrams/sqUpDownD2.svg#diagram=sqUpDownD2&width=400>>
+--   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_sqUpDownD2.svg#diagram=sqUpDownD2&width=400>>
 sqUpDown' :: (TrailLike t, V t ~ R2) => t
 sqUpDown' = cubicSpline False sqUpDown
 
@@ -171,7 +171,7 @@ sqUpDown' = cubicSpline False sqUpDown
 -- | The famous Koch snowflake, made by putting three Koch curves
 --   together. @snowflake n@ yields an order-@n@ snowflake.
 --
---   <<diagrams/snowflake4.svg#diagram=snowflake4&width=300>>
+--   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_snowflake4.svg#diagram=snowflake4&width=300>>
 snowflake :: Int -> Trail R2
 snowflake n = iterateN 3 (rotateBy (-1/3)) edge
             # mconcat
@@ -185,7 +185,7 @@ snowflake n = iterateN 3 (rotateBy (-1/3)) edge
 -- | A cool diagram featuring successive iterations of @sqUpDown'@
 --   superimposed atop one another.
 --
---   <<diagrams/sqUpDownOverlayD.svg#diagram=sqUpDownOverlayD&width=400>>
+--   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_sqUpDownOverlayD.svg#diagram=sqUpDownOverlayD&width=400>>
 sqUpDownOverlay :: Renderable (Path R2) b => Diagram b R2
 sqUpDownOverlay
   = sized (Width 4)

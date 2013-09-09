@@ -63,29 +63,36 @@ import Data.Basis
 import Diagrams.Prelude
 import Diagrams.Core.Style
 import Diagrams.ThreeD.Types
-import Diagrams.TwoD.Image
 
 type Wrapped' s a = Wrapped s s a a
 
 $(concat <$> mapM makeWrapped
   [ ''Deg
-  , ''Path
-  , ''Point
-  , ''QDiagram
 --  , ''R2
   , ''R3
   , ''Rad
-  , ''SubMap
   , ''Turn
+--TODO: re-introduce - this is probably a bug in 'makeWrapped'
+--  , ''SubMap
+--  , ''Path
+--  , ''Point
+--  , ''QDiagram
   ])
 
-$(let rules = defaultRules & lensField .~ (\n -> Just $ '_' : n)
-   in concat <$> mapM (makeLensesWith rules)
-        [''Image, ''PolygonOpts])
+instance Wrapped [Located (Trail v)]  [Located (Trail v)] (Path v) (Path v) where
+  wrapped = iso Path pathTrails
+  {-# INLINE wrapped #-}
+
+instance Wrapped v v (Point v) (Point v) where
+  wrapped = _P
+  {-# INLINE wrapped #-}
 
 _P :: Iso s t (Point s) (Point t)
 _P = iso P $ \(P x) -> x
 
+$(let rules = defaultRules & lensField .~ (\n -> Just $ '_' : n)
+   in concat <$> mapM (makeLensesWith rules)
+        [''Image, ''PolygonOpts])
 
 -- * Diagrams.Align
 

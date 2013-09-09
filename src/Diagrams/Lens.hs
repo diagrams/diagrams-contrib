@@ -68,7 +68,6 @@ type Wrapped' s a = Wrapped s s a a
 
 $(concat <$> mapM makeWrapped
   [ ''Deg
---  , ''R2
   , ''R3
   , ''Rad
   , ''Turn
@@ -85,6 +84,10 @@ instance Wrapped [Located (Trail v)]  [Located (Trail v)] (Path v) (Path v) wher
 
 instance Wrapped v v (Point v) (Point v) where
   wrapped = _P
+  {-# INLINE wrapped #-}
+
+instance Wrapped (Double, Double) (Double, Double) R2 R2 where
+  wrapped = iso r2 unr2
   {-# INLINE wrapped #-}
 
 _P :: Iso s t (Point s) (Point t)

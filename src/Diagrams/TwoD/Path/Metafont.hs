@@ -5,61 +5,9 @@ module Diagrams.TwoD.Path.Metafont where
 
 import Control.Lens
 
-import Diagrams.CubicSpline.Internal
 import Diagrams.Prelude hiding ((&))
 
-data PathJoin d j = PJ { _d1 :: d, _j :: j, _d2 :: d }
-  deriving (Functor)
-
-makeLenses ''PathJoin
-
-data PathDir
-  = PathDirCurl Curl
-  | PathDirDir  Dir
-
-type Curl = Double
-type Dir  = R2
-
-type BasicJoin = Either TensionJoin ControlJoin
-
-data Tension
-  = TensionAmt Double
-  | TensionAtLeast Double
-
-getTension :: Tension -> Double
-getTension (TensionAmt t)     = t
-getTension (TensionAtLeast t) = t
-
-data TensionJoin = TJ { _t1 :: Tension, _t2 :: Tension }
-
-data ControlJoin = CJ { _c1 :: P2, _c2 :: P2 }
-
-makeLenses ''TensionJoin
-makeLenses ''ControlJoin
-
-data MetafontPath = MetafontPath Bool (MFPathData P2)
-
-data P
-data J
-
-data MFPathData a where
-  MFPathEnd  :: P2 -> MFPathData P
-  MFPathPt   :: P2 -> MFPathData J -> MFPathData P
-  MFPathJoin :: PathJoin (Maybe PathDir) BasicJoin -> MFPathData P -> MFPathData J
-
-data MetafontSegment d j = MFS { _x1 :: P2, _pj :: (PathJoin d j), _x2 :: P2 }
-  deriving (Functor)
-
-makeLenses ''MetafontSegment
-
-mfPathToSegments :: MFPathData P -> [MetafontSegment (Maybe PathDir) BasicJoin]
-mfPathToSegments = snd . mfPathToSegments'
-  where
-    mfPathToSegments' :: MFPathData P -> (P2, [MetafontSegment (Maybe PathDir) BasicJoin])
-    mfPathToSegments' (MFPathEnd p0) = (p0, [])
-    mfPathToSegments' (MFPathPt p0 (MFPathJoin j path)) = (p0, MFS p0 j p1 : segs)
-      where
-        (p1, segs) = mfPathToSegments' path
+import  Diagrams.TwoD.Path.Metafont.Types
 
 {-
 

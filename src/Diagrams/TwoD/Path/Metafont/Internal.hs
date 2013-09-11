@@ -9,6 +9,44 @@ import Data.Maybe
 import Diagrams.Prelude hiding ((&), view, over)
 
 import  Diagrams.TwoD.Path.Metafont.Types
+
+
+-- | Reverse a MetaFont segment, including all directions & joins.
+reverseSeg :: MFS -> MFS
+reverseSeg s = MFS (s^.x2) (PJ (rDir $ s^.pj.d2) (s^.pj.j.to rj) (rDir $ s^.pj.d1)) (s^.x1) where
+  rj (Left t) = (Left (TJ (t^.t2) (t^.t1)))
+  rj (Right c) = (Right (CJ (c^.c2) (c^.c1)))
+  rDir (Just (PathDirDir d)) = (Just (PathDirDir (negateV d)))
+  rDir d = d
+
+-- | Calculate the length of a MetaFont segment.
+mfSegmentLength :: MetafontSegment p j -> Double
+mfSegmentLength = magnitude . mfSegmentOffset
+
+-- | Calculate the vector between endpoints of the given segment.
+mfSegmentOffset :: MetafontSegment p j -> R2
+mfSegmentOffset s = s^.x2 .-. s^.x1
+
+-- | leftCurl s is True if the first direction of s is specified as a curl
+leftCurl, rightCurl :: MFS -> Bool
+leftCurl (MFS _ (PJ (Just (PathDirCurl _)) _ _) _) = True
+leftCurl _ = False
+
+-- | rightCurl s is True if the second direction of s is specified as a curl
+rightCurl (MFS _ (PJ _ _ (Just (PathDirCurl _))) _) = True
+rightCurl _ = False
+
+-- | Normalize a number representing number of turns to ±½
+normalizeTurns :: Double -> Double
+normalizeTurns t | t >  1/2   = t - realToFrac (ceiling t)
+normalizeTurns t | t < -1/2   = t - realToFrac (floor t)
+normalizeTurns t = t
+
+-- | By analogy with fromJust, fromLeft returns the Left value or errors
+fromLeft :: Either a b -> a
+fromLeft (Left j) = j
+fromLeft (Right _) = error "got Right in fromLeft"
+
 {-
 
 fillDirs implements all of the following rules:

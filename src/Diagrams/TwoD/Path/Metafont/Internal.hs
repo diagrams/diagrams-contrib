@@ -3,19 +3,20 @@
 {-# LANGUAGE TemplateHaskell #-}
 module Diagrams.TwoD.Path.Metafont.Internal where
 
-import Control.Lens
+import Control.Lens hiding ((#), at)
+import Data.Maybe
 
-import Diagrams.Prelude hiding ((&))
+import Diagrams.Prelude hiding ((&), view, over)
 
 import  Diagrams.TwoD.Path.Metafont.Types
-
 {-
 
-1. [ ] Empty direction @ beginning or end of path -> curl 1. (Implement
-       in direction solving code.)  Note cyclic paths have no
-       beginning/end; will use cyclic tridiagonal.
+fillDirs implements all of the following rules:
 
-2. [ ] Empty direction next to & -> curl 1.  (Should implement in & method.)
+1. [ ] Empty direction @ beginning or end of path -> curl 1. 
+       Note cyclic paths have no beginning/end; will use cyclic tridiagonal.
+
+2. [ ] Empty direction next to & -> curl 1.
 
 3. [ ] empty P nonempty -> replace empty with nonempty.
 
@@ -30,23 +31,60 @@ import  Diagrams.TwoD.Path.Metafont.Types
 
 -}
 
+-- rules 1 & 2
+curlEnds :: MFP -> MFP
+curlEnds p@(MFP True _) = p
+curlEnds (MFP False ss) = MFP False $ end ss where
+  end  [s]      = [s & pj.d1 %~ curlIfEmpty & pj.d2 %~ curlIfEmpty]
+  end  (s:segs) = (s & pj.d1 %~ curlIfEmpty) : end' segs
+  end' []       = []
+  end' (s:[])   = (s & pj.d2 %~ curlIfEmpty) : []
+  end' (s:segs) = s:end' segs
+  curlIfEmpty Nothing = Just $ PathDirCurl 1
+  curlIfEmpty d = d
+
 -- rule 3
-copyDirsL :: [MetafontSegment (Maybe PathDir) BasicJoin] -> [MetafontSegment (Maybe PathDir) BasicJoin]
+copyDirsL :: [MFS] -> [MFS]
 copyDirsL (s1@(MFS _ (PJ _ _ Nothing) _) : segs@(MFS _ (PJ (Just d) _ _) _ : _))
   = (s1 & pj.d2 .~ Just d) : copyDirsL segs
 copyDirsL (s1 : segs) = s1 : copyDirsL segs
-copyDirsL segs = segs
+copyDirsL [] = []
 
 -- rule 4
-copyDirsR :: [MetafontSegment (Maybe PathDir) BasicJoin] -> [MetafontSegment (Maybe PathDir) BasicJoin]
+copyDirsR :: [MFS] -> [MFS]
 copyDirsR (s1@(MFS _ (PJ _ (Left _) (Just d)) _) : s2@(MFS _ (PJ Nothing _ _) _) : segs)
   = s1 : copyDirsR ((s2 & pj.d1 .~ Just d) : segs)
 copyDirsR (s1 : segs) = s1 : copyDirsR segs
-copyDirsR segs = segs
+copyDirsR [] = []
+
+-- copy a direction from one end of a loop to the other
+copyDirsLoop :: MFP -> MFP
+copyDirsLoop p | not $ _loop p = p
+copyDirsLoop p@(MFP _ []) = p
+copyDirsLoop p | (p^?!segs._head.pj.d1.to isJust) &&
+                 (p^?!segs._last.pj.d2.to isNothing) =
+                   p & over (segs._last.pj.d2) (const $ p^?!segs._head.pj.d1)
+copyDirsLoop p | p^?!segs._head.pj.d1.to isNothing &&
+                 p^?!segs._last.pj.d2.to isJust =
+                   p & over (segs._head.pj.d1) (const $ p^?!segs._last.pj.d2)
+copyDirsLoop p = p
 
 -- rule 5
-inheritDirs :: [MetafontSegment (Maybe PathDir) BasicJoin] -> [MetafontSegment (Maybe PathDir) BasicJoin]
-inheritDirs = undefined
+-- apply rule 5 before rules 3 & 4, then depend on those rules to copy the directions
+-- into adjacent segments
+controlPtDirs :: MFS -> MFS
+controlPtDirs s@(MFS z0 (PJ _ (Right (CJ u v)) _) z1) = s & pj %~ dirs where
+  dirs :: PathJoin (Maybe PathDir) j -> PathJoin (Maybe PathDir) j
+  dirs (PJ _ j _) = PJ (dir z0 u) j (dir v z1)
+  dir :: P2 -> P2 -> Maybe PathDir
+  dir p0 p1 | p0 == p1 = Just $ PathDirCurl 1
+  dir p0 p1 | otherwise = Just $ PathDirDir (p1 .-. p0)
+controlPtDirs s = s
+
+-- | Fill in default values for as many blank directions as possible.
+fillDirs :: MFP -> MFP
+fillDirs p  = (copyDirsLoop . curlEnds) p & segs %~
+              (copyDirsR . copyDirsL . map controlPtDirs)
 
 -- | Take a segment whose endpoint directions have been fully
 --   determined, and compute the control points to realize it as a

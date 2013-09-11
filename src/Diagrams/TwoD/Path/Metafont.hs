@@ -11,8 +11,7 @@ import Data.ByteString (ByteString)
 import Data.Either
 import Text.Parsec (ParseError, parse)
 
-import Diagrams.Prelude hiding ((&), view, over)
-import Diagrams.TwoD.Types
+import Diagrams.Prelude hiding (view, over)
 
 import Diagrams.TwoD.Path.Metafont.Types
 import Diagrams.TwoD.Path.Metafont.Internal

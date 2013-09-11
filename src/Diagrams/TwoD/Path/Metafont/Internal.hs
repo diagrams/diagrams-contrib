@@ -344,6 +344,17 @@ hobbyF (Rad phi) (Rad theta) =
   /
   (3 * (1 + (sqrt 5 - 1)/2 * cos theta + (3 - sqrt 5)/2 * cos phi))
 
+-- | Convert a fully specified MetafontSegment to a Diagrams Segment
+importSegment :: MetafontSegment () ControlJoin -> Segment Closed R2
+importSegment (MFS z0 (PJ () (CJ u v) ()) z1) = bezier3 (u .-. z0) (v .-. z0) (z1 .-. z0)
+
+-- | Convert a MetaFont path to a Diagrams Trail, using a Loop or Line as needed
+locatedTrail :: MFPath () ControlJoin -> Located (Trail R2)
+locatedTrail (MFP False ss)  = (wrapLine . fromSegments . map importSegment $ ss)
+                                `at` (head ss ^.x1)
+locatedTrail (MFP True ss)   = (wrapLoop . fromSegments . map importSegment $ ss)
+                                `at` (head ss ^.x1)
+
 -- These are potentially useful for a combinator aproach to defining MF paths.
 --  More design work is needed.
 mfPathToSegments :: MFPathData P -> [MFS]

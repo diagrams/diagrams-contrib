@@ -7,7 +7,7 @@
 module Diagrams.TwoD.Path.Metafont where
 
 import Control.Lens hiding ((#), at)
-import Data.ByteString (ByteString)
+import Data.Text (Text)
 import Data.Either
 import Text.Parsec (ParseError, parse)
 
@@ -20,7 +20,7 @@ import Diagrams.TwoD.Path.Metafont.Parser as P
 -- | MF.fromString is the primary interface to the MetaFont library.
 --  It takes a ByteString in MetaFont syntax, and attempts to return a
 --  TrailLike.
-fromString :: (TrailLike t, V t ~ R2) => ByteString -> Either ParseError t
+fromString :: (TrailLike t, V t ~ R2) => Text -> Either ParseError t
 fromString s = case parse P.metafont "" s of
   (Left e) -> Left e -- with different type
   (Right p)  -> Right . fromPath  $ p
@@ -30,7 +30,7 @@ fromString s = case parse P.metafont "" s of
 --  each string.  fromStrings is provided as a convenience because the
 --  MetaFont &-join is not supported.  mconcat on the TrailLike is
 --  equivalent, with clearer semantics.
-fromStrings :: (TrailLike t, V t ~ R2) => [ByteString] -> Either [ParseError] [t]
+fromStrings :: (TrailLike t, V t ~ R2) => [Text] -> Either [ParseError] [t]
 fromStrings ss = case partitionEithers . map fromString $ ss of
   ([],ts) -> Right ts
   (es,_)  -> Left es

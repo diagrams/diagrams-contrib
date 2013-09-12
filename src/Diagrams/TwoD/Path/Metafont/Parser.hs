@@ -3,11 +3,10 @@ module Diagrams.TwoD.Path.Metafont.Parser where
 import Control.Lens ((^.))
 
 import Text.Parsec
-import Text.Parsec.ByteString
+import Text.Parsec.Text
 
 import Diagrams.Prelude hiding (option)
 import Diagrams.TwoD.Path.Metafont.Types
-import Diagrams.TwoD.Path.Metafont.Internal
 
 num :: Parser Double
 num = read <$> float where

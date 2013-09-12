@@ -37,12 +37,12 @@ astTests = [("p125", let -- this is Knuth's branch4
            ]
 
 illustrateSegment :: FixedSegment R2 -> Diagram SVG R2
-illustrateSegment (FLinear start end) = position [
-  (start, ptMark # fc blue),
-  (end,   ptMark # fc blue)]
-illustrateSegment (FCubic start c1 c2 end) = position [
+illustrateSegment (FLinear from to) = position [
+  (from, ptMark # fc blue),
+  (to,   ptMark # fc blue)]
+illustrateSegment (FCubic from c1 c2 to) = position [
   (c1, ptMark # fc red),
-  (c2, ptMark # fc red)] <> illustrateSegment (FLinear start end)
+  (c2, ptMark # fc red)] <> illustrateSegment (FLinear from to)
 
 ptMark :: Diagram SVG R2
 ptMark = circle 0.02 # lw 0
@@ -51,7 +51,7 @@ illustrateTrailCtls :: Trail R2 -> Diagram SVG R2
 illustrateTrailCtls = mconcat . map illustrateSegment . fixTrail . flip at origin
 
 refPts :: Diagram SVG R2
-refPts = position $ zipWith (,) (map p2 $ (,) <$> [0,1,2] <*> [0,1]) (repeat c) where
+refPts = position $ zip (map p2 $ (,) <$> [0,1,2] <*> [0,1]) (repeat c) where
   c = circle 0.02 # fc blue # lw 0
 
 toSVG :: (FilePath,Trail R2) -> IO ()

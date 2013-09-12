@@ -37,22 +37,22 @@ join :: Parser (PathJoin (Maybe PathDir) BasicJoin)
 join = do
   d1' <- optionMaybe pathDir
   string ".." *> spaces
-  j <- tensionJoin <|> controlJoin <|> plainJoin
+  j' <- tensionJoin <|> controlJoin <|> plainJoin
   d2' <- optionMaybe pathDir
-  return $ PJ d1' j d2'
+  return $ PJ d1' j' d2'
 
 plainJoin :: Parser BasicJoin
-plainJoin = pure $ (Left $ TJ t1 t1) where
-  t1 = TensionAmt 1
+plainJoin = pure (Left $ TJ t1' t1') where
+  t1' = TensionAmt 1
 
 tensionJoin :: Parser BasicJoin
 tensionJoin = do
   string "tension"
   spaces
-  t1 <- num
-  t2 <- try (spaces *> string "and" *> spaces *> num <* spaces) <|> pure t1
+  t1' <- num
+  t2' <- try (spaces *> string "and" *> spaces *> num <* spaces) <|> pure t1'
   string ".."
-  return . Left $ TJ (TensionAmt t1) (TensionAmt t2)
+  return . Left $ TJ (TensionAmt t1') (TensionAmt t2')
 
 controlJoin :: Parser BasicJoin
 controlJoin = do
@@ -93,5 +93,5 @@ metafont = do
   lastD <- optionMaybe pathDir
   c  <- matches $ string "..cycle"
   if c
-     then return . MFP c $ ss ++ [MFS (lastP) (PJ lastD (Left $ TJ (TensionAmt 1) (TensionAmt 1)) Nothing) (head ss^.x1)]
+     then return . MFP c $ ss ++ [MFS lastP (PJ lastD (Left $ TJ (TensionAmt 1) (TensionAmt 1)) Nothing) (head ss^.x1)]
     else return $ MFP c ss

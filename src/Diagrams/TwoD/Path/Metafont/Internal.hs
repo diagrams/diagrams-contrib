@@ -39,20 +39,20 @@ rightCurl _ = False
 
 -- | Normalize a number representing number of turns to ±½
 normalizeTurns :: Double -> Double
-normalizeTurns t | t >  1/2   = t - realToFrac (ceiling t)
-normalizeTurns t | t < -1/2   = t - realToFrac (floor t)
+normalizeTurns t | t >  1/2   = t - realToFrac (ceiling t :: Int)
+normalizeTurns t | t < -1/2   = t - realToFrac (floor t   :: Int)
 normalizeTurns t = t
 
 -- | By analogy with fromJust, fromLeft returns the Left value or errors
 fromLeft :: Either a b -> a
-fromLeft (Left j) = j
+fromLeft (Left l) = l
 fromLeft (Right _) = error "got Right in fromLeft"
 
 {-
 
 fillDirs implements all of the following rules:
 
-1. [ ] Empty direction @ beginning or end of path -> curl 1. 
+1. [ ] Empty direction @ beginning or end of path -> curl 1.
        Note cyclic paths have no beginning/end; will use cyclic tridiagonal.
 
 2. [ ] Empty direction next to & -> curl 1.
@@ -73,27 +73,28 @@ fillDirs implements all of the following rules:
 -- rules 1 & 2
 curlEnds :: MFP -> MFP
 curlEnds p@(MFP True _) = p
-curlEnds (MFP False ss) = MFP False $ end ss where
-  end  [s]      = [s & pj.d1 %~ curlIfEmpty & pj.d2 %~ curlIfEmpty]
-  end  (s:segs) = (s & pj.d1 %~ curlIfEmpty) : end' segs
-  end' []       = []
-  end' (s:[])   = (s & pj.d2 %~ curlIfEmpty) : []
-  end' (s:segs) = s:end' segs
+curlEnds (MFP False ss') = MFP False $ leftEnd ss' where
+  leftEnd  [s]      = [s & pj.d1 %~ curlIfEmpty & pj.d2 %~ curlIfEmpty]
+  leftEnd  (s:ss)   = (s & pj.d1 %~ curlIfEmpty) : rightEnd ss
+  leftEnd  []       = []
+  rightEnd []       = []
+  rightEnd (s:[])   = (s & pj.d2 %~ curlIfEmpty) : []
+  rightEnd (s:ss)   = s:rightEnd ss
   curlIfEmpty Nothing = Just $ PathDirCurl 1
-  curlIfEmpty d = d
+  curlIfEmpty d       = d
 
 -- rule 3
 copyDirsL :: [MFS] -> [MFS]
-copyDirsL (s1@(MFS _ (PJ _ _ Nothing) _) : segs@(MFS _ (PJ (Just d) _ _) _ : _))
-  = (s1 & pj.d2 .~ Just d) : copyDirsL segs
-copyDirsL (s1 : segs) = s1 : copyDirsL segs
+copyDirsL (s1@(MFS _ (PJ _ _ Nothing) _) : ss@(MFS _ (PJ (Just d) _ _) _ : _))
+  = (s1 & pj.d2 .~ Just d) : copyDirsL ss
+copyDirsL (s1 : ss') = s1 : copyDirsL ss'
 copyDirsL [] = []
 
 -- rule 4
 copyDirsR :: [MFS] -> [MFS]
-copyDirsR (s1@(MFS _ (PJ _ (Left _) (Just d)) _) : s2@(MFS _ (PJ Nothing _ _) _) : segs)
-  = s1 : copyDirsR ((s2 & pj.d1 .~ Just d) : segs)
-copyDirsR (s1 : segs) = s1 : copyDirsR segs
+copyDirsR (s1@(MFS _ (PJ _ (Left _) (Just d)) _) : s2@(MFS _ (PJ Nothing _ _) _) : ss)
+  = s1 : copyDirsR ((s2 & pj.d1 .~ Just d) : ss)
+copyDirsR (s1 : ss') = s1 : copyDirsR ss'
 copyDirsR [] = []
 
 -- copy a direction from one end of a loop to the other
@@ -114,7 +115,7 @@ copyDirsLoop p = p
 controlPtDirs :: MFS -> MFS
 controlPtDirs s@(MFS z0 (PJ _ (Right (CJ u v)) _) z1) = s & pj %~ dirs where
   dirs :: PathJoin (Maybe PathDir) j -> PathJoin (Maybe PathDir) j
-  dirs (PJ _ j _) = PJ (dir z0 u) j (dir v z1)
+  dirs (PJ _ jj _) = PJ (dir z0 u) jj (dir v z1)
   dir :: P2 -> P2 -> Maybe PathDir
   dir p0 p1 | p0 == p1 = Just $ PathDirCurl 1
   dir p0 p1 | otherwise = Just $ PathDirDir (p1 .-. p0)
@@ -179,21 +180,22 @@ loopDirs ss = solveCyclicTriDiagonal lower diag upper products ll ur where
 -- | Calculate the coefficients for the loop case, in the
 -- format required by solveCyclicTriDiagonal.
 -- See mf.web ¶ 273
+loopEqs :: [MFS]
+           -> ([Double], [Double], [Double], [Double], Double, Double)
 loopEqs ss = (lower, diag, upper, products, ll, ur) where
-  lower = map a (init ss)
-  sFirst = head ss
+  lower = map aCo (init ss)
   sLast = last ss
-  diag = zipWith (+) (map b $ [sLast] ++ ss) (map c ss)
-  upper = map d (init ss)
-  ur = a sLast
-  ll = d sLast
+  diag = zipWith (+) (map bCo $ [sLast] ++ ss) (map cCo ss)
+  upper = map dCo (init ss)
+  ur = aCo sLast
+  ll = dCo sLast
   segmentPairs = zip ([last ss] ++ init ss) ss
   products = zipWith (-)
-               [-1 * b l * psi s | s@(l,_) <- segmentPairs]
+               [-1 * bCo l * psi s | s@(l,_) <- segmentPairs]
                (zipWith (*)
-                (map d ss)
+                (map dCo ss)
                 (map psi $ tail segmentPairs)
-                ++ [d sLast * psi (head segmentPairs)])
+                ++ [dCo sLast * psi (head segmentPairs)])
 
 -- | solveLine takes a list of segments where only the first and last points
 -- have known directions.  The type signature matches that of solveLoop, and the
@@ -201,8 +203,8 @@ loopEqs ss = (lower, diag, upper, products, ll, ur) where
 -- The equivalent MetaFont code (in make_choices) is written in terms of points,
 -- rather than segments.  See metafont code paragraphs 271--274.
 solveLine :: [MFS] -> [MetafontSegment Dir BasicJoin]
-solveLine [MFS z1 (PJ (Just (PathDirDir d1)) j (Just (PathDirDir d2))) z2] =
-  [MFS z1 (PJ d1 j d2) z2]
+solveLine [MFS z1 (PJ (Just (PathDirDir d1')) jj (Just (PathDirDir d2'))) z2] =
+  [MFS z1 (PJ d1' jj d2') z2]
 solveLine ss = zipWith3 setDirs ss (init thetas) phis where
   segmentPairs = zip (init ss) (tail ss)
   thetas = lineDirs ss
@@ -217,7 +219,7 @@ setDirs :: MFS -- ^ The segment to be modified
         -> Double -- ^ theta, the offset angle at the starting point
         -> Double -- ^ phi, the ofset angle at the endpoint
         -> MetafontSegment Dir BasicJoin
-setDirs (MFS z0 (PJ w0' j w1') z1) t p = MFS z0 (PJ w0 j w1) z1 where
+setDirs (MFS z0 (PJ w0' jj w1') z1) t p = MFS z0 (PJ w0 jj w1) z1 where
     offs  = z1 .-. z0
     w0 = case w0' of
       (Just (PathDirDir d)) -> d
@@ -229,6 +231,7 @@ setDirs (MFS z0 (PJ w0' j w1') z1) t p = MFS z0 (PJ w0 j w1) z1 where
 -- | psi (l,r) calculates the turning angle between segments l and r, if
 -- each segment were a straight line connecting its endpoints.  The endpoint of l
 -- is assumed to be the starting point of r; this is not checked.
+psi :: (MetafontSegment p j1, MetafontSegment p j1) -> Double
 psi (l,r) = normalizeTurns t where
   (Turn t) =  direction (mfSegmentOffset r) - direction (mfSegmentOffset l)
 
@@ -236,8 +239,8 @@ psi (l,r) = normalizeTurns t where
 -- done by lineEqs and solveTriDiagonal, but lineDirs handles the separate cases
 -- of an empty list, and lists of length one.  See mf.web ¶ 280.
 lineDirs :: [MFS] -> [Double]
-lineDirs segs | length segs > 1 = solveTriDiagonal lower diag upper products where
-  (lower, diag, upper, products) = lineEqs segs
+lineDirs ss | length ss > 1 = solveTriDiagonal lower diag upper products where
+  (lower, diag, upper, products) = lineEqs ss
 lineDirs [] = []
 lineDirs [s] | leftCurl s && rightCurl s = [0, 1/2] where
 lineDirs [s] | rightCurl s = solveTriDiagonal [a] [1,c] [0] [normalizeTurns t, r] where
@@ -245,40 +248,43 @@ lineDirs [s] | rightCurl s = solveTriDiagonal [a] [1,c] [0] [normalizeTurns t, r
   (PathDirDir dir) = s^.pj.d1.to fromJust
   (Turn t) = direction dir - direction (s^.x2 .-. s^.x1)
 lineDirs [s] | leftCurl s = reverse $ lineDirs [reverseSeg s]
+lineDirs s = error $ "lineDirs was called on something inappropriate.  \
+\It should be called on a list of segments with directions specified at both ends.\
+\It should only be called through solveLine.  The problem was: "++ show s
 
 -- | Each intermediate point produces one curvature equation, as in loopEqs.
 -- The endpoint equations are the same as those for the single-segment line in
 -- lineDirs.
 -- lineEqs only works when segs has length > 1; this precondition is not checked.
 lineEqs :: [MFS] -> ([Double], [Double], [Double], [Double])
-lineEqs segs = (lower, diag, upper, products) where
-  segmentPairs = zip (init segs) (tail segs)
-  lower = map a (init segs) ++ [an]
-  diag  = c0 : zipWith (+) (map b (init segs)) (map c (tail segs)) ++ [cn]
-  upper = (d0 : map d (tail segs))
+lineEqs ss = (lower, diag, upper, products) where
+  segmentPairs = zip (init ss) (tail ss)
+  lower = map aCo (init ss) ++ [an]
+  diag  = c0 : zipWith (+) (map bCo (init ss)) (map cCo (tail ss)) ++ [cn]
+  upper = (d0 : map dCo (tail ss))
   products = r0 : zipWith (-)
-               [-1 * b l * psi s | s@(l,r) <- segmentPairs]
+               [-1 * bCo l * psi s | s@(l,_) <- segmentPairs]
                (zipWith (*)
-                 (map d (tail $ segs))
+                 (map dCo (tail $ ss))
                  (map psi (tail segmentPairs)
                 ++ [0])) ++ [rn]
   (d0,c0,_) = solveOneSeg . reverseSeg $ s0
   r0 = r0' (s0^.pj.d1.to fromJust) where
     r0' (PathDirDir d) = normalizeTurns t where
                          (Turn t) = direction d - direction (s0^.x2 .-. s0^.x1)
-    r0' (PathDirCurl g) = negate $ d0 * psi (s0, segs!!1)
-  s0 = head segs
-  (an, cn, rn) = solveOneSeg (last segs)
+    r0' (PathDirCurl _) = negate $ d0 * psi (s0, ss!!1)
+  s0 = head ss
+  (an, cn, rn) = solveOneSeg (last ss)
 
 -- These functions calculate the coefficients in lineEqs, loopEqs
 -- They are derived in mf.web ¶ 272-273
-alpha, beta, a, b, c, d :: MFS -> Double
+alpha, beta, aCo, bCo, cCo, dCo :: MFS -> Double
 alpha s = 1 / s^.pj.j.to fromLeft.t1.to getTension
 beta  s = 1 / s^.pj.j.to fromLeft.t2.to getTension
-a s = (alpha s) / (beta s **2 * mfSegmentLength s)
-b s = (3 - alpha s) / (beta s **2 * mfSegmentLength s)
-c s = (3 - beta s) / (alpha s **2 * mfSegmentLength s)
-d s = (beta s) / (alpha s **2 * mfSegmentLength s)
+aCo s = (alpha s) / (beta s **2 * mfSegmentLength s)
+bCo s = (3 - alpha s) / (beta s **2 * mfSegmentLength s)
+cCo s = (3 - beta s) / (alpha s **2 * mfSegmentLength s)
+dCo s = (beta s) / (alpha s **2 * mfSegmentLength s)
 
 -- | solveOneSeg calculates the coefficients for the final segment of a line,
 -- which may incidentally be the only segment.
@@ -362,6 +368,6 @@ mfPathToSegments = snd . mfPathToSegments'
   where
     mfPathToSegments' :: MFPathData P -> (P2, [MFS])
     mfPathToSegments' (MFPathEnd p0) = (p0, [])
-    mfPathToSegments' (MFPathPt p0 (MFPathJoin j path)) = (p0, MFS p0 j p1 : segs)
+    mfPathToSegments' (MFPathPt p0 (MFPathJoin jj path)) = (p0, MFS p0 jj p1 : ss)
       where
-        (p1, segs) = mfPathToSegments' path
+        (p1, ss) = mfPathToSegments' path

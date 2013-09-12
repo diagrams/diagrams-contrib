@@ -22,7 +22,7 @@ import Diagrams.TwoD.Path.Metafont.Parser as P
 --  TrailLike.
 fromString :: (TrailLike t, V t ~ R2) => Text -> Either ParseError t
 fromString s = case parse P.metafont "" s of
-  (Left e) -> Left e -- with different type
+  (Left err) -> Left err -- with different type
   (Right p)  -> Right . fromPath  $ p
 
 -- | fromStrings takes a list of MetaFont strings, and returns either
@@ -47,8 +47,8 @@ fromPath = trailLike . locatedTrail . over (segs.mapped) computeControls . solve
 flex :: (TrailLike t, V t ~ R2) => [P2] -> t
 flex ps = fromPath . MFP False $ (s0:rest) where
   tj = (Left (TJ (TensionAmt 1) (TensionAmt 1)))
-  j = PJ Nothing tj Nothing
-  s0 = MFS (head ps) j (head.tail $ ps)
-  dir = Just . PathDirDir $ (last ps) .-. (head ps)
-  seg z1 z2 = MFS z1 (PJ dir tj Nothing) z2
+  jj = PJ Nothing tj Nothing
+  s0 = MFS (head ps) jj (head.tail $ ps)
+  d = Just . PathDirDir $ (last ps) .-. (head ps)
+  seg z1 z2 = MFS z1 (PJ d tj Nothing) z2
   rest = zipWith seg (init . tail $ ps) (tail . tail $ ps)

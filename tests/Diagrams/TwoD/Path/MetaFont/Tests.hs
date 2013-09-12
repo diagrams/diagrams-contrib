@@ -1,16 +1,13 @@
 {-# LANGUAGE OverloadedStrings #-}
-import qualified Data.ByteString as BS
-import Data.ByteString (ByteString)
-import Text.Parsec
+import Data.Text (Text)
 import System.FilePath
 
 import Diagrams.Prelude hiding (option)
 import Diagrams.Backend.SVG
 
 import Diagrams.TwoD.Path.Metafont as MF
-import Diagrams.TwoD.Path.Metafont.Types (MFP)
 
-litTests :: [(FilePath, ByteString)]
+litTests :: [(FilePath, Text)]
 litTests = [("p15a",  "(0,0)..(0,1)..(1,1)..(2,0)"),
          ("p15b", "(1,0)..(0,0)..(0,1)..(2,1)..(2,0)..(1,0)"),
          ("p15c",   "(1,0)..(0,0)..(0,1)..(2,1)..(2,0)..cycle"),
@@ -62,7 +59,7 @@ toSVG (fn,tr) = do
   renderSVG (replaceExtension fn "svg") (Width 400) $
     strokeTrail tr <> illustrateTrailCtls tr
 
-renderMF :: (FilePath, ByteString) -> IO ()
+renderMF :: (FilePath, Text) -> IO ()
 renderMF (fn, p) = do
   print fn
   case MF.fromString p of

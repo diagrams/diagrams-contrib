@@ -21,7 +21,7 @@ import Diagrams.TwoD.Path.Metafont.Parser as P
 --  It takes a ByteString in MetaFont syntax, and attempts to return a
 --  TrailLike.
 fromString :: (TrailLike t, V t ~ R2) => Text -> Either ParseError t
-fromString s = case parse P.metafont "" s of
+fromString s = case parse metafontParser "" s of
   (Left err) -> Left err -- with different type
   (Right p)  -> Right . fromPath  $ p
 

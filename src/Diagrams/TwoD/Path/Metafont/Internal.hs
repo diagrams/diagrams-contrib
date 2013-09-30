@@ -1,7 +1,13 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TemplateHaskell #-}
-module Diagrams.TwoD.Path.Metafont.Internal where
+module Diagrams.TwoD.Path.Metafont.Internal
+       (
+           solve, computeControls, locatedTrail
+           -- combinator style
+           , mfPathToSegments
+       )
+    where
 
 import Control.Lens hiding ((#), at)
 import Data.Maybe

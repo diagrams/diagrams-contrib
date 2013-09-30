@@ -36,9 +36,10 @@ library
                        Diagrams.TwoD.Path.Turtle.Aliases,
                        Diagrams.TwoD.Path.Turtle.Internal
                        Diagrams.TwoD.Path.Metafont
-                       Diagrams.TwoD.Path.Metafont.Parser
                        Diagrams.TwoD.Path.Metafont.Types
                        Diagrams.TwoD.Path.Metafont.Internal
+                       Diagrams.TwoD.Path.Metafont.Combinators
+                       Diagrams.TwoD.Path.Metafont.Parser
   build-depends:       base >= 4.2 && < 4.7,
                        mtl >= 2.0 && < 2.2,
                        containers > 0.4 && < 0.6,

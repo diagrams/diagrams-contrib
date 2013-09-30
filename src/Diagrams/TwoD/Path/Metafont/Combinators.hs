@@ -24,9 +24,12 @@ type Join = PathJoin (Maybe PathDir) BasicJoin
 infixr 5 .-
 infixr 5 -.
 
+-- | Terminate the right-end of a Metafont path at the given point.
 endpt :: P2 -> MFPathData P
 endpt = MFPathEnd
 
+-- | Wrap the right-end of the Metafont path back to the left-end.
+-- When converted to a Diagrams 'Trail'', this will be a Loop.
 cyclePath :: MFPathData P
 cyclePath = MFPathCycle
 
@@ -61,5 +64,3 @@ leaving d = simpleJoin & d1.~ (Just . PathDirDir $ d)
 -- | A join with the right-end direction specified.
 arriving :: R2 -> Join
 arriving d = simpleJoin & d2.~ (Just . PathDirDir $ d)
-
-

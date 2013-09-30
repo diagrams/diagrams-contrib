@@ -369,8 +369,8 @@ locatedTrail (MFP False ss)  = (wrapLine . fromSegments . map importSegment $ ss
 locatedTrail (MFP True ss)   = (wrapLoop . fromSegments . map importSegment $ ss)
                                 `at` (head ss ^.x1)
 
--- These are potentially useful for a combinator aproach to defining MF paths.
---  More design work is needed.
+-- | Convert a path in combinator syntax to the internal
+-- representation used for solving.
 mfPathToSegments :: MFPathData P -> MFP
 mfPathToSegments = fixCycleSegment . snd . mfPathToSegments'
   where

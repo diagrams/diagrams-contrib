@@ -4,7 +4,13 @@
 
 -- | Metafont allows declaring Diagrams Paths using Donald Knuth's MetaFont syntax.
 --  This module is intended to be imported qualified.
-module Diagrams.TwoD.Path.Metafont where
+module Diagrams.TwoD.Path.Metafont
+       (
+             module  Diagrams.TwoD.Path.Metafont.Combinators
+           , module  Diagrams.TwoD.Path.Metafont
+           , metafontParser
+       )
+       where
 
 import Control.Lens hiding ((#), at)
 import Data.Text (Text)
@@ -15,7 +21,8 @@ import Diagrams.Prelude hiding (view, over)
 
 import Diagrams.TwoD.Path.Metafont.Types
 import Diagrams.TwoD.Path.Metafont.Internal
-import Diagrams.TwoD.Path.Metafont.Parser as P
+import Diagrams.TwoD.Path.Metafont.Combinators
+import Diagrams.TwoD.Path.Metafont.Parser
 
 -- | MF.fromString is the primary interface to the MetaFont library.
 --  It takes a ByteString in MetaFont syntax, and attempts to return a
@@ -52,3 +59,8 @@ flex ps = fromPath . MFP False $ (s0:rest) where
   d = Just . PathDirDir $ (last ps) .-. (head ps)
   seg z1 z2 = MFS z1 (PJ d tj Nothing) z2
   rest = zipWith seg (init . tail $ ps) (tail . tail $ ps)
+
+-- | metafont converts a path defined in the Metafont combinator synax into a
+-- native Diagrams TrailLike.
+metafont :: (TrailLike t, V t ~ R2) => MFPathData P -> t
+metafont = fromPath . mfPathToSegments

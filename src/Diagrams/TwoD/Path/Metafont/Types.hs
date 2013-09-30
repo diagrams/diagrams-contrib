@@ -49,6 +49,7 @@ data P
 data J
 
 data MFPathData a where
+  MFPathCycle:: MFPathData P
   MFPathEnd  :: P2 -> MFPathData P
   MFPathPt   :: P2 -> MFPathData J -> MFPathData P
   MFPathJoin :: PathJoin (Maybe PathDir) BasicJoin -> MFPathData P -> MFPathData J

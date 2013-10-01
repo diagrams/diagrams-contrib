@@ -64,3 +64,7 @@ leaving d = simpleJoin & d1.~ (Just . PathDirDir $ d)
 -- | A join with the right-end direction specified.
 arriving :: R2 -> Join
 arriving d = simpleJoin & d2.~ (Just . PathDirDir $ d)
+
+-- | A join with both directions specified.
+directions :: R2 -> R2 -> Join
+directions v1 v2 = leaving v1 & d2.~ (Just . PathDirDir $ v2)

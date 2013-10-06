@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
 module Diagrams.TwoD.Path.Metafont.Parser
        (metafontParser) where
 

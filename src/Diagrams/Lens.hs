@@ -42,8 +42,6 @@ module Diagrams.Lens
   , _Loc
   -- * Diagrams.Parametric
   , _arcLength
-  -- * Diagrams.Path
-  , _pathVertices
   -- * Diagrams.Segment
   , _mkFixedSeg
   , _straight
@@ -79,7 +77,7 @@ $(concat <$> mapM makeWrapped
   ])
 
 instance Wrapped [Located (Trail v)]  [Located (Trail v)] (Path v) (Path v) where
-  wrapped = iso Path pathTrails
+  wrapped = from pathTrails
   {-# INLINE wrapped #-}
 
 instance Wrapped v v (Point v) (Point v) where
@@ -234,18 +232,6 @@ _arcLength side eps = lens (arcLength eps) adjustArcLength
       , adjEps = eps
       , adjOptsvProxy__ = Proxy
       }
-
-
--- * Diagrams.Path
-
-_pathVertices
-  :: ( InnerSpace v, OrderedField (Scalar v)
-     , InnerSpace v', OrderedField (Scalar v'))
-  => Iso
-    (Path v) (Path v')
-    [[Point v]] [[Point v']]
-_pathVertices = iso pathVertices (mconcat . map (pathFromTrail . fromVertices))
-
 
 -- * Diagrams.Segment
 

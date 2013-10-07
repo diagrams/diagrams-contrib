@@ -23,6 +23,7 @@ install:
   - cabal install --only-dependencies --enable-tests --constraint='transformers >= 0.3' --constraint='mtl >= 2.1'
 
 notifications:
+  email: false
   irc:
     channels:
       - irc.freenode.org#diagrams

@@ -18,12 +18,13 @@ module Diagrams.Example.Logo where
 -- > import Diagrams.Example.Logo
 -- > diaLogo = logo
 
-import           Diagrams.Coordinates      ((&))
+import           Data.AffineSpace.Point
 import           Diagrams.Prelude
 
 import           Diagrams.TwoD.Layout.Tree
 import           Diagrams.TwoD.Path.Turtle
 
+import           Control.Lens               ((&), (.~))
 import           Control.Monad
 
 ------------------------------------------------------------
@@ -32,7 +33,7 @@ import           Control.Monad
 
 d = (stroke $
    circle 2 # alignBR # translateX (-0.5)
-   <> (hcat' with { sep = 0.2 } . map (vcat' with {sep = 0.2})
+   <> (hcat' (with & sep.~ 0.2) . map (vcat' (with & sep .~ 0.2))
         $ (replicate 2 (replicate 9 (reversePath $ circle 0.3)))) # alignBR)
     # fc red
     # lw 0
@@ -41,7 +42,7 @@ d = (stroke $
 
 ico_d = (stroke $
         circle 2 # alignBR # translateX (-0.5)
-        <> (vcat' with {sep = 0.3} $ replicate 5 (reversePath $ circle 0.5)) # alignBR)
+        <> (vcat' (with & sep.~ 0.3) $ replicate 5 (reversePath $ circle 0.5)) # alignBR)
         # fc red
         # lw 0
 
@@ -72,7 +73,7 @@ a1 = sierpinski (4 :: Integer)
 ------------------------------------------------------------
 
 grid = verts # centerXY <> horiz # centerXY
-  where verts = hcat' with {sep=0.5} $ replicate 20 (vrule 10)
+  where verts = hcat' (with & sep.~0.5) $ replicate 20 (vrule 10)
         horiz = rotateBy (1/4) verts
 
 gbkg = grid
@@ -127,9 +128,9 @@ m = square 5 # lw 0.05 <>
 -- S
 ------------------------------------------------------------
 
-vs = map (uncurry (&)) [(5,5), (3,6), (1,5), (1,4), (3,3), (5,2), (4,0), (0,0.5)]
+vs = map r2 [(5,5), (3,6), (1,5), (1,4), (3,3), (5,2), (4,0), (0,0.5)]
 s = (mconcat (map (\v -> translate v (dot blue)) vs) <>
-    cubicSpline False vs # lw 0.20)
+    cubicSpline False (map P vs) # lw 0.20)
     # scale 0.8
 
 dot c = circle 0.4 # fc c # lw 0
@@ -138,5 +139,5 @@ dot c = circle 0.4 # fc c # lw 0
 -- Logo
 ------------------------------------------------------------
 
-logo = (hcat' with {sep = 0.5} . map alignB $ [ d, i, a1, g, r, a2, m, s ])
+logo = (hcat' (with & sep .~ 0.5) . map alignB $ [ d, i, a1, g, r, a2, m, s ])
        # centerXY

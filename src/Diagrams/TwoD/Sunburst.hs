@@ -32,9 +32,7 @@ module Diagrams.TwoD.Sunburst
 import           Data.Tree
 import           Data.Foldable (foldMap)
 import           Data.Default.Class
-
 import           Diagrams.Prelude hiding (radius)
-import           Diagrams.TwoD.Arc (annularWedge)
 
 data SunburstOpts
   = SunburstOpts

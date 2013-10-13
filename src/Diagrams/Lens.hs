@@ -42,8 +42,6 @@ module Diagrams.Lens
   , _Loc
   -- * Diagrams.Parametric
   , _arcLength
-  -- * Diagrams.Path
-  , _pathVertices
   -- * Diagrams.Segment
   , _mkFixedSeg
   , _straight
@@ -79,7 +77,7 @@ $(concat <$> mapM makeWrapped
   ])
 
 instance Wrapped [Located (Trail v)]  [Located (Trail v)] (Path v) (Path v) where
-  wrapped = iso Path pathTrails
+  wrapped = from pathTrails
   {-# INLINE wrapped #-}
 
 instance Wrapped v v (Point v) (Point v) where
@@ -235,18 +233,6 @@ _arcLength side eps = lens (arcLength eps) adjustArcLength
       , adjOptsvProxy__ = Proxy
       }
 
-
--- * Diagrams.Path
-
-_pathVertices
-  :: ( InnerSpace v, OrderedField (Scalar v)
-     , InnerSpace v', OrderedField (Scalar v'))
-  => Iso
-    (Path v) (Path v')
-    [[Point v]] [[Point v']]
-_pathVertices = iso pathVertices (mconcat . map (pathFromTrail . fromVertices))
-
-
 -- * Diagrams.Segment
 
 _mkFixedSeg
@@ -263,6 +249,7 @@ _mkFixedSeg = iso mkFixedSeg fromFixedSeg
 _straight :: Prism' (Segment Closed v) v
 _straight = prism' straight fromStraight
   where
+    fromStraight :: Segment c a -> Maybe a
     fromStraight (Linear (OffsetClosed x)) = Just x
     fromStraight _ = Nothing
 
@@ -271,6 +258,7 @@ _straight = prism' straight fromStraight
 _bezier3 :: Prism' (Segment Closed v) (v, v, v)
 _bezier3 = prism' (\(c1, c2, c3) -> bezier3 c1 c2 c3) fromBezier3
   where
+    fromBezier3 :: Segment c a -> Maybe (a, a, a)
     fromBezier3 (Cubic c1 c2 (OffsetClosed c3)) = Just (c1, c2, c3)
     fromBezier3 _ = Nothing
 

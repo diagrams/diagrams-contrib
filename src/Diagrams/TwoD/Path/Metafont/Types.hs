@@ -1,9 +1,14 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE FlexibleInstances #-}
+
 module Diagrams.TwoD.Path.Metafont.Types where
 
 import Control.Lens hiding ((#))
+import Data.Monoid
+import Data.Semigroup
+
 import Diagrams.TwoD.Types
 
 data PathJoin d j = PJ { _d1 :: d, _j :: j, _d2 :: d }
@@ -49,9 +54,10 @@ data P
 data J
 
 data MFPathData a where
+  MFPathCycle:: MFPathData P
   MFPathEnd  :: P2 -> MFPathData P
   MFPathPt   :: P2 -> MFPathData J -> MFPathData P
-  MFPathJoin :: PathJoin (Maybe PathDir) BasicJoin -> MFPathData P -> MFPathData J
+  MFPathJoin :: PathJoin (Maybe PathDir) (Maybe BasicJoin) -> MFPathData P -> MFPathData J
 
 data MetafontSegment d j = MFS { _x1 :: P2, _pj :: (PathJoin d j), _x2 :: P2 }
                          deriving (Functor, Show)
@@ -65,3 +71,16 @@ type MFS = MetafontSegment (Maybe PathDir) BasicJoin
 
 makeLenses ''MetafontSegment
 makeLenses ''MFPath
+
+instance Monoid (PathJoin (Maybe PathDir) (Maybe BasicJoin)) where
+    -- | The default join, with no directions specified, and both tensions 1.
+    mempty = PJ Nothing Nothing Nothing
+    l `mappend` r = PJ (c (l^.d1) (r^.d1)) (c (l^.j) (r^.j)) (c (l^.d2) (r^.d2))
+      where
+        c a b = case b of
+            Nothing -> a
+            Just _  -> b
+
+instance Semigroup (PathJoin (Maybe PathDir) (Maybe BasicJoin)) where
+    (<>) = mappend
+

@@ -1,7 +1,13 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TemplateHaskell #-}
-module Diagrams.TwoD.Path.Metafont.Internal where
+module Diagrams.TwoD.Path.Metafont.Internal
+       (
+           solve, computeControls, locatedTrail
+           -- combinator style
+           , mfPathToSegments
+       )
+    where
 
 import Control.Lens hiding ((#), at)
 import Data.Maybe
@@ -363,13 +369,19 @@ locatedTrail (MFP False ss)  = (wrapLine . fromSegments . map importSegment $ ss
 locatedTrail (MFP True ss)   = (wrapLoop . fromSegments . map importSegment $ ss)
                                 `at` (head ss ^.x1)
 
--- These are potentially useful for a combinator aproach to defining MF paths.
---  More design work is needed.
-mfPathToSegments :: MFPathData P -> [MFS]
-mfPathToSegments = snd . mfPathToSegments'
+-- | Convert a path in combinator syntax to the internal
+-- representation used for solving.
+mfPathToSegments :: MFPathData P -> MFP
+mfPathToSegments = fixCycleSegment . snd . mfPathToSegments'
   where
-    mfPathToSegments' :: MFPathData P -> (P2, [MFS])
-    mfPathToSegments' (MFPathEnd p0) = (p0, [])
-    mfPathToSegments' (MFPathPt p0 (MFPathJoin jj path)) = (p0, MFS p0 jj p1 : ss)
+    mfPathToSegments' :: MFPathData P -> (P2, MFP)
+    mfPathToSegments' (MFPathEnd p0) = (p0, MFP False [])
+    mfPathToSegments' MFPathCycle    = (origin, MFP True [])
+    mfPathToSegments' (MFPathPt p0 (MFPathJoin jj path)) = (p0, MFP c (MFS p0 jj' p1 : ss))
       where
-        (p1, ss) = mfPathToSegments' path
+        (p1, MFP c ss) = mfPathToSegments' path
+        jj' = case jj^.j of
+            Nothing -> jj & j .~ Left (TJ (TensionAmt 1) (TensionAmt 1))
+            Just bj -> jj & j .~ bj
+    fixCycleSegment (MFP True ss) = MFP True (ss & _last.x2 .~ ss^?!_head.x1)
+    fixCycleSegment p = p

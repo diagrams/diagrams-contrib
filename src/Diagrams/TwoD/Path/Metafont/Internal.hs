@@ -377,8 +377,11 @@ mfPathToSegments = fixCycleSegment . snd . mfPathToSegments'
     mfPathToSegments' :: MFPathData P -> (P2, MFP)
     mfPathToSegments' (MFPathEnd p0) = (p0, MFP False [])
     mfPathToSegments' MFPathCycle    = (origin, MFP True [])
-    mfPathToSegments' (MFPathPt p0 (MFPathJoin jj path)) = (p0, MFP c (MFS p0 jj p1 : ss))
+    mfPathToSegments' (MFPathPt p0 (MFPathJoin jj path)) = (p0, MFP c (MFS p0 jj' p1 : ss))
       where
         (p1, MFP c ss) = mfPathToSegments' path
+        jj' = case jj^.j of
+            Nothing -> jj & j .~ Left (TJ (TensionAmt 1) (TensionAmt 1))
+            Just bj -> jj & j .~ bj
     fixCycleSegment (MFP True ss) = MFP True (ss & _last.x2 .~ ss^?!_head.x1)
     fixCycleSegment p = p

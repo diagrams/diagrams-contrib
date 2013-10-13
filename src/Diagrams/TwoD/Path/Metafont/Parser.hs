@@ -1,4 +1,6 @@
-module Diagrams.TwoD.Path.Metafont.Parser where
+{-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+module Diagrams.TwoD.Path.Metafont.Parser
+       (metafontParser) where
 
 import Control.Lens ((^.))
 
@@ -86,8 +88,8 @@ mfs = MFS <$> pt <*> join <*> lookAhead pt
 matches :: Stream s m t => ParsecT s u m a -> ParsecT s u m Bool
 matches p = option False (p *> return True)
 
-metafont :: Parser (MFPath (Maybe PathDir) BasicJoin)
-metafont = do
+metafontParser :: Parser (MFPath (Maybe PathDir) BasicJoin)
+metafontParser = do
   ss <- many1 (try mfs)
   lastP <- pt
   lastD <- optionMaybe pathDir

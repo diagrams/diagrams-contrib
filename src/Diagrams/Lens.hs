@@ -20,7 +20,6 @@
 -- including orphan instances for the 'Wrapped' class.
 module Diagrams.Lens
   ( Wrapped'
-  , _imgFile, _imgSize, _imgTransf
   , _polyType, _polyOrient, _polyCenter
   , _P
   -- * Diagrams.Align
@@ -90,10 +89,6 @@ instance Wrapped (Double, Double) (Double, Double) R2 R2 where
 
 _P :: Iso s t (Point s) (Point t)
 _P = iso P $ \(P x) -> x
-
-$(let rules = defaultRules & lensField .~ (\n -> Just $ '_' : n)
-   in concat <$> mapM (makeLensesWith rules)
-        [''Image, ''PolygonOpts])
 
 -- * Diagrams.Align
 

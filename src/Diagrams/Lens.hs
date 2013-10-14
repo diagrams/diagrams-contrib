@@ -222,10 +222,10 @@ _arcLength
 _arcLength side eps = lens (arcLength eps) adjustArcLength
   where
     adjustArcLength s x = adjust s AO
-      { adjMethod = ToAbsolute x
-      , adjSide = side
-      , adjEps = eps
-      , adjOptsvProxy__ = Proxy
+      { _adjMethod = ToAbsolute x
+      , _adjSide = side
+      , _adjEps = eps
+      , _adjOptsvProxy__ = Proxy
       }
 
 -- * Diagrams.Segment

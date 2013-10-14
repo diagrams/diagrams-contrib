@@ -59,7 +59,7 @@ i = (circle 1 === strutY 0.5 === roundedRect 2 4 0.4)
 -- A
 ------------------------------------------------------------
 
-sierpinski 1 = polygon with { polyType = PolyRegular 3 1 }
+sierpinski 1 = polygon (with & polyType .~ PolyRegular 3 1 )
 sierpinski n = t === (t ||| t) # centerX
   where t = sierpinski (n-1)
 
@@ -95,7 +95,7 @@ r = sketchTurtle (setHeading 90 >> forward 5 >> right 90
                  >> forward 0.9 >> left 135 >> forward 3
                  )
   # reversePath
-  # stroke' with { vertexNames = [["end"]] }
+  # stroke' (with & vertexNames .~ [["end"]] )
   # lw 0.3
   # lineJoin LineJoinRound
   # lineCap LineCapRound

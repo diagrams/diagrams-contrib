@@ -24,6 +24,7 @@ module Diagrams.TwoD.Factorization where
 
 import           Data.Char                              (digitToInt)
 import           Data.List.Split                        (chunksOf)
+import           Control.Lens                           ((&), (.~))
 import           Diagrams.Prelude
 
 import           Math.NumberTheory.Primes.Factorisation (factorise)
@@ -70,9 +71,9 @@ primeLayout colors p d
     )
     <>
     colorBars colors p poly
-  where poly = polygon with { polyType   = PolyRegular (fromIntegral p) r
-                            , polyOrient = OrientH
-                            }
+  where poly = polygon (with & polyType   .~ PolyRegular (fromIntegral p) r
+                             & polyOrient .~ OrientH
+                            )
         w  = max (width d) (height d)
         r  = w * c / sin (tau / (2 * fromIntegral p))
         c  = 0.75

@@ -7,7 +7,7 @@ import Control.Lens hiding ((#), at)
 import Data.Maybe
 
 import Diagrams.CubicSpline.Internal
-import Diagrams.Prelude hiding (view, over)
+import Diagrams.Prelude hiding (view)
 
 import  Diagrams.TwoD.Path.Metafont.Types
 

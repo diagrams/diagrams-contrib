@@ -1,11 +1,17 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE GADTs #-}
+
 import Data.Text (Text)
 import System.FilePath
+import Control.Arrow
+import Control.Lens hiding ((#), at)
 
 import Diagrams.Prelude hiding (option)
 import Diagrams.Backend.SVG
 
 import Diagrams.TwoD.Path.Metafont as MF
+import Diagrams.TwoD.Path.Metafont.Types
 
 litTests :: [(FilePath, Text)]
 litTests = [("p15a",  "(0,0)..(0,1)..(1,1)..(2,0)"),
@@ -35,6 +41,23 @@ astTests = [("p125", let -- this is Knuth's branch4
                  mconcat [MF.flex [z1, z2, z3], MF.flex [z3, z4, z5],
                           MF.flex [z5, z6, z7], MF.flex [z7, z8, z9, z1]])
            ]
+
+combinatorTests :: [(FilePath, Trail R2)]
+combinatorTests = map (second metafont)
+                  [ ("p15a_", z4.--.z1.--.z2.--.endpt z6)
+                  , ("p15b_", z5.--.z4.--.z1.--.z3.--.z6.--.endpt z5)
+                  , ("p15c_", z5.--.z4.--.z1.--.z3.--.z6.--.cyclePath)
+                  , ("p15d_", z5.--.z4.-tension 1.2-.z3.--.z6.--.cyclePath)
+                  , ("p16a_", z5.--.z4.-tensions 1 1.5-.z1.-tensions 1.5 1-.z3.--.z6.--.cyclePath)
+                  , ("p16b_", z5.--.z4.-goingLeft-.z1.--.z3.--.z6.-goingLeft-.cyclePath)
+                  ] where
+  z1 = p2 (0,1)
+  z2 = p2 (1,1)
+  z3 = p2 (2,1)
+  z4 = p2 (0,0)
+  z5 = p2 (1,0)
+  z6 = p2 (2,0)
+  goingLeft = leaving unitX
 
 illustrateSegment :: FixedSegment R2 -> Diagram SVG R2
 illustrateSegment (FLinear from to) = position [
@@ -67,4 +90,5 @@ renderMF (fn, p) = do
     Right tr -> toSVG (fn,tr)
 
 main :: IO ()
-main = mapM_ renderMF litTests >> mapM_ toSVG astTests
+main = mapM_ renderMF litTests >> mapM_ toSVG (astTests ++ combinatorTests)
+

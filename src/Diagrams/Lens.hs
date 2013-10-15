@@ -244,6 +244,7 @@ _mkFixedSeg = iso mkFixedSeg fromFixedSeg
 _straight :: Prism' (Segment Closed v) v
 _straight = prism' straight fromStraight
   where
+    fromStraight :: Segment c a -> Maybe a
     fromStraight (Linear (OffsetClosed x)) = Just x
     fromStraight _ = Nothing
 
@@ -252,6 +253,7 @@ _straight = prism' straight fromStraight
 _bezier3 :: Prism' (Segment Closed v) (v, v, v)
 _bezier3 = prism' (\(c1, c2, c3) -> bezier3 c1 c2 c3) fromBezier3
   where
+    fromBezier3 :: Segment c a -> Maybe (a, a, a)
     fromBezier3 (Cubic c1 c2 (OffsetClosed c3)) = Just (c1, c2, c3)
     fromBezier3 _ = Nothing
 

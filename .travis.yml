@@ -1,7 +1,13 @@
 language: haskell
 before_install:
   - git clone --quiet git://github.com/diagrams/diagrams-core.git diagrams/diagrams-core
+  - cd diagrams/diagrams-core
+  - if git branch -a |grep -x "  remotes/origin/${TRAVIS_BRANCH}" > /dev/null; then git checkout ${TRAVIS_BRANCH}; fi
+  - cd ../..
   - git clone --quiet git://github.com/diagrams/diagrams-lib.git diagrams/diagrams-lib
+  - cd diagrams/diagrams-lib
+  - if git branch -a |grep -x "  remotes/origin/${TRAVIS_BRANCH}" > /dev/null; then git checkout ${TRAVIS_BRANCH}; fi
+  - cd ../..
 
 install:
   - sudo ghc-pkg --global unregister cgi

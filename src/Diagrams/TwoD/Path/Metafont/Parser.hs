@@ -36,12 +36,15 @@ pt = char '(' *> (p2 <$> xy) <* char ')'
 -- Joins
 
 join :: Parser (PathJoin (Maybe PathDir) BasicJoin)
-join = do
+join = straightJoin <|> do
   d1' <- optionMaybe pathDir
-  string ".." *> spaces
-  j' <- tensionJoin <|> controlJoin <|> plainJoin
+  j' <- tenseLine <|> dotsJoin
   d2' <- optionMaybe pathDir
   return $ PJ d1' j' d2'
+
+dotsJoin :: Parser BasicJoin
+dotsJoin = string ".." *> spaces *>
+           (boundedJoin <|>tensionJoin <|> controlJoin <|> plainJoin)
 
 plainJoin :: Parser BasicJoin
 plainJoin = pure (Left $ TJ t1' t1') where
@@ -64,6 +67,19 @@ controlJoin = do
   z2 <- pt
   spaces *> string ".."
   return . Right $ CJ z1 z2
+
+boundedJoin :: Parser BasicJoin
+boundedJoin = char '.' *> pure (Left $ TJ t t) where t = TensionAtLeast 1
+
+straightJoin :: Parser (PathJoin (Maybe PathDir) BasicJoin)
+straightJoin = try (string "--" *> notFollowedBy (char '-')) *> pure (PJ c jj c)
+  where
+    c = Just $ PathDirCurl 1
+    jj = Left $ TJ (TensionAmt 1) (TensionAmt 1)
+
+tenseLine :: Parser BasicJoin
+-- 4096 is the constant 'infinity' in Plain MetaFont
+tenseLine = string "---" *> pure (Left $ TJ t t) where t = TensionAmt 4096
 
 -- Directions
 

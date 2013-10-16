@@ -6,6 +6,7 @@ import Data.Text (Text)
 import System.FilePath
 import Control.Arrow (second)
 import Control.Lens hiding ((#), at, from, to)
+import Text.Parsec
 
 import Diagrams.Prelude hiding (option)
 import Diagrams.Backend.SVG
@@ -24,7 +25,10 @@ litTests = [
     ("p17a", "(1,0)..(0,0){-1,-1}..(0,1)..(2,1)..(2,0){-1,1}..cycle"),
     ("p17b", "(0,0){curl0}..(1,1){2,1}..{curl0}(2,1)"),
     ("p17c", "(0,0){curl2}..(1,1){2,1}..{curl2}(2,1)"),
-    ("p19a", "(0,0)..controls (0,1) and (1,1)..(2,0)")
+    ("p19a", "(0,0)..controls (0,1) and (1,1)..(2,0)"),
+    ("p127a", "(0,1)..(0.5,0)---(1.8,0)...{0,1}(2,1)"),
+    ("p127b", "(0,1)..(0.5,0)--(1.8,0)...{0,1}(2,1)"),
+    ("p127c", "(0,1)...(0.5,0)---(1.8,0)..{0,1}(2,1)")
     ]
 
 astTests :: [(FilePath, Trail R2)]
@@ -61,15 +65,16 @@ combinatorTests = map (second metafont)
   goingLeft = leaving unit_X
 
 boundedTests :: [(FilePath, Diagram SVG R2)]
-boundedTests = map (second (mconcat . map (illustrateTrailCtls . metafont)))
+boundedTests = map (second (mconcat . map (metafont)))
                [ ("p18a", demo mempty)
                , ("p18b", map (withJoin mempty . Deg) [0,10..90])
                , ("p18c", demo bounded)
-               ] where
-  bounded = simpleJoin & j .~ (Just . Left $ TJ (TensionAtLeast 1) (TensionAtLeast 1))
-  left = leaving (fromDirection . Deg $ 60)
-  demo jj = map (withJoin jj . Deg) [0,(-10)..(-120)]
-  withJoin jj d = origin .- left <> jj <> arriving (fromDirection d) -. (endpt $ p2 (6,0))
+               ]
+  where
+    bounded = simpleJoin & j .~ (Just . Left $ TJ (TensionAtLeast 1) (TensionAtLeast 1))
+    left = leaving (fromDirection . Deg $ 60)
+    demo jj = map (withJoin jj . Deg) [0,(-10)..(-120)]
+    withJoin jj d = origin .- left <> jj <> arriving (fromDirection d) -. (endpt $ p2 (6,0))
 
 illustrateSegment :: FixedSegment R2 -> Diagram SVG R2
 illustrateSegment (FLinear from to) = position [
@@ -106,4 +111,3 @@ main = do
     mapM_ renderMF litTests
     mapM_ toSVG (astTests ++ combinatorTests)
     mapM_ (\(fn, d) -> renderSVG (replaceExtension fn "svg") (Width 400) d) boundedTests
-

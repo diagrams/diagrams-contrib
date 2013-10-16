@@ -341,12 +341,14 @@ computeControls (MFS z0 (PJ w0 (Left (TJ a b)) w1) z1)
     va = case a of
               (TensionAmt ta) -> hobbyF theta phi / ta
               (TensionAtLeast ta) -> case boundingTriangleExists of
-                  True -> sinR theta / sinR (theta + phi)
+                  True -> min (sinR phi / sinR (theta + phi))
+                              (hobbyF theta phi / ta)
                   False -> hobbyF theta phi / ta
     vb = case b of
               (TensionAmt tb) -> hobbyF phi theta / tb
               (TensionAtLeast tb) -> case boundingTriangleExists of
-                  True -> sinR phi / sinR (theta + phi)
+                  True -> min (sinR theta / sinR (theta + phi))
+                              (hobbyF phi theta / tb)
                   False -> hobbyF phi theta / tb
 
 -- | Compute the control points for a cubic bezier, given a segment

@@ -24,7 +24,6 @@ import           Diagrams.Prelude
 import           Diagrams.TwoD.Layout.Tree
 import           Diagrams.TwoD.Path.Turtle
 
-import           Control.Lens               ((&), (.~))
 import           Control.Monad
 
 ------------------------------------------------------------

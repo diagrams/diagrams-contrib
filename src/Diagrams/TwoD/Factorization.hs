@@ -24,7 +24,6 @@ module Diagrams.TwoD.Factorization where
 
 import           Data.Char                              (digitToInt)
 import           Data.List.Split                        (chunksOf)
-import           Control.Lens                           ((&), (.~))
 import           Diagrams.Prelude
 
 import           Math.NumberTheory.Primes.Factorisation (factorise)

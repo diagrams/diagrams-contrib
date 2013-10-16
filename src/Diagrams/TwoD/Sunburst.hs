@@ -1,3 +1,4 @@
+{-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE FlexibleContexts      #-}
 
@@ -26,28 +27,32 @@ module Diagrams.TwoD.Sunburst
   ( --  * Sunburst
     sunburst'
   , sunburst
-  , SunburstOpts(..)
+  , SunburstOpts(..), radius, sectionWidth, colors
   ) where
 
+import           Control.Lens        (makeLenses, (^.))
+
 import           Data.Tree
-import           Data.Foldable (foldMap)
+import           Data.Foldable       (foldMap)
 import           Data.Default.Class
-import           Diagrams.Prelude hiding (radius)
+import           Diagrams.Prelude    hiding (radius)
 
 data SunburstOpts
   = SunburstOpts
-    { radius       :: Double -- ^ Relative size of the root circle, usually 1.
-    , sectionWidth :: Double -- ^ Relative width of the sections.
-    , colors       :: [Colour Double] -- ^ Color list one for each ring.
+    { _radius       :: Double -- ^ Relative size of the root circle, usually 1.
+    , _sectionWidth :: Double -- ^ Relative width of the sections.
+    , _colors       :: [Colour Double] -- ^ Color list one for each ring.
     }
 
 instance Default SunburstOpts where
   def = SunburstOpts
-        { radius       = 1.0
-        , sectionWidth = 0.3
-        , colors       = [ lightcoral, lightseagreen, paleturquoise
+        { _radius       = 1.0
+        , _sectionWidth = 0.3
+        , _colors       = [ lightcoral, lightseagreen, paleturquoise
                          ,lightsteelblue, plum, violet, coral, honeydew]
         }
+
+makeLenses ''SunburstOpts
 
 -- Section data: Will be stored in nodes of a new rose tree and used to
 -- make each section of the sunburst partition.
@@ -87,9 +92,9 @@ sunburst' :: Renderable (Path R2) b => SunburstOpts -> Tree a -> Diagram b R2
 sunburst' opts t
   = sunB $ toTree r s cs t 0 1
       where
-        r = radius opts
-        s = sectionWidth opts
-        cs = colors opts
+        r = opts^.radius
+        s = opts^.sectionWidth
+        cs = opts^.colors
         sunB (Node (SData r' m a1 a2 n c) ts')
           = sections r' m a1 a2 n c <> (foldMap sunB ts')
 

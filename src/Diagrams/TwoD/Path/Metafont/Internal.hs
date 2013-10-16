@@ -374,7 +374,7 @@ ctrlPts z0 w0 va vb w1 z1 = (u,v)
 --   based on the turning angles between endpoints and direction
 --   vectors (again due to Hobby).
 hobbyF :: Rad -> Rad -> Double
-hobbyF (Rad phi) (Rad theta) =
+hobbyF (Rad theta) (Rad phi) =
   (2 + sqrt 2 * (sin theta - sin phi / 16)*(sin phi - sin theta / 16)*(cos theta - cos phi))
   /
   (3 * (1 + (sqrt 5 - 1)/2 * cos theta + (3 - sqrt 5)/2 * cos phi))

@@ -20,7 +20,6 @@
 -- including orphan instances for the 'Wrapped' class.
 module Diagrams.Lens
   ( Wrapped'
-  , _polyType, _polyOrient, _polyCenter
   , _P
   -- * Diagrams.Align
   , _envelopeVMove
@@ -40,7 +39,7 @@ module Diagrams.Lens
   -- * Diagrams.Located
   , _Loc
   -- * Diagrams.Parametric
-  , _arcLength
+  -- , _arcLength
   -- * Diagrams.Segment
   , _mkFixedSeg
   , _straight
@@ -216,6 +215,7 @@ _arcLength eps curve
 
 -}
 
+{-}
 _arcLength
   :: (s ~ Scalar (V p), HasArcLength p, Sectionable p, Fractional s)
   => AdjustSide -> s -> Lens' p s
@@ -225,9 +225,8 @@ _arcLength side eps = lens (arcLength eps) adjustArcLength
       { _adjMethod = ToAbsolute x
       , _adjSide = side
       , _adjEps = eps
-      , _adjOptsvProxy__ = Proxy
       }
-
+-}
 -- * Diagrams.Segment
 
 _mkFixedSeg

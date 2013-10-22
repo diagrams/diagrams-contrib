@@ -32,8 +32,6 @@ module Diagrams.Lens
   , _mkAttr
   , _mkTAttr
   -- * Diagrams.Core.Types
-  , _trace
-  , _envelope
   , _location
   , _mkSubdiagram
   -- * Diagrams.Located
@@ -174,16 +172,6 @@ _mkTAttr = prism' mkTAttr unwrapAttr
 
 
 -- * Diagrams.Core.Types
-
-_trace
-  :: (InnerSpace v, HasLinearMap v, OrderedField (Scalar v), Semigroup m)
-  => Lens' (QDiagram b v m) (Trace v)
-_trace = lens trace $ flip setTrace
-
-_envelope
-  :: (HasLinearMap v, InnerSpace v, OrderedField (Scalar v), Monoid' m)
-  => Lens' (QDiagram b v m) (Envelope v)
-_envelope = lens envelope $ flip setEnvelope
 
 -- | Gets or set the 'location' of a 'Subdiagram'.
 _location

@@ -66,7 +66,7 @@ type RadiusFunction b m = QDiagram b R2 m -> Double
 -- | A safe approximation. Calculates the outer radius of the smallest
 -- axis-aligned polygon with the given number of edges that contains the
 -- object. A parameter of 4 up to 8 should be sufficient for most applications.
-approxRadius :: Int -> RadiusFunction b m
+approxRadius :: (Monoid' m) => Int -> RadiusFunction b m
 approxRadius n =
     if n < 3
     then error "circleRadius: n needs to be at least 3"
@@ -85,5 +85,5 @@ approxRadius n =
 -- fits in the rectangular bounding box of the object, so it may be too small.
 -- It is, however, exact for circles, and there is no function that is safe for
 -- all diagrams and exact for circles.
-circleRadius :: RadiusFunction b m
+circleRadius :: (Monoid' m) => RadiusFunction b m
 circleRadius o = maximum [ envelopeS (e (alpha :: Turn)) o | alpha <- [0,0.25,0.5,0.75]]

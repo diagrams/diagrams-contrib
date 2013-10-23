@@ -60,32 +60,24 @@ import Diagrams.ThreeD.Types
 
 type Wrapped' s a = Wrapped s s a a
 
-$(concat <$> mapM makeWrapped
-  [ ''Deg
-  , ''R3
-  , ''Rad
-  , ''Turn
+instance Wrapped v v (Point v) (Point v) where
+  wrapped = _P
+  {-# INLINE wrapped #-}
+
+_P :: Iso s t (Point s) (Point t)
+_P = iso P $ \(P x) -> x
+
+-- $(concat <$> mapM makeWrapped
+--  [ ''Deg
+--  , ''R3
+--  , ''Rad
+--  , ''Turn
 --TODO: re-introduce - this is probably a bug in 'makeWrapped'
 --  , ''SubMap
 --  , ''Path
 --  , ''Point
 --  , ''QDiagram
-  ])
-
-instance Wrapped [Located (Trail v)]  [Located (Trail v)] (Path v) (Path v) where
-  wrapped = from pathTrails
-  {-# INLINE wrapped #-}
-
-instance Wrapped v v (Point v) (Point v) where
-  wrapped = _P
-  {-# INLINE wrapped #-}
-
-instance Wrapped (Double, Double) (Double, Double) R2 R2 where
-  wrapped = iso r2 unr2
-  {-# INLINE wrapped #-}
-
-_P :: Iso s t (Point s) (Point t)
-_P = iso P $ \(P x) -> x
+  --])
 
 -- * Diagrams.Align
 

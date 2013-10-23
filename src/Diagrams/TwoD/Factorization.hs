@@ -64,9 +64,8 @@ primeLayout _ 2 d
                         # centerX
 primeLayout colors p d
   = (mconcat $
-       iterateN (fromIntegral p)
-         (rotateBy (1/fromIntegral p))
-         (d # translateY r)
+       map (\n -> d # translateY r # rotateBy
+              (fromIntegral n/fromIntegral p)) [0..p-1]
     )
     <>
     colorBars colors p poly

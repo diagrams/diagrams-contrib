@@ -127,9 +127,9 @@ m = square 5 # lw 0.05 <>
 -- S
 ------------------------------------------------------------
 
-vs = map r2 [(5,5), (3,6), (1,5), (1,4), (3,3), (5,2), (4,0), (0,0.5)]
-s = (mconcat (map (\v -> translate v (dot blue)) vs) <>
-    cubicSpline False (map P vs) # lw 0.20)
+ps = map p2 [(5,5), (3,6), (1,5), (1,4), (3,3), (5,2), (4,0), (0,0.5)]
+s = (mconcat (map (place (dot blue)) ps) <>
+    cubicSpline False ps # lw 0.20)
     # scale 0.8
 
 dot c = circle 0.4 # fc c # lw 0

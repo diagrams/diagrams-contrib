@@ -44,7 +44,6 @@ module Diagrams.TwoD.Path.IteratedSubset
        ) where
 
 -- Diagrams.Core.Points needed for V (Point a) instance on GHC < 7.6
-import           Diagrams.Coordinates       ((&))
 import           Diagrams.Core.Points       ()
 import           Diagrams.Prelude
 
@@ -127,7 +126,7 @@ levy = fromOffsets [unitY, unitX]
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_zagD.svg#diagram=zagD&width=400>>
 zag :: (TrailLike t, V t ~ R2) => t
-zag = fromOffsets [unitX, (-0.5) & 1, unitX]
+zag = fromOffsets [unitX, (-0.5) ^& 1, unitX]
 
 -- > zagD = showTrail 5 zag
 
@@ -221,7 +220,7 @@ randITC = do
 
   -- generate a random list of linear segments drawn from (-1,1)^2.
   s       <- fromOffsets <$>
-                replicateM nSegs ((&) <$> getRandomR (-1,1) <*> getRandomR (-1,1))
+                replicateM nSegs ((^&) <$> getRandomR (-1,1) <*> getRandomR (-1,1))
 
   -- generate a random color.
   c       <- sRGB <$> getRandom <*> getRandom <*> getRandom

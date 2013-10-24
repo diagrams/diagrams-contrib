@@ -20,8 +20,6 @@
 -- including orphan instances for the 'Wrapped' class.
 module Diagrams.Lens
   ( Wrapped'
-  , _imgFile, _imgSize, _imgTransf
-  , _polyType, _polyOrient, _polyCenter
   , _P
   -- * Diagrams.Align
   , _envelopeVMove
@@ -34,14 +32,12 @@ module Diagrams.Lens
   , _mkAttr
   , _mkTAttr
   -- * Diagrams.Core.Types
-  , _trace
-  , _envelope
   , _location
   , _mkSubdiagram
   -- * Diagrams.Located
   , _Loc
   -- * Diagrams.Parametric
-  , _arcLength
+  -- , _arcLength
   -- * Diagrams.Segment
   , _mkFixedSeg
   , _straight
@@ -64,36 +60,24 @@ import Diagrams.ThreeD.Types
 
 type Wrapped' s a = Wrapped s s a a
 
-$(concat <$> mapM makeWrapped
-  [ ''Deg
-  , ''R3
-  , ''Rad
-  , ''Turn
---TODO: re-introduce - this is probably a bug in 'makeWrapped'
---  , ''SubMap
---  , ''Path
---  , ''Point
---  , ''QDiagram
-  ])
-
-instance Wrapped [Located (Trail v)]  [Located (Trail v)] (Path v) (Path v) where
-  wrapped = from pathTrails
-  {-# INLINE wrapped #-}
-
 instance Wrapped v v (Point v) (Point v) where
   wrapped = _P
-  {-# INLINE wrapped #-}
-
-instance Wrapped (Double, Double) (Double, Double) R2 R2 where
-  wrapped = iso r2 unr2
   {-# INLINE wrapped #-}
 
 _P :: Iso s t (Point s) (Point t)
 _P = iso P $ \(P x) -> x
 
-$(let rules = defaultRules & lensField .~ (\n -> Just $ '_' : n)
-   in concat <$> mapM (makeLensesWith rules)
-        [''Image, ''PolygonOpts])
+-- $(concat <$> mapM makeWrapped
+--  [ ''Deg
+--  , ''R3
+--  , ''Rad
+--  , ''Turn
+--TODO: re-introduce - this is probably a bug in 'makeWrapped'
+--  , ''SubMap
+--  , ''Path
+--  , ''Point
+--  , ''QDiagram
+  --])
 
 -- * Diagrams.Align
 
@@ -181,16 +165,6 @@ _mkTAttr = prism' mkTAttr unwrapAttr
 
 -- * Diagrams.Core.Types
 
-_trace
-  :: (InnerSpace v, HasLinearMap v, OrderedField (Scalar v), Semigroup m)
-  => Lens' (QDiagram b v m) (Trace v)
-_trace = lens trace $ flip setTrace
-
-_envelope
-  :: (HasLinearMap v, InnerSpace v, OrderedField (Scalar v), Monoid' m)
-  => Lens' (QDiagram b v m) (Envelope v)
-_envelope = lens envelope $ flip setEnvelope
-
 -- | Gets or set the 'location' of a 'Subdiagram'.
 _location
   :: (HasLinearMap v, InnerSpace v, OrderedField (Scalar v))
@@ -220,18 +194,6 @@ _arcLength eps curve
   = iso' (arcLengthFromParam eps curve) (arcLengthToParam eps curve)
 
 -}
-
-_arcLength
-  :: (s ~ Scalar (V p), HasArcLength p, Sectionable p, Fractional s)
-  => AdjustSide -> s -> Lens' p s
-_arcLength side eps = lens (arcLength eps) adjustArcLength
-  where
-    adjustArcLength s x = adjust s AO
-      { adjMethod = ToAbsolute x
-      , adjSide = side
-      , adjEps = eps
-      , adjOptsvProxy__ = Proxy
-      }
 
 -- * Diagrams.Segment
 

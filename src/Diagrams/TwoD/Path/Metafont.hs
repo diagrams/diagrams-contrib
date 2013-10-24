@@ -17,7 +17,7 @@ import Data.Text (Text)
 import Data.Either
 import Text.Parsec (ParseError, parse)
 
-import Diagrams.Prelude hiding (view, over)
+import Diagrams.Prelude hiding (view)
 
 import Diagrams.TwoD.Path.Metafont.Types
 import Diagrams.TwoD.Path.Metafont.Internal

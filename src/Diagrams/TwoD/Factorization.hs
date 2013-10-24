@@ -69,9 +69,9 @@ primeLayout colors p d
     )
     <>
     colorBars colors p poly
-  where poly = polygon with { polyType   = PolyRegular (fromIntegral p) r
-                            , polyOrient = OrientH
-                            }
+  where poly = polygon (with & polyType   .~ PolyRegular (fromIntegral p) r
+                             & polyOrient .~ OrientH
+                            )
         w  = max (width d) (height d)
         r  = w * c / sin (tau / (2 * fromIntegral p))
         c  = 0.75

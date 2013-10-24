@@ -2,8 +2,6 @@
 
 module Diagrams.TwoD.Path.Metafont.Combinators where
 
-import Control.Lens
-
 import Diagrams.Prelude
 import Diagrams.TwoD.Path.Metafont.Types
 

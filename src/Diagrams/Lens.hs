@@ -195,18 +195,6 @@ _arcLength eps curve
 
 -}
 
-{-}
-_arcLength
-  :: (s ~ Scalar (V p), HasArcLength p, Sectionable p, Fractional s)
-  => AdjustSide -> s -> Lens' p s
-_arcLength side eps = lens (arcLength eps) adjustArcLength
-  where
-    adjustArcLength s x = adjust s AO
-      { _adjMethod = ToAbsolute x
-      , _adjSide = side
-      , _adjEps = eps
-      }
--}
 -- * Diagrams.Segment
 
 _mkFixedSeg

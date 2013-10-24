@@ -313,12 +313,16 @@ solveOneSeg s = (a, c, r) where
 --   determined, and compute the control points to realize it as a
 --   cubic Bézier segment.  If the segment already has control points
 --   specified, the directions are ignored (they are assumed to
---   match).  Otherwise, the segment has tensions specified, and we
---   put the direction and tension data through the magical 'ctrlPts'
---   function to determine the proper control points.  Afterwards we
---   can forget the direction information (since the control points
---   are what we really want, and the directions can be recovered by
---   subtracting the control points from the endpoints anyway).
+--   match).  If the segment tensions are specified as TensionAtLeast,
+--   check whether the minimum tension will lead to an inflection
+--   point.  If so, pick the maximum velocity (equivalent to minimum
+--   tension) that avoids the inflection point.  Otherwise, calculate
+--   the velocity from the tension using 'hobbyF'.  Then calculate the
+--   control point positions from the direction and the velocity.
+--   Afterwards we can forget the direction information (since the
+--   control points are what we really want, and the directions can be
+--   recovered by subtracting the control points from the endpoints
+--   anyway).
 computeControls
   :: MetafontSegment Dir (Either TensionJoin ControlJoin)
   -> MetafontSegment ()  ControlJoin
@@ -327,7 +331,23 @@ computeControls (MFS z0 (PJ _ (Right cj) _) z1)
 computeControls (MFS z0 (PJ w0 (Left (TJ a b)) w1) z1)
   = MFS z0 (PJ () (CJ u v) ()) z1
   where
-    (u,v) = ctrlPts z0 w0 (getTension a) (getTension b) w1 z1
+    (u,v) = ctrlPts z0 w0 va vb w1 z1
+    offs  = z1 .-. z0
+    theta = direction w0   - direction offs
+    phi   = direction offs - direction w1
+    sinR  = sin . getRad
+    boundingTriangleExists = signum (sinR theta) == signum (sinR phi)
+                             && signum (sinR theta) == signum (sinR (theta+phi))
+    va = case a of
+              (TensionAmt ta) -> hobbyF theta phi / ta
+              (TensionAtLeast ta) -> case boundingTriangleExists of
+                  True -> sinR theta / sinR (theta + phi)
+                  False -> hobbyF theta phi / ta
+    vb = case b of
+              (TensionAmt tb) -> hobbyF phi theta / tb
+              (TensionAtLeast tb) -> case boundingTriangleExists of
+                  True -> sinR phi / sinR (theta + phi)
+                  False -> hobbyF phi theta / tb
 
 -- | Compute the control points for a cubic bezier, given a segment
 --   where we know the directions and tensions at both endpoints,
@@ -341,19 +361,20 @@ computeControls (MFS z0 (PJ w0 (Left (TJ a b)) w1) z1)
 --
 --   This uses a mysterious, magical formula due to John Hobby.
 ctrlPts :: P2 -> R2 -> Double -> Double -> R2 -> P2 -> (P2, P2)
-ctrlPts z0 w0 a b w1 z1 = (u,v)
+ctrlPts z0 w0 va vb w1 z1 = (u,v)
   where
     offs  = z1 .-. z0
+    theta, phi :: Rad
     theta = direction w0   - direction offs
     phi   = direction offs - direction w1
-    u     = z0 .+^ (offs # rotate theta  # scale (hobbyF theta phi / a))
-    v     = z1 .-^ (offs # rotate (-phi) # scale (hobbyF phi theta / b))
+    u     = z0 .+^ (offs # rotate theta  # scale va)
+    v     = z1 .-^ (offs # rotate (-phi) # scale vb)
 
 -- | Some weird function that computes some sort of scaling factor
 --   based on the turning angles between endpoints and direction
 --   vectors (again due to Hobby).
 hobbyF :: Rad -> Rad -> Double
-hobbyF (Rad phi) (Rad theta) =
+hobbyF (Rad theta) (Rad phi) =
   (2 + sqrt 2 * (sin theta - sin phi / 16)*(sin phi - sin theta / 16)*(cos theta - cos phi))
   /
   (3 * (1 + (sqrt 5 - 1)/2 * cos theta + (3 - sqrt 5)/2 * cos phi))

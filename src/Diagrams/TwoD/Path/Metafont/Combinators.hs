@@ -40,6 +40,13 @@ p .--. q = p .- mempty -. q
 
 infixr 5 .--.
 
+-- | simpleJoin is the same as mempty, with a more specific type.  It
+-- is provided for convenience in situations where explicit type
+-- signatures would otherwise be needed, such as when building up a
+-- join using lenses.
+simpleJoin :: Join
+simpleJoin = mempty
+
 -- | A join with both tensions the same.
 tension :: Double -> Join
 tension t = PJ Nothing (Just . Left $ TJ (TensionAmt t) (TensionAmt t)) Nothing

@@ -335,7 +335,7 @@ computeControls (MFS z0 (PJ w0 (Left (TJ a b)) w1) z1)
     offs  = z1 .-. z0
     theta = direction w0   - direction offs
     phi   = direction offs - direction w1
-    sinR  = sin . getRad
+    sinR  = sin . op Rad
     boundingTriangleExists = signum (sinR theta) == signum (sinR phi)
                              && signum (sinR theta) == signum (sinR (theta+phi))
     va = case a of

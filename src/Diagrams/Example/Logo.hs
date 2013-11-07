@@ -18,7 +18,6 @@ module Diagrams.Example.Logo where
 -- > import Diagrams.Example.Logo
 -- > diaLogo = logo
 
-import           Data.AffineSpace.Point
 import           Diagrams.Prelude
 
 import           Diagrams.TwoD.Layout.Tree

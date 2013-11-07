@@ -50,13 +50,12 @@ module Diagrams.Lens
   , _toTurn
   ) where
 
-import Control.Applicative
-import Control.Lens
-import Data.AffineSpace.Point (Point(P))
-import Data.Basis
-import Diagrams.Prelude
-import Diagrams.Core.Style
-import Diagrams.ThreeD.Types
+import           Control.Applicative
+import           Control.Lens
+import           Data.AffineSpace.Point (Point (P))
+import           Data.Basis
+import           Diagrams.Core.Style
+import           Diagrams.Prelude
 
 type Wrapped' s a = Wrapped s s a a
 

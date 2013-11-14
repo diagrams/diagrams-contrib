@@ -54,6 +54,7 @@ import           Control.Applicative
 import           Control.Lens
 import           Data.AffineSpace.Point (Point (P))
 import           Data.Basis
+import           Diagrams.BoundingBox
 import           Diagrams.Core.Style
 import           Diagrams.Prelude
 

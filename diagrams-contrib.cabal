@@ -11,9 +11,10 @@ author:              Various
 maintainer:          Various; see individual modules
 Bug-reports:         http://github.com/diagrams/diagrams-contrib/issues
 category:            Graphics
-build-type:          Custom
+build-type:          Simple
 cabal-version:       >=1.10
 extra-source-files:  README.markdown, CHANGES.markdown, diagrams/*.svg, CONTRIBUTORS
+extra-doc-files:     diagrams/*.svg
 tested-with:         GHC == 7.4.2, GHC == 7.6.1
 Source-repository head
   type:     git

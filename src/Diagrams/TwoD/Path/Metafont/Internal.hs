@@ -250,7 +250,7 @@ lineDirs :: [MFS] -> [Double]
 lineDirs ss | length ss > 1 = solveTriDiagonal lower diag upper products where
   (lower, diag, upper, products) = lineEqs ss
 lineDirs [] = []
-lineDirs [s] | leftCurl s && rightCurl s = [0, 1/2] where
+lineDirs [s] | leftCurl s && rightCurl s = [0, 0] where
 lineDirs [s] | rightCurl s = solveTriDiagonal [a] [1,c] [0] [normalizeTurns t, r] where
   (a,c,r) = solveOneSeg s
   (PathDirDir dir) = s^.pj.d1.to fromJust

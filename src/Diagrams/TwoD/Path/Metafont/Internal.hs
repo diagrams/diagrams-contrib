@@ -167,7 +167,7 @@ solvePath (MFP True ss) = MFP True ss'' where
   ss' = groupSegments ss
   ss'' = concat . map solveLine $ case ss'^?!_head^?!_head.pj.d1 of
       (Just (PathDirDir _)) -> ss'
-      _ -> (init . tail $ ss') ++ [last ss' ++ head ss']
+      _ -> (maybe [] id $ ss'^?_tail._init) ++ [last ss' ++ head ss']
 
 -- | Calculate the tangent directions at all points.  The input list is assumed
 -- to form a loop; this is not checked.

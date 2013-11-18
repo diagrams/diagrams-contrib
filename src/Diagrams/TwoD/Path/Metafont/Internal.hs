@@ -78,16 +78,16 @@ fillDirs implements all of the following rules:
 
 -- rules 1 & 2
 curlEnds :: MFP -> MFP
-curlEnds p@(MFP True _) = p
-curlEnds (MFP False ss') = MFP False $ leftEnd ss' where
-  leftEnd  [s]      = [s & pj.d1 %~ curlIfEmpty & pj.d2 %~ curlIfEmpty]
-  leftEnd  (s:ss)   = (s & pj.d1 %~ curlIfEmpty) : rightEnd ss
-  leftEnd  []       = []
-  rightEnd []       = []
-  rightEnd (s:[])   = (s & pj.d2 %~ curlIfEmpty) : []
-  rightEnd (s:ss)   = s:rightEnd ss
-  curlIfEmpty Nothing = Just $ PathDirCurl 1
-  curlIfEmpty d       = d
+curlEnds p | (p^.loop) = p
+curlEnds p             = p & segs %~ leftEnd where
+  leftEnd  [s]         = [s & pj.d1 %~ curlIfEmpty & pj.d2 %~ curlIfEmpty]
+  leftEnd  (s:ss)      = (s & pj.d1 %~ curlIfEmpty) : rightEnd ss
+  leftEnd  []          = []
+  rightEnd []          = []
+  rightEnd [s]         = [s & pj.d2 %~ curlIfEmpty]
+  rightEnd (s:ss)      = s:rightEnd ss
+  curlIfEmpty Nothing  = Just $ PathDirCurl 1
+  curlIfEmpty d        = d
 
 -- rule 3
 copyDirsL :: [MFS] -> [MFS]

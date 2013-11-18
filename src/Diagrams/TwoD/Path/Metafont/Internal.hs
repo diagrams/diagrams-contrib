@@ -98,7 +98,7 @@ copyDirsL [] = []
 
 -- rule 4
 copyDirsR :: [MFS] -> [MFS]
-copyDirsR (s1@(MFS _ (PJ _ (Left _) (Just d)) _) : s2@(MFS _ (PJ Nothing _ _) _) : ss)
+copyDirsR (s1@(MFS _ (PJ _ _ (Just d)) _) : s2@(MFS _ (PJ Nothing _ _) _) : ss)
   = s1 : copyDirsR ((s2 & pj.d1 .~ Just d) : ss)
 copyDirsR (s1 : ss') = s1 : copyDirsR ss'
 copyDirsR [] = []

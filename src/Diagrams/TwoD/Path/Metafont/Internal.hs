@@ -119,9 +119,8 @@ copyDirsLoop p = p
 -- apply rule 5 before rules 3 & 4, then depend on those rules to copy the directions
 -- into adjacent segments
 controlPtDirs :: MFS -> MFS
-controlPtDirs s@(MFS z0 (PJ _ (Right (CJ u v)) _) z1) = s & pj %~ dirs where
-  dirs :: PathJoin (Maybe PathDir) j -> PathJoin (Maybe PathDir) j
-  dirs (PJ _ jj _) = PJ (dir z0 u) jj (dir v z1)
+controlPtDirs s@(MFS z0 (PJ _ jj@(Right (CJ u v)) _) z1) = s & pj .~ dirs where
+  dirs = PJ (dir z0 u) jj (dir v z1)
   dir :: P2 -> P2 -> Maybe PathDir
   dir p0 p1 | p0 == p1 = Just $ PathDirCurl 1
   dir p0 p1 | otherwise = Just $ PathDirDir (p1 .-. p0)
@@ -258,7 +257,7 @@ lineDirs [s] | rightCurl s = solveTriDiagonal [a] [1,c] [0] [normalizeTurns t, r
 lineDirs [s] | leftCurl s = reverse $ lineDirs [reverseSeg s]
 lineDirs s = error $ "lineDirs was called on something inappropriate.  \
 \It should be called on a list of segments with directions specified at both ends.\
-\It should only be called through solveLine.  The problem was: "++ show s
+\It should only be called through solveLine.  The input was: "++ show s
 
 -- | Each intermediate point produces one curvature equation, as in loopEqs.
 -- The endpoint equations are the same as those for the single-segment line in

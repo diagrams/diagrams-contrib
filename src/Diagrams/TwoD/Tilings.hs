@@ -85,7 +85,7 @@ import qualified Data.Foldable        as F
 import qualified Data.Set             as S
 
 import           Data.Colour
-import           Diagrams.Prelude     hiding (e)
+import           Diagrams.Prelude
 
 ------------------------------------------------------------
 -- The ring Q[sqrt(2), sqrt(3)]

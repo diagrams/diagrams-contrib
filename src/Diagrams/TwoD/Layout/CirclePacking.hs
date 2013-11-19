@@ -41,6 +41,7 @@ import           Optimisation.CirclePacking
 
 import           Diagrams.Core.Envelope
 import           Diagrams.Prelude
+import           Diagrams.TwoD.Vector       (e)
 
 
 -- | Combines the passed objects, whose radius is estimated using the given

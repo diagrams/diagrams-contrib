@@ -1,6 +1,20 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TemplateHaskell #-}
+
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Diagrams.TwoD.Path.Metafont.Internal
+-- Copyright   :  (c) 2013 Daniel Bergey
+-- License     :  BSD-style (see LICENSE)
+-- Maintainer  :  bergey@alum.mit.edu
+--
+-- Solve equations due to John Hobby, as implemented in Donald Knuth's
+-- /Metafont/, to create (usually) smooth paths from specified points
+-- and directions.
+--
+-----------------------------------------------------------------------------
+
 module Diagrams.TwoD.Path.Metafont.Internal
        (
            solve, computeControls, locatedTrail
@@ -54,27 +68,26 @@ fromLeft :: Either a b -> a
 fromLeft (Left l) = l
 fromLeft (Right _) = error "got Right in fromLeft"
 
-{-
 
-fillDirs implements all of the following rules:
-
-1. [ ] Empty direction @ beginning or end of path -> curl 1.
-       Note cyclic paths have no beginning/end; will use cyclic tridiagonal.
-
-2. [ ] Empty direction next to & -> curl 1.
-
-3. [ ] empty P nonempty -> replace empty with nonempty.
-
-4. [ ] nonempty P empty -> replace " " " UNLESS nonempty follows explicit control pts.
-
-       i.e. direction after control pts is always ignored.
-
-5. [ ] .. z .. controls u and ...  -> {u - z} z ... controls if (u /=
-       z), or {curl 1} if u = z
-
-       Similarly  controls u and v ... z ... ->  z {z - v} (or curl 1)
-
--}
+-- | Fill in default values for as many blank directions as possible.
+-- @fillDirs@ implements all of the following rules:
+--
+-- 1. Empty direction at beginning or end of path -> curl 1.
+--    Note cyclic paths have no beginning/end; will use cyclic tridiagonal.
+--
+-- 2. Empty direction next to & -> curl 1.
+--
+-- 3. empty P nonempty -> replace empty with nonempty.
+--
+-- 4. nonempty P empty -> replace empty with nonempty.
+--
+-- 5.  .. z .. controls u and ...  -> {u - z} z ... controls if (u /=
+--        z), or {curl 1} if u = z
+--
+--        Similarly  controls u and v ... z ... ->  z {z - v} (or curl 1)
+fillDirs :: MFP -> MFP
+fillDirs p  = (copyDirsLoop . curlEnds) p & segs %~
+              (copyDirsR . copyDirsL . map controlPtDirs)
 
 -- rules 1 & 2
 curlEnds :: MFP -> MFP
@@ -126,11 +139,6 @@ controlPtDirs s@(MFS z0 (PJ _ jj@(Right (CJ u v)) _) z1) = s & pj .~ dirs where
   dir p0 p1 | otherwise = Just $ PathDirDir (p1 .-. p0)
 controlPtDirs s = s
 
--- | Fill in default values for as many blank directions as possible.
-fillDirs :: MFP -> MFP
-fillDirs p  = (copyDirsLoop . curlEnds) p & segs %~
-              (copyDirsR . copyDirsL . map controlPtDirs)
-
 -- | Run all the rules required to fully specify all segment directions,
 -- but do not replace the Joins with ControlJoin.
 solve :: MFP -> MFPath Dir BasicJoin
@@ -170,7 +178,7 @@ solvePath (MFP True ss) = MFP True ss'' where
 
 -- | Calculate the tangent directions at all points.  The input list is assumed
 -- to form a loop; this is not checked.
--- See setDirs for an explanation of offset angles.
+-- See 'setDirs' for an explanation of offset angles.
 solveLoop :: [MFS] -> [MetafontSegment Dir BasicJoin]
 solveLoop ss = zipWith3 setDirs ss thetas phis where
   segmentPairs = zip ss (tail . cycle $ ss)
@@ -293,8 +301,9 @@ bCo s = (3 - alpha s) / (beta s **2 * mfSegmentLength s)
 cCo s = (3 - beta s) / (alpha s **2 * mfSegmentLength s)
 dCo s = (beta s) / (alpha s **2 * mfSegmentLength s)
 
--- | solveOneSeg calculates the coefficients for the final segment of a line,
--- which may incidentally be the only segment.
+-- | solveOneSeg calculates the coefficients of the angle equation for
+-- the final segment of a line, which may incidentally be the only
+-- segment.
 solveOneSeg :: MFS -> (Double, Double, Double)
 solveOneSeg s = (a, c, r) where
   a = a' (s^.pj.d2.to fromJust) where

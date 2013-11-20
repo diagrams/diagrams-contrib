@@ -104,6 +104,8 @@ mfs = MFS <$> pt <*> join <*> lookAhead pt
 matches :: Stream s m t => ParsecT s u m a -> ParsecT s u m Bool
 matches p = option False (p *> return True)
 
+-- | Parse a 'Text' value in Metafont syntax, as destribed in /The
+-- METAFONTbook/.
 metafontParser :: Parser (MFPath (Maybe PathDir) BasicJoin)
 metafontParser = do
   ss <- many1 (try mfs)

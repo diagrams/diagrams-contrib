@@ -2,8 +2,20 @@
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TemplateHaskell #-}
 
--- | Metafont allows declaring Diagrams Paths using Donald Knuth's MetaFont syntax.
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Diagrams.TwoD.Path.Metafont
+-- Copyright   :  (c) 2013 Daniel Bergey
+-- License     :  BSD-style (see LICENSE)
+-- Maintainer  :  bergey@alum.mit.edu
+--
+-- Define Diagrams Paths by specifying points and
+-- optionally directions and tension.  Calculate control points to
+-- maintain smooth curvature at each point, following rules
+-- implemented in Donald Knuth's /Metafont/.
+--
 --  This module is intended to be imported qualified.
+-----------------------------------------------------------------------------
 module Diagrams.TwoD.Path.Metafont
        (
              module  Diagrams.TwoD.Path.Metafont.Combinators
@@ -24,9 +36,9 @@ import Diagrams.TwoD.Path.Metafont.Internal
 import Diagrams.TwoD.Path.Metafont.Combinators
 import Diagrams.TwoD.Path.Metafont.Parser
 
--- | MF.fromString is the primary interface to the MetaFont library.
---  It takes a ByteString in MetaFont syntax, and attempts to return a
---  TrailLike.
+-- | MF.fromString parses a Text value in MetaFont syntax, and
+-- attempts to return a TrailLike.  Only a subset of Metafont is
+-- supported; see the tutorial for details.
 fromString :: (TrailLike t, V t ~ R2) => Text -> Either ParseError t
 fromString s = case parse metafontParser "" s of
   (Left err) -> Left err -- with different type
@@ -35,7 +47,7 @@ fromString s = case parse metafontParser "" s of
 -- | fromStrings takes a list of MetaFont strings, and returns either
 --  all errors, or, if there are no parsing errors, a TrailLike for
 --  each string.  fromStrings is provided as a convenience because the
---  MetaFont &-join is not supported.  mconcat on the TrailLike is
+--  MetaFont &-join is not supported.  'mconcat' ('<>') on the TrailLike is
 --  equivalent, with clearer semantics.
 fromStrings :: (TrailLike t, V t ~ R2) => [Text] -> Either [ParseError] [t]
 fromStrings ss = case partitionEithers . map fromString $ ss of

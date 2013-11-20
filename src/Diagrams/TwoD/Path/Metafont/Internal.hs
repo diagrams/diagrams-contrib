@@ -1,6 +1,20 @@
 {-# LANGUAGE DeriveFunctor #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TemplateHaskell #-}
+
+-----------------------------------------------------------------------------
+-- |
+-- Module      :  Diagrams.TwoD.Path.Metafont.Internal
+-- Copyright   :  (c) 2013 Daniel Bergey
+-- License     :  BSD-style (see LICENSE)
+-- Maintainer  :  bergey@alum.mit.edu
+--
+-- Solve equations due to John Hobby, as implemented in Donald Knuth's
+-- /Metafont/, to create (usually) smooth paths from specified points
+-- and directions.
+--
+-----------------------------------------------------------------------------
+
 module Diagrams.TwoD.Path.Metafont.Internal
        (
            solve, computeControls, locatedTrail
@@ -54,40 +68,39 @@ fromLeft :: Either a b -> a
 fromLeft (Left l) = l
 fromLeft (Right _) = error "got Right in fromLeft"
 
-{-
 
-fillDirs implements all of the following rules:
-
-1. [ ] Empty direction @ beginning or end of path -> curl 1.
-       Note cyclic paths have no beginning/end; will use cyclic tridiagonal.
-
-2. [ ] Empty direction next to & -> curl 1.
-
-3. [ ] empty P nonempty -> replace empty with nonempty.
-
-4. [ ] nonempty P empty -> replace " " " UNLESS nonempty follows explicit control pts.
-
-       i.e. direction after control pts is always ignored.
-
-5. [ ] .. z .. controls u and ...  -> {u - z} z ... controls if (u /=
-       z), or {curl 1} if u = z
-
-       Similarly  controls u and v ... z ... ->  z {z - v} (or curl 1)
-
--}
+-- | Fill in default values for as many blank directions as possible.
+-- @fillDirs@ implements all of the following rules:
+--
+-- 1. Empty direction at beginning or end of path -> curl 1.
+--    Note cyclic paths have no beginning/end; will use cyclic tridiagonal.
+--
+-- 2. Empty direction next to & -> curl 1.
+--
+-- 3. empty P nonempty -> replace empty with nonempty.
+--
+-- 4. nonempty P empty -> replace empty with nonempty.
+--
+-- 5.  .. z .. controls u and ...  -> {u - z} z ... controls if (u /=
+--        z), or {curl 1} if u = z
+--
+--        Similarly  controls u and v ... z ... ->  z {z - v} (or curl 1)
+fillDirs :: MFP -> MFP
+fillDirs p  = (copyDirsLoop . curlEnds) p & segs %~
+              (copyDirsR . copyDirsL . map controlPtDirs)
 
 -- rules 1 & 2
 curlEnds :: MFP -> MFP
-curlEnds p@(MFP True _) = p
-curlEnds (MFP False ss') = MFP False $ leftEnd ss' where
-  leftEnd  [s]      = [s & pj.d1 %~ curlIfEmpty & pj.d2 %~ curlIfEmpty]
-  leftEnd  (s:ss)   = (s & pj.d1 %~ curlIfEmpty) : rightEnd ss
-  leftEnd  []       = []
-  rightEnd []       = []
-  rightEnd (s:[])   = (s & pj.d2 %~ curlIfEmpty) : []
-  rightEnd (s:ss)   = s:rightEnd ss
-  curlIfEmpty Nothing = Just $ PathDirCurl 1
-  curlIfEmpty d       = d
+curlEnds p | (p^.loop) = p
+curlEnds p             = p & segs %~ leftEnd where
+  leftEnd  [s]         = [s & pj.d1 %~ curlIfEmpty & pj.d2 %~ curlIfEmpty]
+  leftEnd  (s:ss)      = (s & pj.d1 %~ curlIfEmpty) : rightEnd ss
+  leftEnd  []          = []
+  rightEnd []          = []
+  rightEnd [s]         = [s & pj.d2 %~ curlIfEmpty]
+  rightEnd (s:ss)      = s:rightEnd ss
+  curlIfEmpty Nothing  = Just $ PathDirCurl 1
+  curlIfEmpty d        = d
 
 -- rule 3
 copyDirsL :: [MFS] -> [MFS]
@@ -98,7 +111,7 @@ copyDirsL [] = []
 
 -- rule 4
 copyDirsR :: [MFS] -> [MFS]
-copyDirsR (s1@(MFS _ (PJ _ (Left _) (Just d)) _) : s2@(MFS _ (PJ Nothing _ _) _) : ss)
+copyDirsR (s1@(MFS _ (PJ _ _ (Just d)) _) : s2@(MFS _ (PJ Nothing _ _) _) : ss)
   = s1 : copyDirsR ((s2 & pj.d1 .~ Just d) : ss)
 copyDirsR (s1 : ss') = s1 : copyDirsR ss'
 copyDirsR [] = []
@@ -119,18 +132,12 @@ copyDirsLoop p = p
 -- apply rule 5 before rules 3 & 4, then depend on those rules to copy the directions
 -- into adjacent segments
 controlPtDirs :: MFS -> MFS
-controlPtDirs s@(MFS z0 (PJ _ (Right (CJ u v)) _) z1) = s & pj %~ dirs where
-  dirs :: PathJoin (Maybe PathDir) j -> PathJoin (Maybe PathDir) j
-  dirs (PJ _ jj _) = PJ (dir z0 u) jj (dir v z1)
+controlPtDirs s@(MFS z0 (PJ _ jj@(Right (CJ u v)) _) z1) = s & pj .~ dirs where
+  dirs = PJ (dir z0 u) jj (dir v z1)
   dir :: P2 -> P2 -> Maybe PathDir
   dir p0 p1 | p0 == p1 = Just $ PathDirCurl 1
   dir p0 p1 | otherwise = Just $ PathDirDir (p1 .-. p0)
 controlPtDirs s = s
-
--- | Fill in default values for as many blank directions as possible.
-fillDirs :: MFP -> MFP
-fillDirs p  = (copyDirsLoop . curlEnds) p & segs %~
-              (copyDirsR . copyDirsL . map controlPtDirs)
 
 -- | Run all the rules required to fully specify all segment directions,
 -- but do not replace the Joins with ControlJoin.
@@ -167,11 +174,11 @@ solvePath (MFP True ss) = MFP True ss'' where
   ss' = groupSegments ss
   ss'' = concat . map solveLine $ case ss'^?!_head^?!_head.pj.d1 of
       (Just (PathDirDir _)) -> ss'
-      _ -> (init . tail $ ss') ++ [last ss' ++ head ss']
+      _ -> (maybe [] id $ ss'^?_tail._init) ++ [last ss' ++ head ss']
 
 -- | Calculate the tangent directions at all points.  The input list is assumed
 -- to form a loop; this is not checked.
--- See setDirs for an explanation of offset angles.
+-- See 'setDirs' for an explanation of offset angles.
 solveLoop :: [MFS] -> [MetafontSegment Dir BasicJoin]
 solveLoop ss = zipWith3 setDirs ss thetas phis where
   segmentPairs = zip ss (tail . cycle $ ss)
@@ -250,7 +257,7 @@ lineDirs :: [MFS] -> [Double]
 lineDirs ss | length ss > 1 = solveTriDiagonal lower diag upper products where
   (lower, diag, upper, products) = lineEqs ss
 lineDirs [] = []
-lineDirs [s] | leftCurl s && rightCurl s = [0, 1/2] where
+lineDirs [s] | leftCurl s && rightCurl s = [0, 0] where
 lineDirs [s] | rightCurl s = solveTriDiagonal [a] [1,c] [0] [normalizeTurns t, r] where
   (a,c,r) = solveOneSeg s
   (PathDirDir dir) = s^.pj.d1.to fromJust
@@ -258,7 +265,7 @@ lineDirs [s] | rightCurl s = solveTriDiagonal [a] [1,c] [0] [normalizeTurns t, r
 lineDirs [s] | leftCurl s = reverse $ lineDirs [reverseSeg s]
 lineDirs s = error $ "lineDirs was called on something inappropriate.  \
 \It should be called on a list of segments with directions specified at both ends.\
-\It should only be called through solveLine.  The problem was: "++ show s
+\It should only be called through solveLine.  The input was: "++ show s
 
 -- | Each intermediate point produces one curvature equation, as in loopEqs.
 -- The endpoint equations are the same as those for the single-segment line in
@@ -294,8 +301,9 @@ bCo s = (3 - alpha s) / (beta s **2 * mfSegmentLength s)
 cCo s = (3 - beta s) / (alpha s **2 * mfSegmentLength s)
 dCo s = (beta s) / (alpha s **2 * mfSegmentLength s)
 
--- | solveOneSeg calculates the coefficients for the final segment of a line,
--- which may incidentally be the only segment.
+-- | solveOneSeg calculates the coefficients of the angle equation for
+-- the final segment of a line, which may incidentally be the only
+-- segment.
 solveOneSeg :: MFS -> (Double, Double, Double)
 solveOneSeg s = (a, c, r) where
   a = a' (s^.pj.d2.to fromJust) where

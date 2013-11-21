@@ -12,6 +12,7 @@
 -- Here is an example:
 --
 -- > import Optimisation.CirclePacking
+-- > import Diagrams.TwoD.Vector       (e)
 -- >
 -- > colorize = zipWith fc $
 -- >     cycle [red,blue,yellow,magenta,cyan,bisque,firebrick,indigo]

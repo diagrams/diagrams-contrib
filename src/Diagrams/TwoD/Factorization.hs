@@ -47,7 +47,7 @@ import           Math.NumberTheory.Primes.Factorisation (factorise)
 --   > import Diagrams.TwoD.Factorization
 --   > plExample
 --   >   = pad 1.1 . centerXY
---   >   . hcat' with {sep = 0.5}
+--   >   . hcat' (with & sep .~ 0.5)
 --   >   . map (sized (Width 1))
 --   >   $ [ primeLayout defaultColors 5 (circle 1 # fc black)
 --   >     , primeLayout defaultColors 103 (square 1 # fc green # lw 0)

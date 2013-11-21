@@ -67,7 +67,7 @@ import           Data.Maybe                 (mapMaybe)
 --   seed pattern.
 --
 --   > import Diagrams.TwoD.Path.IteratedSubset
---   > iterTrailEx = vcat' with { sep = 0.3 } . map strokeLine . take 5
+--   > iterTrailEx = vcat' (with & sep .~ 0.3) . map strokeLine . take 5
 --   >             $ iterTrail koch
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_iterTrailEx.svg#diagram=iterTrailEx&width=200>>
@@ -101,7 +101,7 @@ refineSegment t seg
 -- them as inspiration for creating your own seed trails.
 
 -- > import Diagrams.TwoD.Path.IteratedSubset
--- > showTrail n t = hcat' with { sep = 0.2 } [ iters !! 1, iters !! n ]
+-- > showTrail n t = hcat' (with & sep .~ 0.2) [ iters !! 1, iters !! n ]
 -- >             # centerXY # pad 1.1
 -- >   where iters = map strokeLine $ iterTrail t
 

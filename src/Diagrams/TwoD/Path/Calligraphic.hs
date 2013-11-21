@@ -24,16 +24,16 @@ import           Diagrams.Prelude
 --   > import Diagrams.Coordinates
 --   > import Diagrams.TwoD.Path.Calligraphic
 --   >
---   > curve = cubicSpline False [1 & 1, 2 & 5, 5 & 6, 8 & 12]
+--   > curve = cubicSpline False [1 ^& 1, 2 ^& 5, 5 ^& 6, 8 ^& 12]
 --   >       # scale 3
 --   >
 --   > calligraphicEx =
---   >   [ circle 15 # calligraphic (2&1)
---   >   , curve     # calligraphic (2&2)
+--   >   [ circle 15 # calligraphic (2 ^& 1)
+--   >   , curve     # calligraphic (2 ^& 2)
 --   >   ]
 --   >   # map (centerXY . strokeLoop)
 --   >   # fc black
---   >   # hcat' with {sep = 10}
+--   >   # hcat' (with & sep .~ 10)
 
 calligraphic :: R2 -> Trail' Line R2 -> Trail' Loop R2
 calligraphic pen p

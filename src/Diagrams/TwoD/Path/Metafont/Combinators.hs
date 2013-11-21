@@ -1,6 +1,16 @@
 {-# LANGUAGE TypeFamilies #-}
 
-module Diagrams.TwoD.Path.Metafont.Combinators where
+-- | Combinators to allow writing Metafont-style paths embedded in
+-- Haskell, with the usual Diagrams types for points and directions.
+
+module Diagrams.TwoD.Path.Metafont.Combinators
+       (
+           (.-), (-.), (.--.)
+       , endpt, cyclePath
+       , simpleJoin -- is this actually needed?
+       , tension, tensions, controls
+       , leaving, arriving
+       ) where
 
 import Diagrams.Prelude
 import Diagrams.TwoD.Path.Metafont.Types
@@ -8,10 +18,8 @@ import Diagrams.TwoD.Path.Metafont.Types
 -- internal alias to keep the signatures readable
 type Join = PathJoin (Maybe PathDir) (Maybe BasicJoin)
 
-
 -- | /point/ @.-@ /join/ @-.@ /path/ adds /point/ to the
 -- left end of the metafont /path/, connected by /join/.
-
 (.-) :: P2 -> MFPathData J -> MFPathData P
 (.-) = MFPathPt
 

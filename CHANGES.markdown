@@ -1,3 +1,25 @@
+1.0: 25 November 2013
+---------------------
+
+* **New features**
+
+    - New module `Diagrams.TwoD.Sunburst`, for drawing sunburst
+      charts.
+    - New module `Diagrams.TwoD.Path.Metafont`, for specifying
+      trails/paths using an API inspired by Metafont.  Like
+      `cubicSpline` but gives you control over things like the
+      tension/curvature or the tangent at a given point.
+    - New module `Diagrams.TwoD.Path.Calligraphic` for making simple
+      "calligraphic" strokes.
+    - New module `Diagrams.Lens` with lenses for working with
+      diagrams.
+
+* **Bug fixes**
+
+    - `Diagrams.TwoD.Factorization.primeLayout` has been rewritten to
+      avoid iterated transformations, giving a significant performance
+      boost.
+
 0.7: 9 August 2013
 ------------------
 

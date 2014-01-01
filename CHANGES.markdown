@@ -1,3 +1,9 @@
+1.1 (1 January 2014)
+--------------------
+
+    - Switch to using lens for `SymmLayoutOpts` and `ForceLayoutTreeOpts`
+    - Require `force-layout-0.3`
+
 1.0.0.1 (28 November 2013)
 --------------------------
 

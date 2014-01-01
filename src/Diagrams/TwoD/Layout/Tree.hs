@@ -28,7 +28,7 @@
 -- > exampleSymmTree =
 -- >   renderTree ((<> circle 1 # fc white) . text . (:[]))
 -- >              (~~)
--- >              (symmLayout' with { slHSep = 4, slVSep = 4 } t1)
+-- >              (symmLayout' (with & slHSep .~ 4 & slVSep .~ 4) t1)
 -- >   # lw 0.03
 -- >   # centerXY # pad 1.1
 --
@@ -49,8 +49,8 @@
 -- >
 -- > exampleSymmTreeWithDs =
 -- >   renderTree id (~~)
--- >   (symmLayout' with { slWidth  = fromMaybe (0,0) . extentX
--- >                     , slHeight = fromMaybe (0,0) . extentY }
+-- >   (symmLayout' (with & slWidth  .~ fromMaybe (0,0) . extentX
+-- >                      & slHeight .~ fromMaybe (0,0) . extentY)
 -- >      tD)
 -- >   # lw 0.03
 -- >   # centerXY # pad 1.1
@@ -62,7 +62,7 @@
 -- > import Diagrams.TwoD.Layout.Tree
 -- >
 -- > drawT = maybe mempty (renderTree (const (circle 0.05 # fc black)) (~~))
--- >       . symmLayoutBin' with { slVSep = 0.5 }
+-- >       . symmLayoutBin' (with & slVSep .~ 0.5)
 -- >
 -- > tree500 = drawT t # centerXY # pad 1.1 # sized (Width 4)
 -- >   where t = genTree 500 0.05
@@ -111,14 +111,14 @@ module Diagrams.TwoD.Layout.Tree
        , symmLayout'
        , symmLayoutBin
        , symmLayoutBin'
-       , SymmLayoutOpts(..)
+       , SymmLayoutOpts(..), slHSep, slVSep, slWidth, slHeight
 
          -- ** Force-directed layout
          -- $forcedirected
 
        , forceLayoutTree
        , forceLayoutTree'
-       , ForceLayoutTreeOpts(..)
+       , ForceLayoutTreeOpts(..), forceLayoutOpts, edgeLen, springK, staticK
 
        , treeToEnsemble
        , label
@@ -317,15 +317,49 @@ fitList :: Double -> [Extent] -> [Double]
 fitList hSep = uncurry (zipWith mean) . (fitListL hSep &&& fitListR hSep)
   where mean x y = (x+y)/2
 
+-- | Options for controlling the symmetric tree layout algorithm.
+data SymmLayoutOpts a =
+  SLOpts { _slHSep   :: Double           -- ^ Minimum horizontal
+                                         --   separation between sibling
+                                         --   nodes.  The default is 1.
+         , _slVSep   :: Double           -- ^ Vertical separation
+                                         --   between adjacent levels of
+                                         --   the tree.  The default is 1.
+         , _slWidth  :: a -> (Double, Double)
+           -- ^ A function for measuring the horizontal extent (a pair
+           --   of x-coordinates) of an item in the tree.  The default
+           --   is @const (0,0)@, that is, the nodes are considered as
+           --   taking up no space, so the centers of the nodes will
+           --   be separated according to the @slHSep@ and @slVSep@.
+           --   However, this can be useful, /e.g./ if you have a tree
+           --   of diagrams of irregular size and want to make sure no
+           --   diagrams overlap.  In that case you could use
+           --   @fromMaybe (0,0) . extentX@.
+         , _slHeight :: a -> (Double, Double)
+           -- ^ A function for measuring the vertical extent of an
+           --   item in the tree.  The default is @const (0,0)@.  See
+           --   the documentation for 'slWidth' for more information.
+         }
+
+makeLenses ''SymmLayoutOpts
+
+instance Default (SymmLayoutOpts a) where
+  def = SLOpts
+          { _slHSep   = 1
+          , _slVSep   = 1
+          , _slWidth  = const (0,0)
+          , _slHeight = const (0,0)
+          }
+
 -- | Actual recursive tree layout algorithm, which returns a tree
 --   layout as well as an extent.
 symmLayoutR :: SymmLayoutOpts a -> Tree a -> (Rel Tree a, Extent)
 symmLayoutR opts (Node a ts) = (rt, ext)
   where (trees, extents) = unzip (map (symmLayoutR opts) ts)
-        positions        = fitList (slHSep opts) extents
+        positions        = fitList (opts ^. slHSep) extents
         pTrees           = zipWith moveTree positions trees
         pExtents         = zipWith moveExtent positions extents
-        ext              = slWidth opts a `consExtent` mconcat pExtents
+        ext              = (opts^.slWidth) a `consExtent` mconcat pExtents
         rt               = Node (a, 0) pTrees
 
 -- | Symmetric tree layout algorithm specialized to binary trees.
@@ -336,45 +370,13 @@ symmLayoutBinR opts (BNode a l r) = (Just rt, ext)
   where (l', extL) = symmLayoutBinR opts l
         (r', extR) = symmLayoutBinR opts r
         positions  = case (l', r') of
-                       (Nothing, _) -> [0, slHSep opts / 2]
-                       (_, Nothing) -> [-slHSep opts / 2, 0]
-                       _          -> fitList (slHSep opts) [extL, extR]
+                       (Nothing, _) -> [0, opts ^. slHSep / 2]
+                       (_, Nothing) -> [-(opts ^. slHSep) / 2, 0]
+                       _          -> fitList (opts ^. slHSep) [extL, extR]
         pTrees   = catMaybes $ zipWith (fmap . moveTree) positions [l',r']
         pExtents = zipWith moveExtent positions [extL, extR]
-        ext = slWidth opts a `consExtent` mconcat pExtents
+        ext = (opts^.slWidth) a `consExtent` mconcat pExtents
         rt  = Node (a, 0) pTrees
-
--- | Options for controlling the symmetric tree layout algorithm.
-data SymmLayoutOpts a =
-  SLOpts { slHSep   :: Double           -- ^ Minimum horizontal
-                                        --   separation between sibling
-                                        --   nodes.  The default is 1.
-         , slVSep   :: Double           -- ^ Vertical separation
-                                        --   between adjacent levels of
-                                        --   the tree.  The default is 1.
-         , slWidth  :: a -> (Double, Double)
-           -- ^ A function for measuring the horizontal extent (a pair
-           --   of x-coordinates) of an item in the tree.  The default
-           --   is @const (0,0)@, that is, the nodes are considered as
-           --   taking up no space, so the centers of the nodes will
-           --   be separated according to the @slHSep@ and @slVSep@.
-           --   However, this can be useful, /e.g./ if you have a tree
-           --   of diagrams of irregular size and want to make sure no
-           --   diagrams overlap.  In that case you could use
-           --   @fromMaybe (0,0) . extentX@.
-         , slHeight :: a -> (Double, Double)
-           -- ^ A function for measuring the vertical extent of an
-           --   item in the tree.  The default is @const (0,0)@.  See
-           --   the documentation for 'slWidth' for more information.
-         }
-
-instance Default (SymmLayoutOpts a) where
-  def = SLOpts
-          { slHSep   = 1
-          , slVSep   = 1
-          , slWidth  = const (0,0)
-          , slHeight = const (0,0)
-          }
 
 -- | Run the symmetric rose tree layout algorithm on a given tree,
 --   resulting in the same tree annotated with node positions.
@@ -412,15 +414,42 @@ unRelativize :: SymmLayoutOpts a -> P2 -> Rel Tree a -> Tree (a, P2)
 unRelativize opts curPt (Node (a,hOffs) ts)
     = Node (a, rootPt) (map (unRelativize opts (rootPt .+^ (vOffs *^ unit_Y))) ts)
   where rootPt = curPt .+^ (hOffs *^ unitX)
-        vOffs  = - fst (slHeight opts a)
-               + (maximum . map (snd . slHeight opts . fst . rootLabel) $ ts)
-               + slVSep opts
+        vOffs  = - fst ((opts^.slHeight) a)
+               + (maximum . map (snd . (opts^.slHeight) . fst . rootLabel) $ ts)
+               + (opts ^. slVSep)
 
 --------------------------------------------------
 --  Force-directed layout of rose trees
 
 -- $forcedirected
 -- Force-directed layout of rose trees.
+
+data ForceLayoutTreeOpts =
+  FLTOpts
+  { _forceLayoutOpts :: ForceLayoutOpts R2 -- ^ Options to the force layout simulator, including damping.
+  , _edgeLen         :: Double             -- ^ How long edges should be, ideally.
+                                           --   This will be the resting length for
+                                           --   the springs.
+  , _springK         :: Double             -- ^ Spring constant.  The
+                                           --   bigger the constant,
+                                           --   the more the edges
+                                           --   push/pull towards their
+                                           --   resting length.
+  , _staticK         :: Double             -- ^ Coulomb constant.  The
+                                           --   bigger the constant, the
+                                           --   more sibling nodes repel
+                                           --   each other.
+  }
+
+makeLenses ''ForceLayoutTreeOpts
+
+instance Default ForceLayoutTreeOpts where
+  def = FLTOpts
+    { _forceLayoutOpts = def
+    , _edgeLen = sqrt 2
+    , _springK = 0.05
+    , _staticK = 0.1
+    }
 
 -- | Assign unique ID numbers to the nodes of a tree, and generate an
 --   'Ensemble' suitable for simulating in order to do force-directed
@@ -439,8 +468,8 @@ treeToEnsemble :: forall a. ForceLayoutTreeOpts
 treeToEnsemble opts t =
   ( fmap (first fst) lt
   , Ensemble
-      [ (edges, \pt1 pt2 -> project unitX (hookeForce (springK opts) (edgeLen opts) pt1 pt2))
-      , (sibs,  \pt1 pt2 -> project unitX (coulombForce (staticK opts) pt1 pt2))
+      [ (edges, \pt1 pt2 -> project unitX (hookeForce (opts ^. springK) (opts ^. edgeLen) pt1 pt2))
+      , (sibs,  \pt1 pt2 -> project unitX (coulombForce (opts ^. staticK) pt1 pt2))
       ]
       particleMap
   )
@@ -483,36 +512,6 @@ reconstruct :: Functor t => Ensemble R2 -> t (a, PID) -> t (a, P2)
 reconstruct e = (fmap . second)
                   (fromMaybe origin . fmap (view pos) . flip M.lookup (e^.particles))
 
-data ForceLayoutTreeOpts =
-  FLTOpts
-  { forceLayoutOpts :: ForceLayoutOpts R2 -- ^ Options to the force layout simulator, including damping.
-  , edgeLen         :: Double             -- ^ How long edges should be, ideally.
-                                          --   This will be the resting length for
-                                          --   the springs.
-  , springK         :: Double             -- ^ Spring constant.  The
-                                          --   bigger the constant,
-                                          --   the more the edges
-                                          --   push/pull towards their
-                                          --   resting length.
-  , staticK         :: Double             -- ^ Coulomb constant.  The
-                                          --   bigger the constant, the
-                                          --   more sibling nodes repel
-                                          --   each other.
-  }
-
-instance Default ForceLayoutTreeOpts where
-  def = FLTOpts
-    { forceLayoutOpts =
-        FLOpts
-        { damping     = 0.8
-        , energyLimit = Just 0.001
-        , stepLimit   = Just 1000
-        }
-    , edgeLen = sqrt 2
-    , springK = 0.05
-    , staticK = 0.1
-    }
-
 -- | Force-directed layout of rose trees, with default parameters (for
 --   more options, see 'forceLayoutTree'').  In particular,
 --
@@ -529,7 +528,7 @@ forceLayoutTree = forceLayoutTree' def
 
 -- | Force-directed layout of rose trees, with configurable parameters.
 forceLayoutTree' :: ForceLayoutTreeOpts -> Tree (a, P2) -> Tree (a, P2)
-forceLayoutTree' opts t = reconstruct (forceLayout (forceLayoutOpts opts) e) ti
+forceLayoutTree' opts t = reconstruct (forceLayout (opts^.forceLayoutOpts) e) ti
   where (ti, e) = treeToEnsemble opts t
 
 ------------------------------------------------------------

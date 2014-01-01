@@ -11,3 +11,5 @@ dist_*
 history
 TAGS
 .diagrams-cache
+.cabal-sandbox
+cabal.sandbox.config

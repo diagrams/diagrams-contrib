@@ -238,17 +238,17 @@ setDirs (MFS z0 (PJ w0' jj w1') z1) t p = MFS z0 (PJ w0 jj w1) z1 where
     offs  = z1 .-. z0
     w0 = case w0' of
       (Just (PathDirDir d)) -> d
-      _ -> offs # rotate (Turn t)
+      _ -> offs # rotate (t @@ turn)
     w1 = case w1' of
       (Just (PathDirDir d)) -> d
-      _ -> offs # rotate (Turn (negate p))
+      _ -> offs # rotate (negate p @@ turn)
 
 -- | psi (l,r) calculates the turning angle between segments l and r, if
 -- each segment were a straight line connecting its endpoints.  The endpoint of l
 -- is assumed to be the starting point of r; this is not checked.
 psi :: (MetafontSegment p j1, MetafontSegment p j1) -> Double
 psi (l,r) = normalizeTurns t where
-  (Turn t) =  direction (mfSegmentOffset r) - direction (mfSegmentOffset l)
+  t = view turn $ direction (mfSegmentOffset r) - direction (mfSegmentOffset l)
 
 -- | lineDirs calculates the offset angles θ for a Line.  Most of the work
 -- done by lineEqs and solveTriDiagonal, but lineDirs handles the separate cases
@@ -261,7 +261,7 @@ lineDirs [s] | leftCurl s && rightCurl s = [0, 0] where
 lineDirs [s] | rightCurl s = solveTriDiagonal [a] [1,c] [0] [normalizeTurns t, r] where
   (a,c,r) = solveOneSeg s
   (PathDirDir dir) = s^.pj.d1.to fromJust
-  (Turn t) = direction dir - direction (s^.x2 .-. s^.x1)
+  t = view turn $ direction dir - direction (s^.x2 .-. s^.x1)
 lineDirs [s] | leftCurl s = reverse $ lineDirs [reverseSeg s]
 lineDirs s = error $ "lineDirs was called on something inappropriate.  \
 \It should be called on a list of segments with directions specified at both ends.\
@@ -286,7 +286,7 @@ lineEqs ss = (lower, diag, upper, products) where
   (d0,c0,_) = solveOneSeg . reverseSeg $ s0
   r0 = r0' (s0^.pj.d1.to fromJust) where
     r0' (PathDirDir d) = normalizeTurns t where
-                         (Turn t) = direction d - direction (s0^.x2 .-. s0^.x1)
+      t = view turn $ direction d - direction (s0^.x2 .-. s0^.x1)
     r0' (PathDirCurl _) = negate $ d0 * psi (s0, ss!!1)
   s0 = head ss
   (an, cn, rn) = solveOneSeg (last ss)
@@ -314,7 +314,7 @@ solveOneSeg s = (a, c, r) where
        c' (PathDirCurl g) = beta s **3 * g / (alpha s **2) + 3 - alpha s
   r = r' (s^.pj.d2.to fromJust) where
     r' (PathDirDir d) = normalizeTurns t where
-      (Turn t) = direction d - direction (s^.x2 .-. s^.x1)
+      t = view turn $ direction d - direction (s^.x2 .-. s^.x1)
     r' (PathDirCurl _) = 0
 
 -- | Take a segment whose endpoint directions have been fully
@@ -343,7 +343,7 @@ computeControls (MFS z0 (PJ w0 (Left (TJ a b)) w1) z1)
     offs  = z1 .-. z0
     theta = direction w0   - direction offs
     phi   = direction offs - direction w1
-    sinR  = sin . op Rad
+    sinR  = sin . view rad
     boundingTriangleExists = signum (sinR theta) == signum (sinR phi)
                              && signum (sinR theta) == signum (sinR (theta+phi))
     va = case a of
@@ -374,7 +374,6 @@ ctrlPts :: P2 -> R2 -> Double -> Double -> R2 -> P2 -> (P2, P2)
 ctrlPts z0 w0 va vb w1 z1 = (u,v)
   where
     offs  = z1 .-. z0
-    theta, phi :: Rad
     theta = direction w0   - direction offs
     phi   = direction offs - direction w1
     u     = z0 .+^ (offs # rotate theta  # scale va)
@@ -383,11 +382,14 @@ ctrlPts z0 w0 va vb w1 z1 = (u,v)
 -- | Some weird function that computes some sort of scaling factor
 --   based on the turning angles between endpoints and direction
 --   vectors (again due to Hobby).
-hobbyF :: Rad -> Rad -> Double
-hobbyF (Rad theta) (Rad phi) =
-  (2 + sqrt 2 * (sin theta - sin phi / 16)*(sin phi - sin theta / 16)*(cos theta - cos phi))
-  /
-  (3 * (1 + (sqrt 5 - 1)/2 * cos theta + (3 - sqrt 5)/2 * cos phi))
+hobbyF :: Angle -> Angle -> Double
+hobbyF theta' phi' = let
+    theta = theta' ^. rad
+    phi = phi' ^. rad
+    in
+     (2 + sqrt 2 * (sin theta - sin phi / 16)*(sin phi - sin theta / 16)*(cos theta - cos phi))
+     /
+     (3 * (1 + (sqrt 5 - 1)/2 * cos theta + (3 - sqrt 5)/2 * cos phi))
 
 -- | Convert a fully specified MetafontSegment to a Diagrams Segment
 importSegment :: MetafontSegment () ControlJoin -> Segment Closed R2

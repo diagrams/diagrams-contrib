@@ -46,8 +46,6 @@ module Diagrams.Lens
   , _lineVertices
   , _lineOffsets
   , _lineSegments
-  -- * Diagrams.TwoD.Types
-  , _toTurn
   ) where
 
 import           Control.Applicative
@@ -68,10 +66,7 @@ _P :: Iso s t (Point s) (Point t)
 _P = iso P $ \(P x) -> x
 
 -- $(concat <$> mapM makeWrapped
---  [ ''Deg
---  , ''R3
---  , ''Rad
---  , ''Turn
+--  [ ''R3
 --TODO: re-introduce - this is probably a bug in 'makeWrapped'
 --  , ''SubMap
 --  , ''Path
@@ -250,10 +245,3 @@ _lineSegments
     (Trail' Line v) (Trail' Line v')
     [Segment Closed v] [Segment Closed v']
 _lineSegments = iso lineSegments lineFromSegments
-
-
--- * Diagrams.TwoD.Types
-
--- | 'toTurn' is an isomorphism from angles to 'Turn's.
-_toTurn :: (Angle a, Angle a') => Iso a a' Turn Turn
-_toTurn = iso toTurn fromTurn

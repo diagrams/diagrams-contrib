@@ -76,7 +76,7 @@ data TurtleState = TurtleState
      -- | Current position. This is updated everytime the turtle moves
   , penPos       :: P2
      -- | Orientation of the turtle in 2D space, given in degrees
-  , heading      :: Deg
+  , heading      :: Angle
      -- | Path traversed by the turtle so far, without any style or pen
      -- attributes changing
   , currTrail    :: Located (Trail' Line R2)
@@ -131,7 +131,7 @@ backward x = moveTurtle (straight $ r2 (negate x, 0))
 
 -- | Turn the turtle by applying the given function to its current orientation
 -- (in degrees)
-turnTurtle :: (Deg -> Deg)   -- ^ Transformation to apply on current orientation
+turnTurtle :: (Angle -> Angle)   -- ^ Transformation to apply on current orientation
            -> TurtleState    -- ^ Turtle to turn
            -> TurtleState    -- ^ Resulting turtle
 turnTurtle f t@(TurtleState _ _ h _ _ _) = t { heading = f h  }
@@ -140,19 +140,19 @@ turnTurtle f t@(TurtleState _ _ h _ _ _) = t { heading = f h  }
 left :: Double       -- ^ Degree of turn
      -> TurtleState  -- ^ Turtle to turn
      -> TurtleState  -- ^ Resulting turtle
-left d = turnTurtle (+ (Deg d))
+left d = turnTurtle (+ (d @@ deg))
 
 -- | Turn the turtle clockwise (right)
 right :: Double       -- ^ Degree of turn
       -> TurtleState  -- ^ Turtle to turn
       -> TurtleState  -- ^ Resulting turtle
-right d = turnTurtle (subtract (Deg d))
+right d = turnTurtle (subtract (d @@ deg))
 
 -- | Turn the turtle to the given orientation, in degrees
 setHeading :: Double       -- ^ Degree of orientation
            -> TurtleState  -- ^ Turtle to orient
            -> TurtleState  -- ^ Resulting turtle
-setHeading d = turnTurtle (const $ Deg d)
+setHeading d = turnTurtle (const $ d @@ deg)
 
 -- | Sets the turtle orientation towards a given location.
 towards :: P2           -- ^ Point to orient turtle towards

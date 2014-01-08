@@ -80,7 +80,7 @@ iterTrail t = iterate (mconcat . mapMaybe (refineSegment t) . lineSegments)
 refineSegment :: Trail' Line R2 -> Segment Closed R2 -> Maybe (Trail' Line R2)
 refineSegment t seg
   | tOff == zeroV || sOff == zeroV = Nothing
-  | otherwise              = Just $ t # scale k # rotateBy r
+  | otherwise              = Just $ t # scale k # rotate r
   where
     sOff = segOffset seg
     tOff = lineOffset t

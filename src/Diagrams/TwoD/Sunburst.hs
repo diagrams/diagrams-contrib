@@ -57,11 +57,11 @@ makeLenses ''SunburstOpts
 -- Section data: Will be stored in nodes of a new rose tree and used to
 -- make each section of the sunburst partition.
 -- radius, ring width, start angle, end angle, number of sections, color.
-data SData = SData Double Double Turn Turn Int (Colour Double)
+data SData = SData Double Double Angle Angle Int (Colour Double)
 
 -- Make n sections (annular wedges) spanning a1 to a2.
 sections :: Renderable (Path R2) b
-        => Double -> Double -> Turn -> Turn -> Int -> (Colour Double)
+        => Double -> Double -> Angle -> Angle -> Int -> (Colour Double)
         -> Diagram b R2
 sections r s a1 a2 n c = mconcat $ iterateN n (rotate theta) w
   where
@@ -72,7 +72,7 @@ sections r s a1 a2 n c = mconcat $ iterateN n (rotate theta) w
 -- Convert an arbitrary @Tree a@ to a @Tree SData@ storing the sections info
 -- in the nodes. If color list is shorter than depth of tree than the first
 -- color of the list is repeated. If the color list is empty, lightgray is used.
-toTree :: Double -> Double-> [(Colour Double)] -> Tree a -> Turn -> Turn  -> Tree SData
+toTree :: Double -> Double-> [(Colour Double)] -> Tree a -> Angle -> Angle  -> Tree SData
 toTree r s [] x q1 q2 = toTree r s (repeat lightgray) x q1 q2
 toTree r s (c:cs) (Node _ ts) q1 q2
   = Node (SData r s q1 q2 n c) ts'

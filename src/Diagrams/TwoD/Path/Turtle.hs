@@ -30,6 +30,7 @@ module Diagrams.TwoD.Path.Turtle
   , penUp, penDown, penHop, closeCurrent
   ) where
 
+import qualified Control.Lens                       as L
 import           Control.Monad.Identity             (Identity (..))
 import qualified Control.Monad.State                as ST
 
@@ -97,7 +98,7 @@ setHeading d = ST.modify $ T.setHeading d
 
 -- | Get the current turtle angle, in degrees.
 heading :: Monad m => TurtleT m Double
-heading = ST.gets ((\(Deg x) -> x) . T.heading)
+heading = ST.gets (L.view deg . T.heading)
 
 -- | Sets the heading towards a given location.
 towards :: Monad m => P2 -> TurtleT m ()

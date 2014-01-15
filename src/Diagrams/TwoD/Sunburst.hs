@@ -90,7 +90,7 @@ toTree r s (c:cs) (Node _ ts) q1 q2
 --   sections is treated the same way.
 sunburst' :: Renderable (Path R2) b => SunburstOpts -> Tree a -> Diagram b R2
 sunburst' opts t
-  = sunB $ toTree r s cs t 0 1
+  = sunB $ toTree r s cs t 0 fullTurn
       where
         r = opts^.radius
         s = opts^.sectionWidth

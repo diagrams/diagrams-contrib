@@ -65,8 +65,8 @@ sections :: Renderable (Path R2) b
         -> Diagram b R2
 sections r s a1 a2 n c = mconcat $ iterateN n (rotate theta) w
   where
-    theta = (a2 - a1) / (fromIntegral n)
-    w = annularWedge (s + r) r a1 (a1 + theta)
+    theta = (a2 ^-^ a1) ^/ (fromIntegral n)
+    w = annularWedge (s + r) r a1 (a1 ^+^ theta)
       # lc white # lw 0.008 # fc c
 
 -- Convert an arbitrary @Tree a@ to a @Tree SData@ storing the sections info
@@ -78,8 +78,8 @@ toTree r s (c:cs) (Node _ ts) q1 q2
   = Node (SData r s q1 q2 n c) ts'
       where
         n = length ts
-        dt =  (q2 - q1) / (fromIntegral n)
-        qs = [q1 + ((fromIntegral i) * dt ) | i <- [0..n]]
+        dt =  (q2 ^-^ q1) ^/ (fromIntegral n)
+        qs = [q1 ^+^ ((fromIntegral i) *^ dt ) | i <- [0..n]]
         fs = toTree (r + s) s (cs ++ [c])
         ts' = zipWith3 fs ts (take (n-1) qs) (drop 1 qs)
 
@@ -90,7 +90,7 @@ toTree r s (c:cs) (Node _ ts) q1 q2
 --   sections is treated the same way.
 sunburst' :: Renderable (Path R2) b => SunburstOpts -> Tree a -> Diagram b R2
 sunburst' opts t
-  = sunB $ toTree r s cs t 0 fullTurn
+  = sunB $ toTree r s cs t zeroV fullTurn
       where
         r = opts^.radius
         s = opts^.sectionWidth

@@ -95,7 +95,7 @@ defaultPenStyle = PenStyle 1.0 black
 -- orientation of 0 degrees with its pen position down. The pen style is
 -- @defaultPenStyle@.
 startTurtle :: TurtleState
-startTurtle = TurtleState True origin 0 (mempty `at` origin) defaultPenStyle []
+startTurtle = TurtleState True origin zeroV (mempty `at` origin) defaultPenStyle []
 
 -- | Draw a segment along the turtle’s path and update its position. If the pen
 -- is up, only the position is updated.
@@ -140,13 +140,13 @@ turnTurtle f t@(TurtleState _ _ h _ _ _) = t { heading = f h  }
 left :: Double       -- ^ Degree of turn
      -> TurtleState  -- ^ Turtle to turn
      -> TurtleState  -- ^ Resulting turtle
-left d = turnTurtle (+ (d @@ deg))
+left d = turnTurtle (^+^ (d @@ deg))
 
 -- | Turn the turtle clockwise (right)
 right :: Double       -- ^ Degree of turn
       -> TurtleState  -- ^ Turtle to turn
       -> TurtleState  -- ^ Resulting turtle
-right d = turnTurtle (subtract (d @@ deg))
+right d = turnTurtle (^-^ (d @@ deg))
 
 -- | Turn the turtle to the given orientation, in degrees
 setHeading :: Double       -- ^ Degree of orientation

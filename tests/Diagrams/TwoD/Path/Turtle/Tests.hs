@@ -162,7 +162,7 @@ instance Arbitrary TurtleState where
      TurtleState
        <$> arbitrary
        <*> arbitrary
-       <*> (Deg <$> arbitrary)
+       <*> ((@@deg) <$> arbitrary)
        <*> arbitrary
        <*> arbitrary
        <*> arbitrary
@@ -193,7 +193,7 @@ instance Arbitrary PenStyle where
 -- Currently this only generates linear segments only
 instance Arbitrary (Segment Closed R2)  where
   arbitrary = do
-    h <- Deg <$> arbitrary
+    h <- (@@deg) <$> arbitrary
     x <- r2 <$> arbitrary
     return $ rotate h (straight x)
 

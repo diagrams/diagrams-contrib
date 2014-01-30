@@ -84,10 +84,9 @@ movesLeft t = isPenDown t ==>
   && abs(endY - startY) < 0.0001
  where
   x                          = 2.0
-  turn                       = 90
-  t'                         = t # forward x # left turn
-                                 # forward x # left turn
-                                 # forward x # left turn
+  t'                         = t # forward x # left 90
+                                 # forward x # left 90
+                                 # forward x # left 90
                                  # forward x
   (unp2 -> (startX, startY)) = penPos t
   (unp2 -> (endX, endY))     = penPos t'
@@ -100,10 +99,9 @@ movesRight t = isPenDown t ==>
   && abs(endY - startY) < 0.0001
  where
   x                          = 2.0
-  turn                       = 90
-  t'                         = t # forward x # right turn
-                                 # forward x # right turn
-                                 # forward x # right turn
+  t'                         = t # forward x # right 90
+                                 # forward x # right 90
+                                 # forward x # right 90
                                  # forward x
   (unp2 -> (startX, startY)) = penPos t
   (unp2 -> (endX, endY))     = penPos t'

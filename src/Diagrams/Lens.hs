@@ -19,8 +19,7 @@
 -- This module provides utilities for using "Control.Lens" with diagrams,
 -- including orphan instances for the 'Wrapped' class.
 module Diagrams.Lens
-  ( Wrapped'
-  , _P
+  ( _P
   -- * Diagrams.Align
   , _envelopeVMove
   , _alignedVMove
@@ -56,23 +55,8 @@ import           Diagrams.BoundingBox
 import           Diagrams.Core.Style
 import           Diagrams.Prelude
 
-type Wrapped' s a = Wrapped s s a a
-
-instance Wrapped v v (Point v) (Point v) where
-  wrapped = _P
-  {-# INLINE wrapped #-}
-
-_P :: Iso s t (Point s) (Point t)
-_P = iso P $ \(P x) -> x
-
--- $(concat <$> mapM makeWrapped
---  [ ''R3
---TODO: re-introduce - this is probably a bug in 'makeWrapped'
---  , ''SubMap
---  , ''Path
---  , ''Point
---  , ''QDiagram
-  --])
+_P :: Iso (Point v) (Point v') v v'
+_P = iso (\(P x) -> x) P
 
 -- * Diagrams.Align
 

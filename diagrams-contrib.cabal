@@ -51,7 +51,7 @@ library
                        colour >= 2.3.1 && < 2.4,
                        split >= 0.2.1 && < 0.3,
                        diagrams-core >= 1.0 && < 1.1,
-                       diagrams-lib >= 1.0 && < 1.1,
+                       diagrams-lib >= 1.0 && < 1.2,
                        arithmoi >= 0.4 && < 0.5,
                        lens >= 3.8 && < 4.1,
                        force-layout >= 0.3 && < 0.4,

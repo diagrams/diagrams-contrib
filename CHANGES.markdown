@@ -1,5 +1,5 @@
-1.1.1 (XXX)
------------
+1.1.1 (8 March 2014)
+--------------------
 
     - require `diagrams-core-1.1` and `diagrams-lib-1.1`
 

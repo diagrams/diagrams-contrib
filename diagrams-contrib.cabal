@@ -53,7 +53,7 @@ library
                        diagrams-core >= 1.1 && < 1.2,
                        diagrams-lib >= 1.1 && < 1.2,
                        arithmoi >= 0.4 && < 0.5,
-                       lens >= 3.8 && < 4.1,
+                       lens >= 3.8 && < 4.2,
                        force-layout >= 0.3 && < 0.4,
                        data-default >= 0.3 && < 0.6,
                        MonadRandom >= 0.1.8 && < 0.2,

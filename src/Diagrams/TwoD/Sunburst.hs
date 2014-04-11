@@ -67,7 +67,7 @@ sections r s a1 a2 n c = mconcat $ iterateN n (rotate theta) w
   where
     theta = (a2 ^-^ a1) ^/ (fromIntegral n)
     w = annularWedge (s + r) r a1 (a1 ^+^ theta)
-      # lc white # lw 0.008 # fc c
+      # lc white # lwG 0.008 # fc c
 
 -- Convert an arbitrary @Tree a@ to a @Tree SData@ storing the sections info
 -- in the nodes. If color list is shorter than depth of tree than the first

@@ -88,7 +88,7 @@ colorBars :: (Renderable (Path R2) b)
           => [Colour Double] -> Integer -> Path R2 -> Diagram b R2
 colorBars colors p poly | p <= 11 = stroke poly
                              # fc (colors!!(fromIntegral p `mod` 10))
-                             # lw 0
+                             # lwG 0
 colorBars colors p poly = bars # clipBy poly
   where
     barColors = map ((colors!!) . digitToInt) (show p)

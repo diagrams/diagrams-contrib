@@ -354,9 +354,9 @@ drawTiling :: (Renderable (Path R2) b, Backend b R2)
            => Tiling -> Double -> Double -> Diagram b R2
 drawTiling =
   drawTilingStyled
-    (mempty # lw 0.02)
+    (mempty # lwG 0.02)
     (\p -> mempty
-           # lw 0
+           # lwG 0
            # fc ( polyColor
                 . polyFromSides
                 . length

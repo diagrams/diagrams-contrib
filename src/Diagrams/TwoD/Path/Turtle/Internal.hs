@@ -286,7 +286,7 @@ turtlePathToStroke :: (Renderable (Path R2) b) => TurtlePath
                    -> Diagram b R2
 turtlePathToStroke t@(TurtlePath (PenStyle lineWidth_  lineColor_) _) = d
  where d = lc lineColor_ .
-           lw lineWidth_ .
+           lwG lineWidth_ .
            stroke $ turtlePathToTrailLike t
 
 -- | Prints out turtle representation and returns it. Use for debugging

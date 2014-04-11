@@ -217,7 +217,7 @@ apollonian' thresh cur others
 -- | Draw a circle.
 drawCircle :: (Renderable (Path R2) b) => Double -> Circle -> Diagram b R2
 drawCircle w c = circle (radius c) # moveTo (center c)
-                                   # lw w # fcA transparent
+                                   # lwG w # fcA transparent
 
 -- | Draw a generated gasket, using a line width 0.003 times the
 --   radius of the largest circle.

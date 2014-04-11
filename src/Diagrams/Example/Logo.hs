@@ -34,7 +34,7 @@ d = (stroke $
    <> (hcat' (with & sep.~ 0.2) . map (vcat' (with & sep .~ 0.2))
         $ (replicate 2 (replicate 9 (reversePath $ circle 0.3)))) # alignBR)
     # fc red
-    # lw 0
+    # lwG 0
 
 -- an icon-ish version of the d
 
@@ -42,14 +42,14 @@ ico_d = (stroke $
         circle 2 # alignBR # translateX (-0.5)
         <> (vcat' (with & sep.~ 0.3) $ replicate 5 (reversePath $ circle 0.5)) # alignBR)
         # fc red
-        # lw 0
+        # lwG 0
 
 ------------------------------------------------------------
 -- I
 ------------------------------------------------------------
 
 i = (circle 1 === strutY 0.5 === roundedRect 2 4 0.4)
-    # lw 0.05
+    # lwG 0.05
     # lc blue
     # fc yellow
 
@@ -63,7 +63,7 @@ sierpinski n = t === (t ||| t) # centerX
 
 a1 = sierpinski (4 :: Integer)
      # fc navy
-     # lw 0
+     # lwG 0
      # scale (1/2)
 
 ------------------------------------------------------------
@@ -79,10 +79,10 @@ gbkg = grid
     # rotateBy (-1/20)
     # clipBy p
     # withEnvelope (p :: Path R2)
-    # lw 0.05
+    # lwG 0.05
   where p = square 5
 
-g = (text "G" # fontSize 4 # rotateBy (-1/20)) <> gbkg
+g = (text "G" # fontSizeG 4 # rotateBy (-1/20)) <> gbkg
 
 ------------------------------------------------------------
 -- R
@@ -94,14 +94,14 @@ r = sketchTurtle (setHeading 90 >> forward 5 >> right 90
                  )
   # reversePath
   # stroke' (with & vertexNames .~ [["end"]] )
-  # lw 0.3
+  # lwG 0.3
   # lineJoin LineJoinRound
   # lineCap LineCapRound
   # lc orange
   # (withName "end" $ atop . place turtle . location)
   where
     turtle = eqTriangle 1 # scaleY 1.3 # rotate (-135 @@ deg)
-             # lw 0.1
+             # lwG 0.1
 
 ------------------------------------------------------------
 -- A
@@ -110,7 +110,7 @@ r = sketchTurtle (setHeading 90 >> forward 5 >> right 90
 aTree = BNode () f f
   where f = BNode () (leaf ()) (leaf ())
 
-a2 = renderTree (\_ -> circle 0.5 # fc purple) (~~) t'' # lw 0.1
+a2 = renderTree (\_ -> circle 0.5 # fc purple) (~~) t'' # lwG 0.1
   where Just t' = uniqueXLayout 1 2 aTree
         t''     = forceLayoutTree t'
 
@@ -118,9 +118,9 @@ a2 = renderTree (\_ -> circle 0.5 # fc purple) (~~) t'' # lw 0.1
 -- M
 ------------------------------------------------------------
 
-m = square 5 # lw 0.05 <>
+m = square 5 # lwG 0.05 <>
     text "m"
-      # fontSize 6 # italic # font "freeserif" # fc green
+      # fontSizeG 6 # italic # font "freeserif" # fc green
 
 ------------------------------------------------------------
 -- S
@@ -128,10 +128,10 @@ m = square 5 # lw 0.05 <>
 
 ps = map p2 [(5,5), (3,6), (1,5), (1,4), (3,3), (5,2), (4,0), (0,0.5)]
 s = (mconcat (map (place (dot blue)) ps) <>
-    cubicSpline False ps # lw 0.20)
+    cubicSpline False ps # lwG 0.20)
     # scale 0.8
 
-dot c = circle 0.4 # fc c # lw 0
+dot c = circle 0.4 # fc c # lwG 0
 
 ------------------------------------------------------------
 -- Logo

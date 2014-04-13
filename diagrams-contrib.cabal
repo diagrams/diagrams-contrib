@@ -1,5 +1,5 @@
 name:                diagrams-contrib
-version:             1.1.1.4
+version:             1.1.1.5
 synopsis:            Collection of user contributions to diagrams EDSL
 description:         A collection of user contributions for diagrams,
                      an embedded domain-specific language for generation
@@ -26,6 +26,7 @@ library
                        Diagrams.Example.Logo,
                        Diagrams.Layout.Wrap,
                        Diagrams.Lens,
+                       Diagrams.TwoD.Grid,
                        Diagrams.TwoD.Apollonian,
                        Diagrams.TwoD.Factorization,
                        Diagrams.TwoD.Tilings,

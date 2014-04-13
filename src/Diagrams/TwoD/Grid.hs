@@ -15,9 +15,9 @@
 -- <<diagrams/src_Diagrams_TwoD_Grid_example1.svg#diagram=example1&height=300&width=200>>
 --
 -- The example above is created by the code below which generates a
--- grid, puts points on the interior, draws dashed lines around the
--- points to which we wish to draw attention and annotate the points
--- of interest with some text.
+-- grid, puts points on the interior and the boundary, draws dashed
+-- lines around the points to which we wish to draw attention and
+-- annotates the points of interest with some text.
 --
 -- > {-# LANGUAGE FlexibleContexts #-}
 -- >

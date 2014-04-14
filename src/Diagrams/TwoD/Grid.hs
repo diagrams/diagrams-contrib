@@ -105,7 +105,7 @@ import Data.List.Split
 
 data GridOpts
   = GridOpts
-    { _gridLineWidth :: Double
+    { _gridLineWidth :: Measure R2
     , _gridYColour   :: Colour Double
     , _gridXColour   :: Colour Double
     , _gridLL        :: R2
@@ -115,7 +115,7 @@ data GridOpts
 
 instance Default GridOpts where
   def = GridOpts
-        { _gridLineWidth = 0.001
+        { _gridLineWidth = thin
         , _gridXColour   = red
         , _gridYColour   = blue
         , _gridLL        = r2 (1.0, 1.0)
@@ -126,17 +126,17 @@ instance Default GridOpts where
 data HighlightLineOpts
   = HighlightLineOpts
     { _highLightLineColour        :: Colour Double
-    , _highLightLineWidth         :: Double
-    , _highLightLineDashingOnOff  :: [Double]
-    , _highLightLineDashingOffset :: Double
+    , _highLightLineWidth         :: Measure R2
+    , _highLightLineDashingOnOff  :: [Measure R2]
+    , _highLightLineDashingOffset :: Measure R2
     }
 
 instance Default HighlightLineOpts where
   def = HighlightLineOpts
         { _highLightLineColour = black
-        , _highLightLineWidth = 0.003
-        , _highLightLineDashingOnOff = [0.01,0.01]
-        , _highLightLineDashingOffset = 0.0
+        , _highLightLineWidth = medium
+        , _highLightLineDashingOnOff = [Normalized 0.03, Normalized 0.03]
+        , _highLightLineDashingOffset = Output 0
         }
 
 makeLenses ''GridOpts

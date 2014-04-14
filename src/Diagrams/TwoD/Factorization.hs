@@ -50,7 +50,7 @@ import           Math.NumberTheory.Primes.Factorisation (factorise)
 --   >   . hcat' (with & sep .~ 0.5)
 --   >   . map (sized (Width 1))
 --   >   $ [ primeLayout defaultColors 5 (circle 1 # fc black)
---   >     , primeLayout defaultColors 103 (square 1 # fc green # lw 0)
+--   >     , primeLayout defaultColors 103 (square 1 # fc green # lw none)
 --   >     , primeLayout (repeat white) 13 (circle 1 # lc orange)
 --   >     ]
 --
@@ -88,7 +88,7 @@ colorBars :: (Renderable (Path R2) b)
           => [Colour Double] -> Integer -> Path R2 -> Diagram b R2
 colorBars colors p poly | p <= 11 = stroke poly
                              # fc (colors!!(fromIntegral p `mod` 10))
-                             # lwG 0
+                             # lw none
 colorBars colors p poly = bars # clipBy poly
   where
     barColors = map ((colors!!) . digitToInt) (show p)
@@ -109,7 +109,7 @@ defaultColors = map (blend 0.1 white)
 -- > import Diagrams.TwoD.Factorization
 -- > showDefaultColors = hcat $ zipWith showColor defaultColors [0..]
 -- >   where
--- >     showColor c d = text (show d) <> square 1 # fc c # lw 0
+-- >     showColor c d = text (show d) <> square 1 # fc c # lw none
 
 -- | Create a centered factorization diagram from the given list of
 --   factors (intended to be primes, but again, any positive integers
@@ -123,7 +123,7 @@ defaultColors = map (blend 0.1 white)
 --   <<diagrams/src_Diagrams_TwoD_Factorization_factorDiagram'Ex.svg#diagram=factorDiagram'Ex&height=200>>
 factorDiagram' :: (Backend b R2, Renderable (Path R2) b)
                => [Integer] -> Diagram b R2
-factorDiagram' = centerXY . foldr (primeLayout defaultColors) (circle 1 # fc black)
+factorDiagram' = centerXY . foldr (primeLayout defaultColors) (circle 1 # fc black # lw none)
 
 -- | Create a default factorization diagram for the given integer, by
 --   factoring it and calling 'factorDiagram'' on its prime

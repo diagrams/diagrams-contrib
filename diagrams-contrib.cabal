@@ -28,6 +28,7 @@ library
                        Diagrams.Lens,
                        Diagrams.TwoD.Apollonian,
                        Diagrams.TwoD.Factorization,
+                       Diagrams.TwoD.Grid,
                        Diagrams.TwoD.Tilings,
                        Diagrams.TwoD.Sunburst,
                        Diagrams.TwoD.Layout.Tree,

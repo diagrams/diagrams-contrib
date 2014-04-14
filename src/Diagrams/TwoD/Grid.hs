@@ -19,9 +19,11 @@
 -- lines around the points to which we wish to draw attention and
 -- annotates the points of interest with some text.
 --
--- > {-# LANGUAGE FlexibleContexts #-}
+-- > {-# LANGUAGE FlexibleContexts      #-}
+-- > {-# LANGUAGE MultiParamTypeClasses #-}
 -- >
 -- > import Diagrams.TwoD.Grid
+-- > import Diagrams.TwoD.Text
 -- >
 -- > example :: (Renderable Text b, Renderable (Path R2) b, Backend b R2) =>
 -- >            Int -> Int -> Diagram b R2
@@ -70,12 +72,12 @@
 -- >                        , (n - 1, m - 1)
 -- >                        ]
 -- >
--- >     txtPt t = circle cSize # opacity 0.0 # lw 0.0
+-- >     txtPt t = circle cSize # opacity 0.0 # lw none
 -- >               ===
--- >               text t # scaleX 0.03 # scaleY 0.03
+-- >               text t # fontSize (Local 0.0004)
 -- >
--- >     intPts = placeDiagramOnGrid (circle (cSize / 2) # fc blue # opacity 0.5 # lw 0)
--- >     bndPts = placeDiagramOnGrid (circle (cSize / 2) # fc red  # opacity 0.5 # lw 0)
+-- >     intPts = placeDiagramOnGrid (circle (cSize / 2) # fc blue # opacity 0.5 # lw none)
+-- >     bndPts = placeDiagramOnGrid (circle (cSize / 2) # fc red  # opacity 0.5 # lw none)
 -- >
 -- >     cSize :: Double
 -- >     cSize = 0.03

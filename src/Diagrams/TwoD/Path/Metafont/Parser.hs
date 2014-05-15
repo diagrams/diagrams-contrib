@@ -35,8 +35,8 @@ pt = char '(' *> (p2 <$> xy) <* char ')'
 
 -- Joins
 
-join :: Parser (PathJoin (Maybe PathDir) BasicJoin)
-join = straightJoin <|> do
+anyJoin :: Parser (PathJoin (Maybe PathDir) BasicJoin)
+anyJoin = straightJoin <|> do
   d1' <- optionMaybe pathDir
   j' <- tenseLine <|> dotsJoin
   d2' <- optionMaybe pathDir
@@ -99,7 +99,7 @@ pathDir = do
 -- Segments & Paths
 
 mfs :: Parser (MetafontSegment (Maybe PathDir) BasicJoin)
-mfs = MFS <$> pt <*> join <*> lookAhead pt
+mfs = MFS <$> pt <*> anyJoin <*> lookAhead pt
 
 matches :: Stream s m t => ParsecT s u m a -> ParsecT s u m Bool
 matches p = option False (p *> return True)

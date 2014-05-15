@@ -19,8 +19,7 @@
 -- This module provides utilities for using "Control.Lens" with diagrams,
 -- including orphan instances for the 'Wrapped' class.
 module Diagrams.Lens
-  ( Wrapped'
-  , _P
+  ( _P
   -- * Diagrams.Align
   , _envelopeVMove
   , _alignedVMove
@@ -46,8 +45,6 @@ module Diagrams.Lens
   , _lineVertices
   , _lineOffsets
   , _lineSegments
-  -- * Diagrams.TwoD.Types
-  , _toTurn
   ) where
 
 import           Control.Applicative
@@ -58,26 +55,8 @@ import           Diagrams.BoundingBox
 import           Diagrams.Core.Style
 import           Diagrams.Prelude
 
-type Wrapped' s a = Wrapped s s a a
-
-instance Wrapped v v (Point v) (Point v) where
-  wrapped = _P
-  {-# INLINE wrapped #-}
-
-_P :: Iso s t (Point s) (Point t)
-_P = iso P $ \(P x) -> x
-
--- $(concat <$> mapM makeWrapped
---  [ ''Deg
---  , ''R3
---  , ''Rad
---  , ''Turn
---TODO: re-introduce - this is probably a bug in 'makeWrapped'
---  , ''SubMap
---  , ''Path
---  , ''Point
---  , ''QDiagram
-  --])
+_P :: Iso (Point v) (Point v') v v'
+_P = iso (\(P x) -> x) P
 
 -- * Diagrams.Align
 
@@ -250,10 +229,3 @@ _lineSegments
     (Trail' Line v) (Trail' Line v')
     [Segment Closed v] [Segment Closed v']
 _lineSegments = iso lineSegments lineFromSegments
-
-
--- * Diagrams.TwoD.Types
-
--- | 'toTurn' is an isomorphism from angles to 'Turn's.
-_toTurn :: (Angle a, Angle a') => Iso a a' Turn Turn
-_toTurn = iso toTurn fromTurn

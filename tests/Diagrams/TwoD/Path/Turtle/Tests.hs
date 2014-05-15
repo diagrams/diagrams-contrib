@@ -84,10 +84,9 @@ movesLeft t = isPenDown t ==>
   && abs(endY - startY) < 0.0001
  where
   x                          = 2.0
-  turn                       = 90
-  t'                         = t # forward x # left turn
-                                 # forward x # left turn
-                                 # forward x # left turn
+  t'                         = t # forward x # left 90
+                                 # forward x # left 90
+                                 # forward x # left 90
                                  # forward x
   (unp2 -> (startX, startY)) = penPos t
   (unp2 -> (endX, endY))     = penPos t'
@@ -100,10 +99,9 @@ movesRight t = isPenDown t ==>
   && abs(endY - startY) < 0.0001
  where
   x                          = 2.0
-  turn                       = 90
-  t'                         = t # forward x # right turn
-                                 # forward x # right turn
-                                 # forward x # right turn
+  t'                         = t # forward x # right 90
+                                 # forward x # right 90
+                                 # forward x # right 90
                                  # forward x
   (unp2 -> (startX, startY)) = penPos t
   (unp2 -> (endX, endY))     = penPos t'
@@ -162,7 +160,7 @@ instance Arbitrary TurtleState where
      TurtleState
        <$> arbitrary
        <*> arbitrary
-       <*> (Deg <$> arbitrary)
+       <*> ((@@deg) <$> arbitrary)
        <*> arbitrary
        <*> arbitrary
        <*> arbitrary
@@ -193,7 +191,7 @@ instance Arbitrary PenStyle where
 -- Currently this only generates linear segments only
 instance Arbitrary (Segment Closed R2)  where
   arbitrary = do
-    h <- Deg <$> arbitrary
+    h <- (@@deg) <$> arbitrary
     x <- r2 <$> arbitrary
     return $ rotate h (straight x)
 

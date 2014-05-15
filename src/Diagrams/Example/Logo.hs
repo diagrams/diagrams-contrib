@@ -100,7 +100,7 @@ r = sketchTurtle (setHeading 90 >> forward 5 >> right 90
   # lc orange
   # (withName "end" $ atop . place turtle . location)
   where
-    turtle = eqTriangle 1 # scaleY 1.3 # rotate (-135 :: Deg)
+    turtle = eqTriangle 1 # scaleY 1.3 # rotate (-135 @@ deg)
              # lw 0.1
 
 ------------------------------------------------------------

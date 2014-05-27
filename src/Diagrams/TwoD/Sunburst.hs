@@ -79,7 +79,7 @@ toTree r s (c:cs) (Node _ ts) d a
       where
         n = length ts
         dt =  a ^/ (fromIntegral n)
-        qs = [d .+^ ((fromIntegral i) *^ dt ) | i <- [0..n]]
+        qs = [rotate ((fromIntegral i) *^ dt ) d  | i <- [0..n]]
         fs = toTree (r + s) s (cs ++ [c])
         ts' = zipWith3 fs ts (take (n-1) qs) (repeat dt)
 

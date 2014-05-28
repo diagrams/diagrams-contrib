@@ -1,3 +1,15 @@
+1.1.2 (28 May 2014)
+-------------------
+
+* **New features**
+
+    - New module `Diagrams.TwoD.Grid`, for making grids.
+      
+* **Dependency/version changes**
+
+    - Allow `diagrams-core-1.2`
+    - Allow `diarams-lib-1.2`
+    
 1.1.1.5 (15 May 2014)
 ------------------------
 

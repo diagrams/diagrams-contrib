@@ -85,7 +85,7 @@ refineSegment t seg
     sOff = segOffset seg
     tOff = lineOffset t
     k    = magnitude sOff / magnitude tOff
-    r    = angleBetween sOff tOff
+    r    = (sOff^._theta) ^-^ (tOff^._theta)
 
 ------------------------------------------------------------
 -- Examples

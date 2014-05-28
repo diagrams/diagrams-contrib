@@ -248,7 +248,7 @@ setDirs (MFS z0 (PJ w0' jj w1') z1) t p = MFS z0 (PJ w0 jj w1) z1 where
 -- is assumed to be the starting point of r; this is not checked.
 psi :: (MetafontSegment p j1, MetafontSegment p j1) -> Double
 psi (l,r) = normalizeTurns t where
-  t = view turn $ angleBetween (mfSegmentOffset r) (mfSegmentOffset l)
+  t = view turn $ (mfSegmentOffset r ^. _theta) ^-^ (mfSegmentOffset l ^. _theta)
 
 -- | lineDirs calculates the offset angles θ for a Line.  Most of the work
 -- done by lineEqs and solveTriDiagonal, but lineDirs handles the separate cases

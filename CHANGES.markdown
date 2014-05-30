@@ -9,6 +9,7 @@
 
     - Allow `diagrams-core-1.2`
     - Allow `diarams-lib-1.2`
+    - Allow `semigroups-0.15`
     
 1.1.1.5 (15 May 2014)
 ------------------------

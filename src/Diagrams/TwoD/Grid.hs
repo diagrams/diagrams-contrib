@@ -74,7 +74,7 @@
 -- >
 -- >     txtPt t = circle cSize # opacity 0.0 # lw none
 -- >               ===
--- >               text t # fontSize (Local 0.0004)
+-- >               text t # fontSize (Local 0.06)
 -- >
 -- >     intPts = placeDiagramOnGrid (circle (cSize / 2) # fc blue # opacity 0.5 # lw none)
 -- >     bndPts = placeDiagramOnGrid (circle (cSize / 2) # fc red  # opacity 0.5 # lw none)

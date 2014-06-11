@@ -47,6 +47,7 @@ module Diagrams.TwoD.Path.IteratedSubset
 import           Diagrams.Core.Points       ()
 import           Diagrams.Prelude
 
+import           Control.Lens ((^.))
 import           Control.Monad              (replicateM)
 import           Control.Monad.Random       (evalRandIO, getRandom, getRandomR)
 import           Control.Monad.Random.Class (MonadRandom)
@@ -85,7 +86,7 @@ refineSegment t seg
     sOff = segOffset seg
     tOff = lineOffset t
     k    = magnitude sOff / magnitude tOff
-    r    = direction sOff ^-^ direction tOff
+    r    = (sOff^._theta) ^-^ (tOff^._theta)
 
 ------------------------------------------------------------
 -- Examples

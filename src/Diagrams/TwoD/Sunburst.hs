@@ -33,7 +33,7 @@ module Diagrams.TwoD.Sunburst
   , colors
   ) where
 
-import           Control.Lens        (makeLenses, (^.))
+import           Control.Lens        (makeLenses)
 
 import           Data.Tree
 import           Data.Foldable       (foldMap)
@@ -57,12 +57,12 @@ makeLenses ''SunburstOpts
 -- Section data: Will be stored in nodes of a new rose tree and used to
 -- make each section of the sunburst partition.
 data SData = SData 
-  { sRadius :: Double          -- section radius 
-  , sWidth  :: Double          -- section width 
-  , start   :: Direction R2    -- start direction
-  , sweep   :: Angle           -- sweep angle 
-  , sNum    :: Int             -- number of sections
-  , sColor  :: Colour Double } -- color 
+  Double          -- section radius 
+  Double          -- section width 
+  (Direction R2)  -- start direction
+  Angle           -- sweep angle 
+  Int             -- number of sections
+  (Colour Double) -- color 
   
 -- Make n sections (annular wedges) starting in direction d and sweeping a
 sections :: Renderable (Path R2) b => SData -> Diagram b R2

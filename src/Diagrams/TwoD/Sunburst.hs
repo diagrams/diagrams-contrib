@@ -5,7 +5,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Diagrams.TwoD.Sunburst
--- Copyright   :  (c) 2013 Jeffrey Rosenbluth
+-- Copyright   :  (c) 2013-14 Jeffrey Rosenbluth
 -- License     :  BSD-style (see LICENSE)
 -- Maintainer  :  jeffrey.rosenbluth@gmail.com
 --
@@ -27,7 +27,10 @@ module Diagrams.TwoD.Sunburst
   ( --  * Sunburst
     sunburst'
   , sunburst
-  , SunburstOpts(..), radius, sectionWidth, colors
+  , SunburstOpts(..)
+  , radius
+  , sectionWidth
+  , colors
   ) where
 
 import           Control.Lens        (makeLenses, (^.))
@@ -37,57 +40,50 @@ import           Data.Foldable       (foldMap)
 import           Data.Default.Class
 import           Diagrams.Prelude    hiding (radius)
 
-data SunburstOpts
-  = SunburstOpts
-    { _radius       :: Double -- ^ Relative size of the root circle, usually 1.
-    , _sectionWidth :: Double -- ^ Relative width of the sections.
-    , _colors       :: [Colour Double] -- ^ Color list one for each ring.
-    }
+data SunburstOpts = SunburstOpts
+  { _radius       :: Double -- ^ Relative size of the root circle, usually 1.
+  , _sectionWidth :: Double -- ^ Relative width of the sections.
+  , _colors       :: [Colour Double]} -- ^ Color list one for each ring.
 
 instance Default SunburstOpts where
   def = SunburstOpts
-        { _radius       = 1.0
-        , _sectionWidth = 0.3
-        , _colors       = [ lightcoral, lightseagreen, paleturquoise
-                         ,lightsteelblue, plum, violet, coral, honeydew]
-        }
+    { _radius       = 1.0
+    , _sectionWidth = 0.3
+    , _colors       = [ lightcoral, lightseagreen, paleturquoise
+                      , lightsteelblue, plum, violet, coral, honeydew]}
 
 makeLenses ''SunburstOpts
 
 -- Section data: Will be stored in nodes of a new rose tree and used to
 -- make each section of the sunburst partition.
-data SData 
-    = SData 
-      { sRadius :: Double        -- section radius 
-      , sWidth  :: Double        -- section width 
-      , start   :: Direction R2  -- start direction
-      , sweep   :: Angle         -- sweep angle 
-      , sNum    :: Int           -- number of sections
-      , sColor  :: Colour Double -- color 
-      }
-
+data SData = SData 
+  { sRadius :: Double          -- section radius 
+  , sWidth  :: Double          -- section width 
+  , start   :: Direction R2    -- start direction
+  , sweep   :: Angle           -- sweep angle 
+  , sNum    :: Int             -- number of sections
+  , sColor  :: Colour Double } -- color 
+  
 -- Make n sections (annular wedges) starting in direction d and sweeping a
 sections :: Renderable (Path R2) b => SData -> Diagram b R2
 sections (SData r s d a n c) = mconcat $ iterateN n (rotate theta) w
   where
     theta = a ^/ (fromIntegral n)
-    w = annularWedge (s + r) r d theta
-      # lc white # lwG 0.008 # fc c
+    w = annularWedge (s + r) r d theta # lc white # lwG 0.008 # fc c
 
 -- Convert an arbitrary @Tree a@ to a @Tree SData@ storing the sections info
 -- in the nodes. If color list is shorter than depth of tree than the first
 -- color of the list is repeated. If the color list is empty, lightgray is used.
-toTree ::SunburstOpts -> Tree a -> Direction R2 -> Angle  -> Tree SData
+toTree :: SunburstOpts -> Tree a -> Direction R2 -> Angle  -> Tree SData
 toTree (SunburstOpts r s []) x q1 q2 = 
   toTree (SunburstOpts r s (repeat lightgray)) x q1 q2
-toTree (SunburstOpts r s (c:cs)) (Node _ ts) d a =
-  Node (SData r s d a n c) ts'
-    where
-      n = length ts
-      dt =  a ^/ (fromIntegral n)
-      qs = [rotate ((fromIntegral i) *^ dt ) d  | i <- [0..n]]
-      fs = toTree (SunburstOpts(r + s) s (cs ++ [c]))
-      ts' = zipWith3 fs ts (take (n-1) qs) (repeat dt)
+toTree (SunburstOpts r s (c:cs)) (Node _ ts) d a = Node (SData r s d a n c) ts'
+  where
+    n = length ts
+    dt =  a ^/ (fromIntegral n)
+    qs = [rotate ((fromIntegral i) *^ dt ) d  | i <- [0..n]]
+    fs = toTree (SunburstOpts(r + s) s (cs ++ [c]))
+    ts' = zipWith3 fs ts (take (n-1) qs) (repeat dt)
 
 -- | Take any @Tree a@ and @SunburstOpts@ and make a sunburst partition.
 --   Basically a treemap with a radial layout.
@@ -95,10 +91,8 @@ toTree (SunburstOpts r s (c:cs)) (Node _ ts) d a =
 --   evenly according to the number of child nodes it has. Then each of those
 --   sections is treated the same way.
 sunburst' :: Renderable (Path R2) b => SunburstOpts -> Tree a -> Diagram b R2
-sunburst' opts t = 
-  sunB $ toTree opts t xDir fullTurn
-    where
-      sunB (Node sd ts') = sections sd <> (foldMap sunB ts')
+sunburst' opts t = sunB $ toTree opts t xDir fullTurn
+  where sunB (Node sd ts') = sections sd <> (foldMap sunB ts')
 
 -- | @sunburst@ with default opts
 --

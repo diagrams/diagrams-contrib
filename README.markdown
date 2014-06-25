@@ -1,4 +1,4 @@
-[![Build Status](https://secure.travis-ci.org/diagrams/diagrams-contrib.png)](http://travis-ci.org/diagrams/diagrams-contrib)
+[![Build Status](https://travis-ci.org/diagrams/diagrams-contrib.png?branch=master)](http://travis-ci.org/diagrams/diagrams-contrib)
 
 This package is a repository for user contributions to the
 [diagrams project](http://projects.haskell.org/diagrams): generation

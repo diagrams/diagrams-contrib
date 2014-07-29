@@ -29,7 +29,6 @@
 -- >   renderTree ((<> circle 1 # fc white) . text . (:[]))
 -- >              (~~)
 -- >              (symmLayout' (with & slHSep .~ 4 & slVSep .~ 4) t1)
--- >   # lw 0.03
 -- >   # centerXY # pad 1.1
 --
 -- <<diagrams/src_Diagrams_TwoD_Layout_Tree_exampleSymmTree.svg#diagram=exampleSymmTree&width=300>>
@@ -52,7 +51,6 @@
 -- >   (symmLayout' (with & slWidth  .~ fromMaybe (0,0) . extentX
 -- >                      & slHeight .~ fromMaybe (0,0) . extentY)
 -- >      tD)
--- >   # lw 0.03
 -- >   # centerXY # pad 1.1
 --
 -- <<diagrams/src_Diagrams_TwoD_Layout_Tree_exampleSymmTreeWithDs.svg#diagram=exampleSymmTreeWithDs&width=300>>
@@ -82,7 +80,7 @@
 -- >
 -- > Just t' = uniqueXLayout 1 1 (t 4)
 -- >
--- > fblEx = renderTree (\n -> (text (show n) # fontSize 0.5
+-- > fblEx = renderTree (\n -> (text (show n) # fontSizeL 0.5
 -- >                             <> circle 0.3 # fc white))
 -- >             (~~)
 -- >             (forceLayoutTree t')

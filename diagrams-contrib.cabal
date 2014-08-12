@@ -31,6 +31,7 @@ library
                        Diagrams.TwoD.Grid,
                        Diagrams.TwoD.Tilings,
                        Diagrams.TwoD.Sunburst,
+                       Diagrams.TwoD.Layout.Grid,
                        Diagrams.TwoD.Layout.Tree,
                        Diagrams.TwoD.Layout.CirclePacking,
                        Diagrams.TwoD.Path.Calligraphic,

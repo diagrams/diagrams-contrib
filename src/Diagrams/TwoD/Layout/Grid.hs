@@ -138,7 +138,7 @@ sameBoundingRect diagrams = map frameOne diagrams
 -- * Helper functions.
 
 intSqrt :: Int -> Int
-intSqrt x = floor . sqrt . (fromIntegral x :: Float)
+intSqrt = round . sqrt . (fromIntegral :: Int -> Float)
 
 everyOther :: (a -> a) -> ([a] -> [a])
 everyOther f xs = zipWith ($) (cycle [id, f]) xs

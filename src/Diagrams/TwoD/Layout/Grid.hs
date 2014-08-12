@@ -35,6 +35,11 @@ import Diagrams.Prelude
 
 -- | Puts a list of diagrams in a grid, left-to-right, top-to-bottom.
 --   The grid is as close to square as possible.
+--
+-- > gridCatExample = gridCat $ map (flip regPoly 1) [3..10]
+-- 
+-- <<#diagram=gridCatExample&width=200>>
+
 gridCat
   :: (Backend b R2, Renderable (Path R2) b)
   => [Diagram b R2] 
@@ -42,6 +47,11 @@ gridCat
 gridCat diagrams = gridCat' (intSqrt $ length diagrams) diagrams
 
 -- | Same as 'gridCat', but with a specified number of columns.
+--
+-- > gridCatExample' = gridCat' 4 $ map (flip regPoly 1) [3..10]
+-- 
+-- <<#diagram=gridCatExample'&width=200>>
+
 gridCat' 
   :: (Backend b R2, Renderable (Path R2) b)
   => Int -> [Diagram b R2] 
@@ -51,6 +61,11 @@ gridCat' = gridAnimal id
 -- | Puts a list of diagrams in a grid, alternating left-to-right
 --   and right-to-left. Useful for comparing sequences of diagrams.
 --   The grid is as close to square as possible.
+--
+-- > gridSnakeExample = gridSnake $ map (flip regPoly 1) [3..10]
+-- 
+-- <<#diagram=gridSnakeExample&width=200>>
+
 gridSnake
   :: (Backend b R2, Renderable (Path R2) b)
   => [Diagram b R2] 
@@ -58,6 +73,11 @@ gridSnake
 gridSnake diagrams = gridSnake' (intSqrt $ length diagrams) diagrams
 
 -- | Same as 'gridSnake', but with a specified number of columns.
+--
+-- > gridSnakeExample' = gridSnake' 4 $ map (flip regPoly 1) [3..10]
+-- 
+-- <<#diagram=gridSnakeExample'&width=200>>
+
 gridSnake'
   :: (Backend b R2, Renderable (Path R2) b)
   => Int -> [Diagram b R2] 
@@ -74,7 +94,7 @@ gridAnimal rowFunction cols = vcat . map hcat . rowFunction
 
 -- | `gridWith f (cols, rows)` uses `f`, a function of two 
 --   zero-indexed integer coordinates, to generate a grid of diagrams
---   with the specified dimensions.
+--   with the specified dimensions.git clone https://github.com/diagrams/diagrams-svg.git && cd diagrams-svg && cabal install
 gridWith 
   :: (Backend b R2, Renderable (Path R2) b)
   => (Int -> Int -> Diagram b R2) -> (Int, Int) 
@@ -118,10 +138,10 @@ sameBoundingRect diagrams = map frameOne diagrams
 -- * Helper functions.
 
 intSqrt :: Int -> Int
-intSqrt = floor . sqrt . fromIntegral
+intSqrt x = floor . sqrt . (fromIntegral x :: Float)
 
 everyOther :: (a -> a) -> ([a] -> [a])
 everyOther f xs = zipWith ($) (cycle [id, f]) xs
 
 padList :: Int -> a -> [a] -> [a]
-padList m pad xs = xs ++ replicate (mod (- length xs) m) pad
+padList m padding xs = xs ++ replicate (mod (- length xs) m) padding

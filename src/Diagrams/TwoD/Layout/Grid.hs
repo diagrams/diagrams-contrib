@@ -36,6 +36,7 @@ import Diagrams.Prelude
 -- | Puts a list of diagrams in a grid, left-to-right, top-to-bottom.
 --   The grid is as close to square as possible.
 --
+-- > import Diagrams.TwoD.Layout.Grid
 -- > gridCatExample = gridCat $ map (flip regPoly 1) [3..10]
 -- 
 -- <<#diagram=gridCatExample&width=200>>
@@ -48,6 +49,7 @@ gridCat diagrams = gridCat' (intSqrt $ length diagrams) diagrams
 
 -- | Same as 'gridCat', but with a specified number of columns.
 --
+-- > import Diagrams.TwoD.Layout.Grid
 -- > gridCatExample' = gridCat' 4 $ map (flip regPoly 1) [3..10]
 -- 
 -- <<#diagram=gridCatExample'&width=200>>
@@ -62,6 +64,7 @@ gridCat' = gridAnimal id
 --   and right-to-left. Useful for comparing sequences of diagrams.
 --   The grid is as close to square as possible.
 --
+-- > import Diagrams.TwoD.Layout.Grid
 -- > gridSnakeExample = gridSnake $ map (flip regPoly 1) [3..10]
 -- 
 -- <<#diagram=gridSnakeExample&width=200>>
@@ -74,6 +77,7 @@ gridSnake diagrams = gridSnake' (intSqrt $ length diagrams) diagrams
 
 -- | Same as 'gridSnake', but with a specified number of columns.
 --
+-- > import Diagrams.TwoD.Layout.Grid
 -- > gridSnakeExample' = gridSnake' 4 $ map (flip regPoly 1) [3..10]
 -- 
 -- <<#diagram=gridSnakeExample'&width=200>>
@@ -94,7 +98,7 @@ gridAnimal rowFunction cols = vcat . map hcat . rowFunction
 
 -- | `gridWith f (cols, rows)` uses `f`, a function of two 
 --   zero-indexed integer coordinates, to generate a grid of diagrams
---   with the specified dimensions.git clone https://github.com/diagrams/diagrams-svg.git && cd diagrams-svg && cabal install
+--   with the specified dimensions.
 gridWith 
   :: (Backend b R2, Renderable (Path R2) b)
   => (Int -> Int -> Diagram b R2) -> (Int, Int) 

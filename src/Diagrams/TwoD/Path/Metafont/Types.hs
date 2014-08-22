@@ -1,4 +1,5 @@
 {-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -111,4 +112,3 @@ instance Monoid (PathJoin (Maybe PathDir) (Maybe BasicJoin)) where
 
 instance Semigroup (PathJoin (Maybe PathDir) (Maybe BasicJoin)) where
     (<>) = mappend
-

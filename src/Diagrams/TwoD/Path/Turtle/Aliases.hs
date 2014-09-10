@@ -14,7 +14,7 @@ module Diagrams.TwoD.Path.Turtle.Aliases where
 
 import Diagrams.TwoD.Path.Turtle
 
-fd, bk, lt, rt :: Double -> Turtle ()
+fd, bk, lt, rt :: (Floating n, Ord n) => n -> Turtle n ()
 
 fd = forward
 bk = backward
@@ -22,6 +22,6 @@ bk = backward
 lt = left
 rt = right
 
-pu, pd :: Turtle ()
+pu, pd :: (Floating n, Ord n) => Turtle n ()
 pu = penUp
 pd = penDown

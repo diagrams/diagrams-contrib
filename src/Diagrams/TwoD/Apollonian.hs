@@ -60,6 +60,7 @@ module Diagrams.TwoD.Apollonian
        ) where
 
 import           Data.Complex
+import Data.Data
 import           Data.Foldable    (foldMap)
 
 import           Diagrams.Prelude hiding (center, radius)
@@ -72,14 +73,14 @@ import           Control.Arrow    (second)
 
 -- | Representation for circles that lets us quickly compute an
 --   Apollonian gasket.
-data Circle = Circle { bend :: Double
+data Circle n = Circle { bend :: n
                        -- ^ The bend is the reciprocal of signed
                        --   radius: a negative radius means the
                        --   outside and inside of the circle are
                        --   switched.  The bends of any four mutually
                        --   tangent circles satisfy Descartes'
                        --   Theorem.
-                     , cb   :: Complex Double
+                     , cb   :: Complex n
                        -- ^ /Product/ of bend and center represented
                        --   as a complex number.  Amazingly, these
                        --   products also satisfy the equation of
@@ -88,27 +89,29 @@ data Circle = Circle { bend :: Double
   deriving (Eq, Show)
 
 -- | Create a @Circle@ given a signed radius and a location for its center.
-mkCircle :: Double -- ^ signed radius
-         -> P2     -- ^ center
-         -> Circle
+mkCircle :: Fractional n =>
+            n -- ^ signed radius
+         -> P2 n     -- ^ center
+         -> Circle n
 mkCircle r (unp2 -> (x,y)) = Circle (1/r) (b*x :+ b*y)
   where b = 1/r
 
 -- | Get the center of a circle.
-center :: Circle -> P2
+center :: Fractional n => Circle n -> P2 n
 center (Circle b (cbx :+ cby)) = p2 (cbx / b, cby / b)
 
 -- | Get the (unsigned) radius of a circle.
-radius :: Circle -> Double
+radius :: Fractional n => Circle n -> n
 radius = abs . recip . bend
 
-liftF :: (forall a. Floating a => a -> a) -> Circle -> Circle
+liftF :: RealFloat n => (forall n. Floating n => n -> n) -> Circle n -> Circle n
 liftF f (Circle b c) = Circle (f b) (f c)
 
-liftF2 :: (forall a. Floating a => a -> a -> a) -> Circle -> Circle -> Circle
+liftF2 :: RealFloat n => (forall n. Floating n => n -> n -> n) ->
+          Circle n -> Circle n -> Circle n
 liftF2 f (Circle b1 cb1) (Circle b2 cb2) = Circle (f b1 b2) (f cb1 cb2)
 
-instance Num Circle where
+instance RealFloat n => Num (Circle n) where
   (+) = liftF2 (+)
   (-) = liftF2 (-)
   (*) = liftF2 (*)
@@ -116,14 +119,14 @@ instance Num Circle where
   abs = liftF abs
   fromInteger n = Circle (fromInteger n) (fromInteger n)
 
-instance Fractional Circle where
+instance RealFloat n => Fractional (Circle n) where
   (/) = liftF2 (/)
   recip = liftF recip
 
 -- | The @Num@, @Fractional@, and @Floating@ instances for @Circle@
 --   (all simply lifted elementwise over @Circle@'s fields) let us use
 --   Descartes' Theorem directly on circles.
-instance Floating Circle where
+instance RealFloat n => Floating (Circle n) where
   sqrt = liftF sqrt
 
 ------------------------------------------------------------
@@ -146,7 +149,7 @@ instance Floating Circle where
 --   Notably, @descartes@ works for any instance of @Floating@, which
 --   includes both @Double@ (for bends), @Complex Double@ (for
 --   bend/center product), and @Circle@ (for both at once).
-descartes :: Floating a => [a] -> [a]
+descartes :: Floating n => [n] -> [n]
 descartes [b1,b2,b3] = [r + s, -r + s]
   where r = 2 * sqrt (b1*b2 + b1*b3 + b2*b3)
         s = b1+b2+b3
@@ -165,12 +168,12 @@ descartes _ = error "descartes must be called on a list of length 3"
 --   Hence, to replace @b4@ with its dual, we need only sum the other
 --   three, multiply by two, and subtract @b4@.  Again, this works for
 --   bends as well as bend/center products.
-other :: Num a => [a] -> a -> a
+other :: Num n => [n] -> n -> n
 other xs x = 2 * sum xs - x
 
 -- | Generate an initial configuration of four mutually tangent
 --   circles, given just the signed bends of three of them.
-initialConfig :: Double -> Double -> Double -> [Circle]
+initialConfig :: RealFloat n => n -> n -> n -> [Circle n]
 initialConfig b1 b2 b3 = cs ++ [c4]
   where cs     = [Circle b1 0, Circle b2 ((b2/b1 + 1) :+ 0), Circle b3 cb3]
         a      = 1/b1 + 1/b2
@@ -193,12 +196,12 @@ select (x:xs) = (x,xs) : (map . second) (x:) (select xs)
 --   circles, generate the Apollonian gasket containing those circles.
 --   Stop the recursion when encountering a circle with an (unsigned)
 --   radius smaller than the threshold.
-apollonian :: Double -> [Circle] -> [Circle]
+apollonian :: RealFloat n => n -> [Circle n] -> [Circle n]
 apollonian thresh cs
   =  cs
   ++ (concat . map (\(c,cs') -> apollonian' thresh (other cs' c) cs') . select $ cs)
 
-apollonian' :: Double -> Circle -> [Circle] -> [Circle]
+apollonian' :: RealFloat n => n -> Circle n -> [Circle n] -> [Circle n]
 apollonian' thresh cur others
   | radius cur < thresh = []
   | otherwise = cur
@@ -215,20 +218,21 @@ apollonian' thresh cur others
 ------------------------------------------------------------
 
 -- | Draw a circle.
-drawCircle :: (Renderable (Path R2) b) => Double -> Circle -> Diagram b R2
+drawCircle :: (Renderable (Path V2 n) b, RealFloat n, Data n) =>
+              n -> Circle n -> Diagram b V2 n
 drawCircle w c = circle (radius c) # moveTo (center c)
                                    # lwG w # fcA transparent
 
 -- | Draw a generated gasket, using a line width 0.003 times the
 --   radius of the largest circle.
-drawGasket :: (Renderable (Path R2) b) => [Circle] -> Diagram b R2
+drawGasket :: (Renderable (Path V2 n) b, RealFloat n, Data n) =>
+              [Circle n] -> Diagram b V2 n
 drawGasket cs = foldMap (drawCircle w) cs
   where w = (*0.003) . maximum . map radius $ cs
 
 -- | Draw an Apollonian gasket: the first argument is the threshold;
 --   the recursion will stop upon reaching circles with radii less than
 --   it. The next three arguments are bends of three circles.
-apollonianGasket :: (Renderable (Path R2) b)
-                 => Double -> Double -> Double -> Double -> Diagram b R2
+apollonianGasket :: (Renderable (Path V2 n) b, RealFloat n, Data n)
+                 => n -> n -> n -> n -> Diagram b V2 n
 apollonianGasket thresh b1 b2 b3 = drawGasket . apollonian thresh $ (initialConfig b1 b2 b3)
-

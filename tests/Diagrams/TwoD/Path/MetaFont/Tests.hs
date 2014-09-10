@@ -31,7 +31,7 @@ litTests = [
     ("p127c", "(0,1)...(0.5,0)---(1.8,0)..{0,1}(2,1)")
     ]
 
-astTests :: [(FilePath, Trail R2)]
+astTests :: [(FilePath, Trail V2 n)]
 astTests = [("p125", let -- this is Knuth's branch4
                 z1 = p2 (0,509)
                 z2 = p2 (-14,492)
@@ -47,7 +47,7 @@ astTests = [("p125", let -- this is Knuth's branch4
                           MF.flex [z5, z6, z7], MF.flex [z7, z8, z9, z1]])
            ]
 
-combinatorTests :: [(FilePath, Trail R2)]
+combinatorTests :: [(FilePath, Trail V2 n)]
 combinatorTests = map (second metafont)
                   [ ("p15a_", z4.--.z1.--.z2.--.endpt z6)
                   , ("p15b_", z5.--.z4.--.z1.--.z3.--.z6.--.endpt z5)
@@ -64,7 +64,7 @@ combinatorTests = map (second metafont)
   z6 = p2 (2,0)
   goingLeft = leaving unit_X
 
-boundedTests :: [(FilePath, Diagram SVG R2)]
+boundedTests :: [(FilePath, Diagram SVG V2 n)]
 boundedTests = map (second (mconcat . map (metafont)))
                [ ("p18a", demo mempty)
                , ("p18b", map (withJoin mempty . Deg) [0,10..90])
@@ -76,7 +76,7 @@ boundedTests = map (second (mconcat . map (metafont)))
     demo jj = map (withJoin jj . Deg) [0,(-10)..(-120)]
     withJoin jj d = origin .- left <> jj <> arriving (fromDirection d) -. (endpt $ p2 (6,0))
 
-illustrateSegment :: FixedSegment R2 -> Diagram SVG R2
+illustrateSegment :: FixedSegment V2 n -> Diagram SVG V2 n
 illustrateSegment (FLinear from to) = position [
   (from, ptMark # fc blue),
   (to,   ptMark # fc blue)]
@@ -84,17 +84,17 @@ illustrateSegment (FCubic from z1 z2 to) = position [
   (z1, ptMark # fc red),
   (z2, ptMark # fc red)] <> illustrateSegment (FLinear from to)
 
-ptMark :: Diagram SVG R2
+ptMark :: Diagram SVG V2 n
 ptMark = circle 0.02 # lw 0
 
-illustrateTrailCtls :: Trail R2 -> Diagram SVG R2
+illustrateTrailCtls :: Trail V2 n -> Diagram SVG V2 n
 illustrateTrailCtls tr = strokeTrail tr <> (mconcat . map illustrateSegment . fixTrail . flip at origin $ tr)
 
-refPts :: Diagram SVG R2
+refPts :: Diagram SVG V2 n
 refPts = position $ zip (map p2 $ (,) <$> [0,1,2] <*> [0,1]) (repeat c) where
   c = circle 0.02 # fc blue # lw 0
 
-toSVG :: (FilePath,Trail R2) -> IO ()
+toSVG :: (FilePath,Trail V2 n) -> IO ()
 toSVG (fn,tr) = do
   renderSVG (replaceExtension fn "svg") (Width 400) $
     illustrateTrailCtls tr

@@ -25,8 +25,8 @@
 -- > import Diagrams.TwoD.Grid
 -- > import Diagrams.TwoD.Text
 -- >
--- > example :: (Renderable Text b, Renderable (Path R2) b, Backend b R2) =>
--- >            Int -> Int -> Diagram b R2
+-- > example :: (Renderable (Text n) b, Renderable (Path V2 n) b, Backend b V2 n) =>
+-- >            Int -> Int -> Diagram b V2 n
 -- > example n m =
 -- >
 -- >   (gridWithHalves n m) #
@@ -103,19 +103,20 @@ import Control.Lens (makeLenses, (^.))
 import Data.Default.Class
 import Data.List
 import Data.List.Split
+import Data.Data
 
 
-data GridOpts
+data GridOpts n
   = GridOpts
-    { _gridLineWidth :: Measure R2
+    { _gridLineWidth :: Measure n
     , _gridYColour   :: Colour Double
     , _gridXColour   :: Colour Double
-    , _gridLL        :: R2
-    , _gridLR        :: R2
-    , _gridUL        :: R2
+    , _gridLL        :: V2 n
+    , _gridLR        :: V2 n
+    , _gridUL        :: V2 n
     }
 
-instance Default GridOpts where
+instance Floating n => Default (GridOpts n) where
   def = GridOpts
         { _gridLineWidth = thin
         , _gridXColour   = red
@@ -125,15 +126,15 @@ instance Default GridOpts where
         , _gridUL        = r2 (1.0, 2.0)
         }
 
-data HighlightLineOpts
+data HighlightLineOpts n
   = HighlightLineOpts
     { _highLightLineColour        :: Colour Double
-    , _highLightLineWidth         :: Measure R2
-    , _highLightLineDashingOnOff  :: [Measure R2]
-    , _highLightLineDashingOffset :: Measure R2
+    , _highLightLineWidth         :: Measure n
+    , _highLightLineDashingOnOff  :: [Measure n]
+    , _highLightLineDashingOffset :: Measure n
     }
 
-instance Default HighlightLineOpts where
+instance Floating n => Default (HighlightLineOpts n) where
   def = HighlightLineOpts
         { _highLightLineColour = black
         , _highLightLineWidth = medium
@@ -145,21 +146,23 @@ makeLenses ''GridOpts
 makeLenses ''HighlightLineOpts
 
 -- | Name a point by grid co-ordinates.
-tick :: (Renderable Text b, Renderable (Path R2) b) =>
-        (Int, Int) -> Diagram b R2
+tick :: (Renderable (Text n) b, Renderable (Path V2 n) b, Floating n, Ord n) =>
+        (Int, Int) -> Diagram b V2 n
 tick (n, m) = pointDiagram origin # named (n, m)
 
 -- | @gridWithHalves@ with default opts.
-gridWithHalves :: (Renderable Text b, Renderable (Path R2) b, Backend b R2) =>
-                  Int -> Int -> Diagram b R2
+gridWithHalves :: (Renderable (Text n) b, Renderable (Path V2 n) b,
+                   Backend b V2 n, RealFloat n, Ord n, Data n) =>
+                  Int -> Int -> Diagram b V2 n
 gridWithHalves = gridWithHalves' def
 
 -- | Create a n by m grid. Diagrams can be placed on either the grid
 -- points themselves or on points half way between grid points. The
 -- latter includes points a half grid length outside of the grid
 -- itself.
-gridWithHalves' :: (Renderable Text b, Renderable (Path R2) b, Backend b R2) =>
-                   GridOpts -> Int -> Int -> Diagram b R2
+gridWithHalves' :: (Renderable (Text n) b, Renderable (Path V2 n) b,
+                    Backend b V2 n, RealFloat n, Ord n, Data n) =>
+                   GridOpts n -> Int -> Int -> Diagram b V2 n
 gridWithHalves' opts n m =
   (mconcat lineXs # translate (r2 (llx, lly))) <>
   (mconcat lineYs # translate (r2 (llx, lly))) <>
@@ -204,31 +207,34 @@ gridWithHalves' opts n m =
 
 -- | Place a diagram on a grid (which is itself a diagram) at all the
 -- co-ordinates specified.
-placeDiagramOnGrid :: (IsName n, Renderable Text b, Renderable (Path R2) b) =>
-                      Diagram b R2 -> [n] -> Diagram b R2 -> Diagram b R2
+placeDiagramOnGrid :: (IsName n, Renderable (Text n) b,
+                       Renderable (Path V2 n) b, Floating n) =>
+                      Diagram b V2 n -> [n] -> Diagram b V2 n -> Diagram b V2 n
 placeDiagramOnGrid d = flip $ foldr (\n -> withName n (atop . place d . location))
 
-annotate :: (Renderable Text b, Renderable (Path R2) b) =>
+annotate :: (Renderable (Text n) b, Renderable (Path V2 n) b, Floating n, Ord n, Typeable n) =>
              String ->
-             (String -> Diagram b R2) ->
+             (String -> Diagram b V2 n) ->
              Colour Double ->
              Int ->
              Int ->
-             Diagram b R2 ->
-             Diagram b R2
+             Diagram b V2 n ->
+             Diagram b V2 n
 annotate s txtPt h n m =
   withName (n, m) (atop . place (addText s h) . location)
   where
     addText s h = txtPt s # fc h
 
 -- | Draw a line between two named points on the grid.
-gridLine :: (IsName a, IsName b, Renderable Text c, Renderable (Path R2) c) =>
-            a -> b -> Diagram c R2 -> Diagram c R2
+gridLine :: (IsName a, IsName b, Renderable (Text n) c,
+             Renderable (Path V2 n) c, RealFloat n, Data n) =>
+            a -> b -> Diagram c V2 n -> Diagram c V2 n
 gridLine = gridLine' def
 
 -- | Draw a line between two named points on the grid.
-gridLine' :: (IsName a, IsName b, Renderable Text c, Renderable (Path R2) c) =>
-            HighlightLineOpts -> a -> b -> Diagram c R2 -> Diagram c R2
+gridLine' :: (IsName a, IsName b, Renderable (Text n) c,
+              Renderable (Path V2 n) c, RealFloat n, Data n) =>
+            HighlightLineOpts n -> a -> b -> Diagram c V2 n -> Diagram c V2 n
 gridLine' opts u v =
   withName u $ \x ->
   withName v $ \y ->
@@ -238,6 +244,7 @@ gridLine' opts u v =
         dashing (opts^.highLightLineDashingOnOff) (opts^.highLightLineDashingOffset))
 
 -- | Draw lines between a list of pairs of named points on the grid.
-gridLines :: (Renderable Text c, Renderable (Path R2) c, IsName a, IsName b) =>
-             [(a, b)] -> Diagram c R2 -> Diagram c R2
+gridLines :: (Renderable (Text n) c, Renderable (Path V2 n) c, RealFloat n,
+              Data n, IsName a, IsName b) =>
+             [(a, b)] -> Diagram c V2 n -> Diagram c V2 n
 gridLines xs = foldr (.) id [ gridLine x y | (x, y) <- xs ]

@@ -189,17 +189,17 @@ instance Arbitrary PenStyle where
 -- | Arbitrary instance of Segment
 --
 -- Currently this only generates linear segments only
-instance Arbitrary (Segment Closed R2)  where
+instance Arbitrary (Segment Closed V2 n)  where
   arbitrary = do
     h <- (@@deg) <$> arbitrary
     x <- r2 <$> arbitrary
     return $ rotate h (straight x)
 
-instance Arbitrary (Trail' Line R2) where
+instance Arbitrary (Trail' Line V2 n) where
   arbitrary = lineFromSegments <$> arbitrary
 
 instance (Arbitrary a, Arbitrary (Point (V a))) => Arbitrary (Located a) where
   arbitrary = at <$> arbitrary <*> arbitrary
 
-instance Arbitrary (Trail R2) where
+instance Arbitrary (Trail V2 n) where
   arbitrary = wrapLine <$> arbitrary

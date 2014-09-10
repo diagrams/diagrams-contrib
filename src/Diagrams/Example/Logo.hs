@@ -78,7 +78,7 @@ gbkg = grid
     # lc gray
     # rotateBy (-1/20)
     # clipBy p
-    # withEnvelope (p :: Path R2)
+    # withEnvelope (p :: Path V2 n)
     # lwG 0.05
   where p = square 5
 

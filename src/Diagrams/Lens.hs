@@ -19,9 +19,9 @@
 -- This module provides utilities for using "Control.Lens" with diagrams,
 -- including orphan instances for the 'Wrapped' class.
 module Diagrams.Lens
-  ( _P
+  (
   -- * Diagrams.Align
-  , _envelopeVMove
+  _envelopeVMove
   , _alignedVMove
   -- * Diagrams.BoundingBox
   , _corners
@@ -49,14 +49,10 @@ module Diagrams.Lens
 
 import           Control.Applicative
 import           Control.Lens
-import           Data.AffineSpace.Point (Point (P))
-import           Data.Basis
+import Data.Foldable
 import           Diagrams.BoundingBox
 import           Diagrams.Core.Style
 import           Diagrams.Prelude
-
-_P :: Iso (Point v) (Point v') v v'
-_P = iso (\(P x) -> x) P
 
 -- * Diagrams.Align
 
@@ -67,8 +63,8 @@ _P = iso (\(P x) -> x) P
 --   This is the same as '_alignedVMove' with @1@ as the interpolation
 --   parameter.
 _envelopeVMove
-  :: (Monoid a, HasOrigin a, Enveloped a, Num (Scalar (V a)))
-  => V a -> Traversal' a (V a)
+  :: (Monoid a, HasOrigin a, Enveloped a, Num (N a))
+  => Vn a -> Traversal' a (Vn a)
 _envelopeVMove v f x = case envelopeVMay v x of
   (Just p) -> (\p' -> moveOriginBy (p ^-^ p') x) <$> f p
   Nothing -> pure x
@@ -84,18 +80,18 @@ _envelopeVMove v f x = case envelopeVMay v x of
 --
 --   If you need a 'Point' instead of a vector, then compose with '_P'.
 _alignedVMove
-  :: (Monoid a, HasOrigin a, Enveloped a, Num (Scalar (V a)))
-  => V a -> Scalar (V a) -> Traversal' a (V a)
+    :: (Monoid a, HasOrigin a, Enveloped a, Num (N a))
+  => Vn a -> N a -> Traversal' a (Vn a)
 _alignedVMove v d f x = case appEnvelope $ getEnvelope x of
   (Just env) -> (\p' -> moveOriginBy (p ^-^ p') x) <$> f p
     where
-      p = v ^* lerp' (env (negateV v)) (env v) ((d + 1) / 2)
+      p = v ^* lerp' (env (negated v)) (env v) ((d + 1) / 2)
       -- Constraints were pretty wacky otherwise.
       lerp' l u t = (1 - t) * u + t * l
   Nothing -> pure x
 
 {- TODO
-_traceMove :: Point v -> v -> Traversal (QDiagram b v m) (Scalar v)
+_traceMove :: Point v -> v -> Traversal (QDiagram b v n m) n
 _traceMove p v f x = case appTrace (trace x) p v of
   Finite t ->
   PosInfty -> pure x
@@ -107,17 +103,16 @@ _traceMove p v f x = case appTrace (trace x) p v of
 -- | A traversal that either has 0 (empty box) or 2 points.  These points are
 --   the lower and upper corners, respectively.
 _corners
-  :: ( HasBasis v, Ord (Basis v), AdditiveGroup (Scalar v), Ord (Scalar v)
-     , HasBasis v', Ord (Basis v'), AdditiveGroup (Scalar v'), Ord (Scalar v'))
-  => Traversal (BoundingBox v) (BoundingBox v') (Point v) (Point v')
+    :: (Additive v', Foldable v', Ord n')
+       => Traversal (BoundingBox v n) (BoundingBox v' n') (Point v n) (Point v' n')
 _corners f (getCorners -> Just (l, t)) = fromCorners <$> f l <*> f t
 _corners _ _ = pure emptyBox
 
 -- | A lens that gets the extents of the box.  In order to change the extents,
 --   this modifies the upper corner.
 _boxExtents
-  :: (HasBasis v, Ord (Basis v), AdditiveGroup (Scalar v), Ord (Scalar v))
-  => Lens' (BoundingBox v) v
+  :: (Additive v, Foldable v, Num n, Ord n)
+  => Lens' (BoundingBox v n) (v n)
 _boxExtents = lens boxExtents setExtent
   where
     setExtent (getCorners -> Just (l, _)) x = fromCorners l (l .+^ x)
@@ -126,19 +121,19 @@ _boxExtents = lens boxExtents setExtent
 
 -- * Diagrams.Core.Style
 
-_attr :: AttributeClass a => Lens' (Style v) (Maybe a)
+_attr :: AttributeClass a => Lens' (Style v n) (Maybe a)
 _attr = lens getAttr setAttr'
   where
     setAttr' style (Just x) = setAttr x style
     setAttr' style Nothing = style
 
 _mkAttr
-  :: AttributeClass a => Prism' (Attribute v) a
+  :: AttributeClass a => Prism' (Attribute v n) a
 _mkAttr = prism' mkAttr unwrapAttr
 
 _mkTAttr
-  :: (AttributeClass a, Transformable a, V a ~ v)
-  => Prism' (Attribute v) a
+  :: (AttributeClass a, Transformable a, Vn a ~ v n)
+  => Prism' (Attribute v n) a
 _mkTAttr = prism' mkTAttr unwrapAttr
 
 
@@ -146,20 +141,20 @@ _mkTAttr = prism' mkTAttr unwrapAttr
 
 -- | Gets or set the 'location' of a 'Subdiagram'.
 _location
-  :: (HasLinearMap v, InnerSpace v, OrderedField (Scalar v))
-  => Lens' (Subdiagram b v m) (Point v)
+  :: (HasLinearMap v, Metric v, OrderedField n)
+  => Lens' (Subdiagram b v n m) (Point v n)
 --TODO: Is this correct??
 _location = lens location (flip Diagrams.Prelude.moveTo)
 
 _mkSubdiagram
-  :: (HasLinearMap v, InnerSpace v, OrderedField (Scalar v), Semigroup m)
-  => Iso' (QDiagram b v m) (Subdiagram b v m)
+  :: (HasLinearMap v, Metric v, OrderedField n, Semigroup m)
+  => Iso' (QDiagram b v n m) (Subdiagram b v n m)
 _mkSubdiagram = iso mkSubdiagram getSub
 
 
 -- * Diagrams.Located
 
-_Loc :: Iso (Located a) (Located a') (Point (V a), a) (Point (V a'), a')
+_Loc :: Iso (Located a) (Located a') (Point (V a) (N a), a) (Point (V a') (N a'), a')
 _Loc = iso viewLoc (uncurry $ flip Diagrams.Prelude.at)
 
 
@@ -168,7 +163,7 @@ _Loc = iso viewLoc (uncurry $ flip Diagrams.Prelude.at)
 {- TODO: requires 'arcLengthFromParam'
 
 _arcLength
-  :: HasArcLength p => Scalar (V p) -> p -> Iso' (Scalar (V p)) (Scalar (V p))
+  :: HasArcLength p => N p -> p -> Iso' (N p)  (N p)
 _arcLength eps curve
   = iso' (arcLengthFromParam eps curve) (arcLengthToParam eps curve)
 
@@ -177,29 +172,29 @@ _arcLength eps curve
 -- * Diagrams.Segment
 
 _mkFixedSeg
-  :: (AdditiveGroup v, AdditiveGroup v')
+  :: (Additive v, Additive v', Num n, Num n')
   => Iso
-    (Located (Segment Closed v))
-    (Located (Segment Closed v'))
-    (FixedSegment v)
-    (FixedSegment v')
+    (Located (Segment Closed v n))
+    (Located (Segment Closed v' n'))
+    (FixedSegment v n)
+    (FixedSegment v' n')
 _mkFixedSeg = iso mkFixedSeg fromFixedSeg
 
 -- | Prism that constructs linear segments.  Can also destruct them, if the
 --   segment is Linear.
-_straight :: Prism' (Segment Closed v) v
+_straight :: Prism' (Segment Closed v n) (v n)
 _straight = prism' straight fromStraight
   where
-    fromStraight :: Segment c a -> Maybe a
+    fromStraight :: Segment c v n -> Maybe (v n)
     fromStraight (Linear (OffsetClosed x)) = Just x
     fromStraight _ = Nothing
 
 -- | Prism that constructs cubic bezier segments.  Can also destruct them, if
 --   segment is a 'Cubic'.
-_bezier3 :: Prism' (Segment Closed v) (v, v, v)
+_bezier3 :: Prism' (Segment Closed v n) (v n, v n, v n)
 _bezier3 = prism' (\(c1, c2, c3) -> bezier3 c1 c2 c3) fromBezier3
   where
-    fromBezier3 :: Segment c a -> Maybe (a, a, a)
+    fromBezier3 :: Segment c v n -> Maybe (v n, v n, v n)
     fromBezier3 (Cubic c1 c2 (OffsetClosed c3)) = Just (c1, c2, c3)
     fromBezier3 _ = Nothing
 
@@ -207,25 +202,24 @@ _bezier3 = prism' (\(c1, c2, c3) -> bezier3 c1 c2 c3) fromBezier3
 -- * Diagrams.Trail
 
 _lineVertices
-  :: ( InnerSpace v, OrderedField (Scalar v)
-     , InnerSpace v', OrderedField (Scalar v'))
+  :: ( Metric v, OrderedField n
+     , Metric v', OrderedField n')
   => Iso
-    (Located (Trail' Line v)) (Located (Trail' Line v'))
-    [Point v] [Point v']
+    (Located (Trail' Line v n)) (Located (Trail' Line v' n'))
+    [Point v n] [Point v' n']
 _lineVertices = iso lineVertices fromVertices
 
 _lineOffsets
-  :: ( InnerSpace v, OrderedField (Scalar v)
-     , InnerSpace v', OrderedField (Scalar v'))
+  :: ( Metric v, OrderedField n
+     , Metric v', OrderedField  n')
   => Iso
-    (Trail' Line v) (Trail' Line v')
-    [v] [v']
+    (Trail' Line v n) (Trail' Line v' n')
+    [v n] [v' n']
 _lineOffsets = iso lineOffsets lineFromOffsets
 
 _lineSegments
-  :: ( InnerSpace v, OrderedField (Scalar v)
-     , InnerSpace v', OrderedField (Scalar v'))
+  :: (Metric v', OrderedField n')
   => Iso
-    (Trail' Line v) (Trail' Line v')
-    [Segment Closed v] [Segment Closed v']
+    (Trail' Line v n) (Trail' Line v' n')
+    [Segment Closed v n] [Segment Closed v' n']
 _lineSegments = iso lineSegments lineFromSegments

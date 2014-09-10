@@ -184,7 +184,7 @@ data Pos = Pos { _level :: Int
 
 makeLenses ''Pos
 
-pos2Point :: Double -> Double -> Pos -> P2
+pos2Point :: Num n => n -> n -> Pos -> P2 n
 pos2Point cSep lSep (Pos l h) = p2 (fromIntegral h * cSep, -fromIntegral l * lSep)
 
 -- | @uniqueXLayout xSep ySep t@ lays out the binary tree @t@ using a
@@ -200,7 +200,7 @@ pos2Point cSep lSep (Pos l h) = p2 (fromIntegral h * cSep, -fromIntegral l * lSe
 --   * Every node has a unique x-coordinate. The separation between
 --     successive nodes from left to right is given by @xSep@.
 
-uniqueXLayout :: Double -> Double -> BTree a -> Maybe (Tree (a, P2))
+uniqueXLayout :: n -> n -> BTree a -> Maybe (Tree (a, P2 n))
 uniqueXLayout cSep lSep t = (fmap . fmap . second) (pos2Point cSep lSep)
                 $ evalState (uniqueXLayout' t) (Pos 0 0)
   where uniqueXLayout' Empty         = return Nothing
@@ -247,58 +247,58 @@ uniqueXLayout cSep lSep t = (fmap . fmap . second) (pos2Point cSep lSep)
 --   5. The layouts are as narrow as possible while satisfying all the
 --   above constraints.
 
--- | A tree with /relative/ positioning information.  The Double
+-- | A tree with /relative/ positioning information.  The @n@
 --   at each node is the horizontal /offset/ from its parent.
-type Rel t a = t (a, Double)
+type Rel t n a = t (a, n)
 
 -- | Shift a RelTree horizontally.
-moveTree :: Double -> Rel Tree a -> Rel Tree a
+moveTree :: n -> Rel Tree n a -> Rel Tree n a
 moveTree x' (Node (a, x) ts) = Node (a, x+x') ts
 
 -- | An /extent/ is a list of pairs, recording the leftmost and
 --   rightmost (absolute) horizontal positions of a tree at each
 --   depth.
-newtype Extent = Extent { getExtent :: [(Double, Double)] }
+newtype Extent n = Extent { getExtent :: [(n, n)] }
 
-extent :: ([(Double, Double)] -> [(Double, Double)]) -> Extent -> Extent
+extent :: ([(n, n)] -> [(n, n)]) -> Extent n -> Extent n
 extent f = Extent . f . getExtent
 
-consExtent :: (Double, Double) -> Extent -> Extent
+consExtent :: (n, n) -> Extent n -> Extent n
 consExtent = extent . (:)
 
 -- | Shift an extent horizontally.
-moveExtent :: Double -> Extent -> Extent
+moveExtent :: Num n => n -> Extent n -> Extent n
 moveExtent x = (extent . map) ((+x) *** (+x))
 
 -- | Reflect an extent about the vertical axis.
-flipExtent :: Extent -> Extent
+flipExtent :: Num n => Extent n -> Extent n
 flipExtent = (extent . map) (\(p,q) -> (-q, -p))
 
 -- | Merge two non-overlapping extents.
-mergeExtents :: Extent -> Extent -> Extent
+mergeExtents :: Extent n -> Extent n -> Extent n
 mergeExtents (Extent e1) (Extent e2) = Extent $ mergeExtents' e1 e2
   where
     mergeExtents' [] qs = qs
     mergeExtents' ps [] = ps
     mergeExtents' ((p,_) : ps) ((_,q) : qs) = (p,q) : mergeExtents' ps qs
 
-instance Semigroup Extent where
+instance Semigroup (Extent n) where
   (<>) = mergeExtents
 
-instance Monoid Extent where
+instance Monoid (Extent n) where
   mempty  = Extent []
   mappend = (<>)
 
 -- | Determine the amount to shift in order to \"fit\" two extents
 --   next to one another.  The first argument is the separation to
 --   leave between them.
-fit :: Double -> Extent -> Extent -> Double
+fit :: Num n => n -> Extent n -> Extent n -> n
 fit hSep (Extent ps) (Extent qs) = maximum (0 : zipWith (\(_,p) (q,_) -> p - q + hSep) ps qs)
 
 -- | Fit a list of subtree extents together using a left-biased
 --   algorithm.  Compute a list of positions (relative to the leftmost
 --   subtree which is considered to have position 0).
-fitListL :: Double -> [Extent] -> [Double]
+fitListL :: n -> [Extent n] -> [n]
 fitListL hSep = snd . mapAccumL fitOne mempty
   where
     fitOne acc e =
@@ -306,24 +306,24 @@ fitListL hSep = snd . mapAccumL fitOne mempty
       in  (acc <> moveExtent x e, x)
 
 -- | Fit a list of subtree extents together with a right bias.
-fitListR :: Double -> [Extent] -> [Double]
+fitListR :: n -> [Extent n] -> [n]
 fitListR hSep = reverse . map negate . fitListL hSep . map flipExtent . reverse
 
 -- | Compute a symmetric fitting by averaging the results of left- and
 --   right-biased fitting.
-fitList :: Double -> [Extent] -> [Double]
+fitList :: Num n => n -> [Extent n] -> [n]
 fitList hSep = uncurry (zipWith mean) . (fitListL hSep &&& fitListR hSep)
   where mean x y = (x+y)/2
 
 -- | Options for controlling the symmetric tree layout algorithm.
-data SymmLayoutOpts a =
-  SLOpts { _slHSep   :: Double           -- ^ Minimum horizontal
+data SymmLayoutOpts n a =
+  SLOpts { _slHSep   :: n -- ^ Minimum horizontal
                                          --   separation between sibling
                                          --   nodes.  The default is 1.
-         , _slVSep   :: Double           -- ^ Vertical separation
+         , _slVSep   :: n -- ^ Vertical separation
                                          --   between adjacent levels of
                                          --   the tree.  The default is 1.
-         , _slWidth  :: a -> (Double, Double)
+         , _slWidth  :: a -> (n, n)
            -- ^ A function for measuring the horizontal extent (a pair
            --   of x-coordinates) of an item in the tree.  The default
            --   is @const (0,0)@, that is, the nodes are considered as
@@ -333,7 +333,7 @@ data SymmLayoutOpts a =
            --   of diagrams of irregular size and want to make sure no
            --   diagrams overlap.  In that case you could use
            --   @fromMaybe (0,0) . extentX@.
-         , _slHeight :: a -> (Double, Double)
+         , _slHeight :: a -> (n, n)
            -- ^ A function for measuring the vertical extent of an
            --   item in the tree.  The default is @const (0,0)@.  See
            --   the documentation for 'slWidth' for more information.
@@ -341,7 +341,7 @@ data SymmLayoutOpts a =
 
 makeLenses ''SymmLayoutOpts
 
-instance Default (SymmLayoutOpts a) where
+instance Num n => Default (SymmLayoutOpts n a) where
   def = SLOpts
           { _slHSep   = 1
           , _slVSep   = 1
@@ -351,7 +351,7 @@ instance Default (SymmLayoutOpts a) where
 
 -- | Actual recursive tree layout algorithm, which returns a tree
 --   layout as well as an extent.
-symmLayoutR :: SymmLayoutOpts a -> Tree a -> (Rel Tree a, Extent)
+symmLayoutR :: Num n => SymmLayoutOpts n a -> Tree a -> (Rel Tree a, Extent n)
 symmLayoutR opts (Node a ts) = (rt, ext)
   where (trees, extents) = unzip (map (symmLayoutR opts) ts)
         positions        = fitList (opts ^. slHSep) extents
@@ -362,7 +362,8 @@ symmLayoutR opts (Node a ts) = (rt, ext)
 
 -- | Symmetric tree layout algorithm specialized to binary trees.
 --   Returns a tree layout as well as an extent.
-symmLayoutBinR :: SymmLayoutOpts a -> BTree a -> (Maybe (Rel Tree a), Extent)
+symmLayoutBinR :: Num n =>
+                  SymmLayoutOpts n a -> BTree a -> (Maybe (Rel Tree a), Extent n)
 symmLayoutBinR _    Empty         = (Nothing, mempty)
 symmLayoutBinR opts (BNode a l r) = (Just rt, ext)
   where (l', extL) = symmLayoutBinR opts l
@@ -378,13 +379,13 @@ symmLayoutBinR opts (BNode a l r) = (Just rt, ext)
 
 -- | Run the symmetric rose tree layout algorithm on a given tree,
 --   resulting in the same tree annotated with node positions.
-symmLayout' :: SymmLayoutOpts a -> Tree a -> Tree (a, P2)
+symmLayout' :: SymmLayoutOpts n a -> Tree a -> Tree (a, P2 n)
 symmLayout' opts = unRelativize opts origin . fst . symmLayoutR opts
 
 -- | Run the symmetric rose tree layout algorithm on a given tree
 --   using default options, resulting in the same tree annotated with
 --   node positions.
-symmLayout :: Tree a -> Tree (a, P2)
+symmLayout :: Tree a -> Tree (a, P2 n)
 symmLayout = symmLayout' def
 
 -- | Lay out a binary tree using a slight variant of the symmetric
@@ -393,7 +394,7 @@ symmLayout = symmLayout' def
 --   the parent horizontally by half the horizontal separation
 --   parameter. Note that the result will be @Nothing@ if and only if
 --   the input tree is @Empty@.
-symmLayoutBin' :: SymmLayoutOpts a -> BTree a -> Maybe (Tree (a,P2))
+symmLayoutBin' :: SymmLayoutOpts n a -> BTree a -> Maybe (Tree (a,P2 n))
 symmLayoutBin' opts = fmap (unRelativize opts origin) . fst . symmLayoutBinR opts
 
 -- | Lay out a binary tree using a slight variant of the symmetric
@@ -402,13 +403,13 @@ symmLayoutBin' opts = fmap (unRelativize opts origin) . fst . symmLayoutBinR opt
 --   the child will be offset from the parent horizontally by half the
 --   horizontal separation parameter. Note that the result will be
 --   @Nothing@ if and only if the input tree is @Empty@.
-symmLayoutBin :: BTree a -> Maybe (Tree (a,P2))
+symmLayoutBin :: BTree a -> Maybe (Tree (a,P2 n))
 symmLayoutBin = symmLayoutBin' def
 
 -- | Given a fixed location for the root, turn a tree with
 --   \"relative\" positioning into one with absolute locations
 --   associated to all the nodes.
-unRelativize :: SymmLayoutOpts a -> P2 -> Rel Tree a -> Tree (a, P2)
+unRelativize :: SymmLayoutOpts n a -> P2 n -> Rel Tree a -> Tree (a, P2 n)
 unRelativize opts curPt (Node (a,hOffs) ts)
     = Node (a, rootPt) (map (unRelativize opts (rootPt .+^ (vOffs *^ unit_Y))) ts)
   where rootPt = curPt .+^ (hOffs *^ unitX)
@@ -422,9 +423,9 @@ unRelativize opts curPt (Node (a,hOffs) ts)
 -- $forcedirected
 -- Force-directed layout of rose trees.
 
-data ForceLayoutTreeOpts =
+data ForceLayoutTreeOpts n =
   FLTOpts
-  { _forceLayoutOpts :: ForceLayoutOpts R2 -- ^ Options to the force layout simulator, including damping.
+  { _forceLayoutOpts :: ForceLayoutOpts V2 n -- ^ Options to the force layout simulator, including damping.
   , _edgeLen         :: Double             -- ^ How long edges should be, ideally.
                                            --   This will be the resting length for
                                            --   the springs.
@@ -462,7 +463,7 @@ instance Default ForceLayoutTreeOpts where
 --   The input to @treeToEnsemble@ could be a tree already laid out by
 --   some other method, such as 'uniqueXLayout'.
 treeToEnsemble :: forall a. ForceLayoutTreeOpts
-               -> Tree (a, P2) -> (Tree (a, PID), Ensemble R2)
+               -> Tree (a, P2) -> (Tree (a, PID), Ensemble V2 n)
 treeToEnsemble opts t =
   ( fmap (first fst) lt
   , Ensemble
@@ -475,7 +476,7 @@ treeToEnsemble opts t =
   where lt :: Tree ((a,P2), PID)
         lt = label t
 
-        particleMap :: M.Map PID (Particle R2)
+        particleMap :: M.Map PID (Particle V2 n)
         particleMap = M.fromList
                     . map (second initParticle)
                     . F.toList
@@ -506,7 +507,7 @@ label = flip evalState 0 . T.mapM (\a -> get >>= \i -> modify (+1) >> return (a,
 -- | Reconstruct a tree (or any traversable structure) from an
 --   'Ensemble', given unique identifier annotations matching the
 --   identifiers used in the 'Ensemble'.
-reconstruct :: Functor t => Ensemble R2 -> t (a, PID) -> t (a, P2)
+reconstruct :: Functor t => Ensemble V2 n -> t (a, PID) -> t (a, P2)
 reconstruct e = (fmap . second)
                   (fromMaybe origin . fmap (view pos) . flip M.lookup (e^.particles))
 
@@ -536,8 +537,8 @@ forceLayoutTree' opts t = reconstruct (forceLayout (opts^.forceLayoutOpts) e) ti
 -- | Draw a tree annotated with node positions, given functions
 --   specifying how to draw nodes and edges.
 renderTree :: Monoid' m
-           => (a -> QDiagram b R2 m) -> (P2 -> P2 -> QDiagram b R2 m)
-           -> Tree (a, P2) -> QDiagram b R2 m
+           => (a -> QDiagram b V2 n m) -> (P2 -> P2 -> QDiagram b V2 n m)
+           -> Tree (a, P2) -> QDiagram b V2 n m
 renderTree n e = renderTree' n (e `on` snd)
 
 -- | Draw a tree annotated with node positions, given functions
@@ -545,8 +546,8 @@ renderTree n e = renderTree' n (e `on` snd)
 --   this version gives the edge-drawing function access to the actual
 --   values stored at the nodes rather than just their positions.
 renderTree' :: Monoid' m
-           => (a -> QDiagram b R2 m) -> ((a,P2) -> (a,P2) -> QDiagram b R2 m)
-           -> Tree (a, P2) -> QDiagram b R2 m
+           => (a -> QDiagram b V2 n m) -> ((a,P2) -> (a,P2) -> QDiagram b V2 n m)
+           -> Tree (a, P2) -> QDiagram b V2 n m
 renderTree' renderNode renderEdge = alignT . centerX . renderTreeR
   where
     renderTreeR (Node (a,p) cs) =

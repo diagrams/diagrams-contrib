@@ -1,4 +1,5 @@
-{-# LANGUAGE FlexibleContexts #-} 
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -18,17 +19,18 @@ module Diagrams.TwoD.Layout.Grid
     , gridSnake
     , gridSnake'
     , gridWith
-    
+
     , sameBoundingRect
     , sameBoundingSquare
-    
+
     ) where
 
 import Data.List       (maximumBy)
 import Data.Ord        (comparing)
+import Data.Typeable
 
 import Data.List.Split (chunksOf)
-    
+
 import Diagrams.Prelude
 
 -- * Grid Layout
@@ -38,26 +40,26 @@ import Diagrams.Prelude
 --
 -- > import Diagrams.TwoD.Layout.Grid
 -- > gridCatExample = gridCat $ map (flip regPoly 1) [3..10]
--- 
+--
 -- <<#diagram=gridCatExample&width=200>>
 
 gridCat
-  :: (Backend b R2, Renderable (Path R2) b)
-  => [Diagram b R2] 
-  -> Diagram b R2
+  :: (Backend b V2 n, Renderable (Path V2 n) b, RealFloat n, Typeable n)
+  => [Diagram b V2 n]
+  -> Diagram b V2 n
 gridCat diagrams = gridCat' (intSqrt $ length diagrams) diagrams
 
 -- | Same as 'gridCat', but with a specified number of columns.
 --
 -- > import Diagrams.TwoD.Layout.Grid
 -- > gridCatExample' = gridCat' 4 $ map (flip regPoly 1) [3..10]
--- 
+--
 -- <<#diagram=gridCatExample'&width=200>>
 
-gridCat' 
-  :: (Backend b R2, Renderable (Path R2) b)
-  => Int -> [Diagram b R2] 
-  -> Diagram b R2
+gridCat'
+  :: (Backend b V2 n, Renderable (Path V2 n) b, RealFloat n, Typeable n)
+  => Int -> [Diagram b V2 n]
+  -> Diagram b V2 n
 gridCat' = gridAnimal id
 
 -- | Puts a list of diagrams in a grid, alternating left-to-right
@@ -66,43 +68,43 @@ gridCat' = gridAnimal id
 --
 -- > import Diagrams.TwoD.Layout.Grid
 -- > gridSnakeExample = gridSnake $ map (flip regPoly 1) [3..10]
--- 
+--
 -- <<#diagram=gridSnakeExample&width=200>>
 
 gridSnake
-  :: (Backend b R2, Renderable (Path R2) b)
-  => [Diagram b R2] 
-  -> Diagram b R2
+  :: (Backend b V2 n, Renderable (Path V2 n) b, Typeable n, RealFloat n)
+  => [Diagram b V2 n]
+  -> Diagram b V2 n
 gridSnake diagrams = gridSnake' (intSqrt $ length diagrams) diagrams
 
 -- | Same as 'gridSnake', but with a specified number of columns.
 --
 -- > import Diagrams.TwoD.Layout.Grid
 -- > gridSnakeExample' = gridSnake' 4 $ map (flip regPoly 1) [3..10]
--- 
+--
 -- <<#diagram=gridSnakeExample'&width=200>>
 
 gridSnake'
-  :: (Backend b R2, Renderable (Path R2) b)
-  => Int -> [Diagram b R2] 
-  -> Diagram b R2
+  :: (Backend b V2 n, Renderable (Path V2 n) b, RealFloat n, Typeable n)
+  => Int -> [Diagram b V2 n]
+  -> Diagram b V2 n
 gridSnake' = gridAnimal (everyOther reverse)
 
 -- | Generalisation of gridCat and gridSnake to not repeat code.
-gridAnimal 
-  :: (Backend b R2, Renderable (Path R2) b)
-  => ([[Diagram b R2]] -> [[Diagram b R2]]) -> Int -> [Diagram b R2] 
-  -> Diagram b R2
-gridAnimal rowFunction cols = vcat . map hcat . rowFunction 
+gridAnimal
+  :: (Backend b V2 n, Renderable (Path V2 n) b, TypeableFloat n)
+  => ([[Diagram b V2 n]] -> [[Diagram b V2 n]]) -> Int -> [Diagram b V2 n]
+  -> Diagram b V2 n
+gridAnimal rowFunction cols = vcat . map hcat . rowFunction
     . chunksOf cols . sameBoundingRect . padList cols mempty
 
--- | `gridWith f (cols, rows)` uses `f`, a function of two 
+-- | `gridWith f (cols, rows)` uses `f`, a function of two
 --   zero-indexed integer coordinates, to generate a grid of diagrams
 --   with the specified dimensions.
-gridWith 
-  :: (Backend b R2, Renderable (Path R2) b)
-  => (Int -> Int -> Diagram b R2) -> (Int, Int) 
-  -> Diagram b R2
+gridWith
+  :: (Backend b V2 n, Renderable (Path V2 n) b, RealFloat n, Typeable n)
+  => (Int -> Int -> Diagram b V2 n) -> (Int, Int)
+  -> Diagram b V2 n
 gridWith f (cols, rows) = gridCat' cols diagrams
   where
     diagrams = [ f x y | y <- [0..rows - 1] , x <- [0..cols - 1] ]
@@ -112,31 +114,31 @@ gridWith f (cols, rows) = gridCat' cols diagrams
 -- | Make all diagrams have the same bounding square,
 --   one that bounds them all.
 sameBoundingSquare
-  :: (Backend b R2, Renderable (Path R2) b)
-  => [Diagram b R2]
-  -> [Diagram b R2]
+  :: forall b n. (Backend b V2 n, Renderable (Path V2 n) b, Ord n, RealFloat n, Typeable n)
+  => [Diagram b V2 n]
+  -> [Diagram b V2 n]
 sameBoundingSquare diagrams = map frameOne diagrams
   where
     biggest = maximumBy (comparing size) diagrams
     size diagram = max (width diagram) (height diagram)
     centerPoint = center2D biggest
-    padSquare = (square (size biggest) :: D R2) # phantom
+    padSquare = (square (size biggest) :: D V2 n) # phantom
     frameOne = atop padSquare . moveOriginTo centerPoint
 
 
 -- | Make all diagrams have the same bounding rect,
 --   one that bounds them all.
 sameBoundingRect
-  :: (Backend b R2, Renderable (Path R2) b)
-  => [Diagram b R2]
-  -> [Diagram b R2]
+  :: forall n b. (Backend b V2 n, Renderable (Path V2 n) b, Ord n, RealFloat n, Typeable n)
+  => [Diagram b V2 n]
+  -> [Diagram b V2 n]
 sameBoundingRect diagrams = map frameOne diagrams
   where
     widest = maximumBy (comparing width) diagrams
     tallest = maximumBy (comparing height) diagrams
     (xCenter :& _) = coords (center2D widest)
     (_ :& yCenter) = coords (center2D tallest)
-    padRect = (rect (width widest) (height tallest) :: D R2) # phantom
+    padRect = (rect (width widest) (height tallest) :: D V2 n) # phantom
     frameOne = atop padRect . moveOriginTo (xCenter ^& yCenter)
 
 -- * Helper functions.

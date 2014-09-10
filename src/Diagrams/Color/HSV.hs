@@ -25,7 +25,6 @@ import           Data.Colour.RGBSpace.HSV (hsv, hsvView)
 import           Data.Colour.SRGB         (sRGB, toSRGB)
 import           Data.List                (minimumBy)
 import           Data.Ord                 (comparing)
-import           Data.VectorSpace         (Scalar, VectorSpace, lerp)
 
 -- | Blend two colors in HSV space---that is, linearly interpolate
 --   between their hues, saturations, and values independently
@@ -34,18 +33,23 @@ import           Data.VectorSpace         (Scalar, VectorSpace, lerp)
 --   HSV space.  That is, a parameter of @0@ results in only the first
 --   color; @1@ results in only the second color; and anything in
 --   between results in a blend.
-hsvBlend :: (Floating a, RealFrac a, VectorSpace a)
-         => Scalar a -> Colour a -> Colour a -> Colour a
+hsvBlend :: RealFloat n => n -> Colour n -> Colour n -> Colour n
 hsvBlend t c1 c2 = uncurryRGB sRGB . hsv3
-                 $ (lerpWrap h1 h2 360 t, lerp s1 s2 t, lerp v1 v2 t)
+                 $ (lerpWrap h1 h2 360 t, lerp' s1 s2 t, lerp' v1 v2 t)
   where
     [(h1,s1,v1), (h2,s2,v2)] = map (hsvView . toSRGB) [c1,c2]
     hsv3 (h,s,v) = hsv h s v
 
-lerpWrap :: (RealFrac a, VectorSpace a) => a -> a -> a -> Scalar a -> a
-lerpWrap a b m t = lerp a b' t `dmod` m
+lerpWrap :: (RealFrac n) => n -> n -> n -> n -> n
+lerpWrap a b m t = lerp' a b' t `dmod` m
   where
     b' = minimumBy (comparing (abs . subtract a)) [b - m, b, b + m]
 
-dmod :: RealFrac a => a -> a -> a
+-- | Interpolate linearly between two values.  The first argument is
+-- the parameter.  A parameter of @0@ results in the second argument;
+-- with a parameter of @1@, @lerp'@ returns its third argument.
+lerp' :: Num n => n -> n -> n -> n
+lerp' t a b = t * a + (1 - t) * b
+
+dmod :: RealFrac n => n -> n -> n
 dmod a m = a - m * fromIntegral (floor (a/m) :: Integer)

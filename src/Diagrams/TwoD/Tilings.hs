@@ -23,9 +23,9 @@ module Diagrams.TwoD.Tilings (
 
     Q236, rt2, rt3, rt6
 
-  , toDouble
+  , toFloating
 
-  , Q2, toR2, toP2
+  , Q2, toV2, toP2
 
   -- * Regular polygons
 
@@ -76,13 +76,12 @@ import           Control.Monad.Writer hiding ((<>))
 import           Control.Monad.Writer
 #endif
 
-import           Control.Arrow
 import           Data.Function        (on)
 import           Data.List            (mapAccumL, sort)
-import           Data.VectorSpace
 
 import qualified Data.Foldable        as F
 import qualified Data.Set             as S
+import Data.Data
 
 import           Data.Colour
 import           Diagrams.Prelude
@@ -101,8 +100,8 @@ data Q236 = Q236 Rational Rational Rational Rational
   deriving (Eq, Ord, Show, Read)
 
 -- | Convert a @Q236@ value to a @Double@.
-toDouble :: Q236 -> Double
-toDouble (Q236 a b c d) = fromRational a
+toFloating :: Floating n => Q236 -> n
+toFloating (Q236 a b c d) = fromRational a
                         + fromRational b * sqrt 2
                         + fromRational c * sqrt 3
                         + fromRational d * sqrt 6
@@ -113,8 +112,10 @@ rt3 = Q236 0 0 1 0
 rt6 = rt2*rt3
 
 instance Num Q236 where
-  (+) = (^+^)
-  (-) = (^-^)
+  (Q236 a1 b1 c1 d1) + (Q236 a2 b2 c2 d2)
+      = Q236 (a1 + a2) (b1 + b2) (c1 + c2) (d1 + d2)
+  (Q236 a1 b1 c1 d1) - (Q236 a2 b2 c2 d2)
+      = Q236 (a1 - a2) (b1 - b2) (c1 - c2) (d1 - d2)
   (Q236 a1 b1 c1 d1) * (Q236 a2 b2 c2 d2) =
     Q236 (a1*a2 + 2*b1*b2 + 3*c1*c2 + 6*d1*d2)
          (a1*b2 + b1*a2 + 3*c1*d2 + 3*d1*c2)
@@ -124,23 +125,23 @@ instance Num Q236 where
   fromInteger z = Q236 (fromInteger z) 0 0 0
   signum = error "no signum for Q236"
 
-instance AdditiveGroup Q236 where
-  zeroV = Q236 0 0 0 0
-  (Q236 a1 b1 c1 d1) ^+^ (Q236 a2 b2 c2 d2)
-    = Q236 (a1 + a2) (b1 + b2) (c1 + c2) (d1 + d2)
-  negateV (Q236 a b c d) = Q236 (-a) (-b) (-c) (-d)
+instance Fractional Q236 where
+    recip q@(Q236 a b c d) = Q236 (a3/α) (b3/α) (c3/α) (d3/α)
+      where
+        q' = (Q236 a (-b) (-c) d)
+        rs@(Q236 r 0 0 s) = q * q'
+        rs' = (Q236 r 0 0 (-s))
+        (Q236 α 0 0 0) = rs * rs'
+        (Q236 a3 b3 c3 d3) = q' * rs'
+    fromRational r = Q236 r 0 0 0
 
-instance VectorSpace Q236 where
-  type Scalar Q236 = Rational
-  s *^ (Q236 a b c d) = Q236 (s * a) (s * b) (s * c) (s * d)
+type Q2 = V2 Q236
 
-type Q2 = (Q236, Q236)
+toV2 :: Floating n => Q2 -> V2 n
+toV2 = fmap toFloating
 
-toR2 :: Q2 -> R2
-toR2 = r2 . (toDouble *** toDouble)
-
-toP2 :: Q2 -> P2
-toP2 = p2 . (toDouble *** toDouble)
+toP2 :: Floating n => Q2 -> P2 n
+toP2 = P . toV2
 
 ------------------------------------------------------------
 -- Polygons
@@ -167,19 +168,19 @@ polyFromSides n  = error $ "Bad polygon number: " ++ show n
 
 -- | Cosine of a polygon's internal angle.
 polyCos :: TilingPoly -> Q236
-polyCos Triangle  = (1/2) *^ 1
+polyCos Triangle  = (1/2)
 polyCos Square    = 0
-polyCos Hexagon   = (-1/2) *^ 1
-polyCos Octagon   = (-1/2) *^ rt2
-polyCos Dodecagon = (-1/2) *^ rt3
+polyCos Hexagon   = (-1/2)
+polyCos Octagon   = (-1/2)
+polyCos Dodecagon = (-1/2) * rt3
 
 -- | Sine of a polygon's internal angle.
 polySin :: TilingPoly -> Q236
-polySin Triangle  = (1/2) *^ rt3
+polySin Triangle  = (1/2) * rt3
 polySin Square    = 1
-polySin Hexagon   = (1/2) *^ rt3
-polySin Octagon   = (1/2) *^ rt2
-polySin Dodecagon = (1/2) *^ 1
+polySin Hexagon   = (1/2) * rt3
+polySin Octagon   = (1/2) * rt2
+polySin Dodecagon = 1/2
 
 {-
    R_th = ( cos th  -sin th )
@@ -189,7 +190,7 @@ polySin Dodecagon = (1/2) *^ 1
 
 -- | Rotate by polygon internal angle.
 polyRotation :: TilingPoly -> Q2 -> Q2
-polyRotation p (x,y) = (x*c - y*s, x*s + y*c)
+polyRotation p (V2 x y) = V2 (x*c - y*s) (x*s + y*c)
   where c = polyCos p
         s = polySin p
 
@@ -200,7 +201,7 @@ polyRotation p (x,y) = (x*c - y*s, x*s + y*c)
 
 -- | Rotate by polygon external angle.
 polyExtRotation :: TilingPoly -> Q2 -> Q2
-polyExtRotation p (x,y) = (-x*c - y*s, x*s - y*c)
+polyExtRotation p (V2 x y) = V2 (-x*c - y*s) (x*s - y*c)
   where c = polyCos p
         s = polySin p
 
@@ -313,7 +314,7 @@ genNeighbors t v d = (neighbors, S.fromList polys) where
     = unzip . snd
       $ mapAccumL
           (\d' poly -> (polyRotation poly d', (v ^+^ d', genPolyVs poly v d')))
-          (negateV d)
+          (negated d)
           (curConfig t)
 
 -- | Generate the vertices of the given polygon, with one vertex at the given point
@@ -333,11 +334,13 @@ genPolyVs p v d = Polygon
 ------------------------------------------------------------
 
 -- | Draw an edge with the given style.
-drawEdge :: Renderable (Path R2) b => Style R2 -> Edge -> Diagram b R2
+drawEdge :: (Renderable (Path V2 n) b, RealFloat n, Typeable n) =>
+            Style V2 n -> Edge -> Diagram b V2 n
 drawEdge s (Edge v1 v2) = (toP2 v1 ~~ toP2 v2) # applyStyle s
 
 -- | Draw a polygon with the given style.
-drawPoly :: Renderable (Path R2) b => (Polygon -> Style R2) -> Polygon -> Diagram b R2
+drawPoly :: (Renderable (Path V2 n) b, RealFloat n, Ord n, Typeable n) =>
+            (Polygon -> Style V2 n) -> Polygon -> Diagram b V2 n
 drawPoly s p = applyStyle (s p) . fromVertices . map toP2 . polygonVertices $ p
 
 -- Simple per-polygon color scheme
@@ -350,8 +353,8 @@ polyColor Dodecagon = cornflowerblue
 
 -- | Draw a tiling, with a given width and height and default colors
 --   for the polygons.
-drawTiling :: (Renderable (Path R2) b, Backend b R2)
-           => Tiling -> Double -> Double -> Diagram b R2
+drawTiling :: (Renderable (Path V2 n) b, Backend b V2 n, RealFloat n, Data n)
+           => Tiling -> n -> n -> Diagram b V2 n
 drawTiling =
   drawTilingStyled
     (mempty)
@@ -368,11 +371,12 @@ drawTiling =
 -- | Draw a tiling with customizable styles for the polygons.  This is
 --   just an example, which you can use as the basis of your own
 --   tiling-drawing routine.
-drawTilingStyled :: (Renderable (Path R2) b, Backend b R2)
-                 => Style R2 -> (Polygon -> Style R2)
-                 -> Tiling -> Double -> Double -> Diagram b R2
+drawTilingStyled :: forall b n. (Renderable (Path V2 n) b, Backend b V2 n,
+                                 RealFloat n, Typeable n)
+                 => Style V2 n -> (Polygon -> Style V2 n)
+                 -> Tiling -> n -> n -> Diagram b V2 n
 drawTilingStyled eStyle pStyle t w h =
-  mkDia $ generateTiling t (0,0) (1,0) inRect
+  mkDia $ generateTiling t (V2 0 0) (V2 1 0) inRect
 
             -- draw the edges and polygons into separate
             -- diagrams, so we can make sure all the edges are
@@ -380,9 +384,9 @@ drawTilingStyled eStyle pStyle t w h =
             (liftA2 (,) (drawEdge eStyle) mempty)
             (liftA2 (,) mempty (drawPoly pStyle))
   where
-    inRect ((unr2 . toR2) -> (x,y)) = -w/2 <= x && x <= w/2 && -h/2 <= y && y <= h/2
+    inRect ((unr2 . toV2) -> (x,y)) = -w/2 <= x && x <= w/2 && -h/2 <= y && y <= h/2
     mkDia (es, ps) = viewRect (es <> ps)
-    viewRect = withEnvelope (rect w h :: D R2)
+    viewRect = withEnvelope (rect w h :: D V2 n)
 
 ------------------------------------------------------------
 -- Some pre-defined tilings

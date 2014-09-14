@@ -1,4 +1,6 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -fno-warn-missing-signatures #-}
 
 -----------------------------------------------------------------------------
@@ -24,6 +26,7 @@ import           Diagrams.TwoD.Layout.Tree
 import           Diagrams.TwoD.Path.Turtle
 
 import           Control.Monad
+import           Data.Data
 
 ------------------------------------------------------------
 -- D
@@ -74,6 +77,9 @@ grid = verts # centerXY <> horiz # centerXY
   where verts = hcat' (with & sep.~0.5) $ replicate 20 (vrule 10)
         horiz = rotateBy (1/4) verts
 
+gbkg :: forall b n m. (TrailLike (QDiagram b V2 n m), Monoid m, Semigroup m,
+                       RealFloat n, Data n) =>
+        QDiagram b V2 n m
 gbkg = grid
     # lc gray
     # rotateBy (-1/20)
@@ -127,11 +133,11 @@ m = square 5 # lwG 0.05 <>
 ------------------------------------------------------------
 
 ps = map p2 [(5,5), (3,6), (1,5), (1,4), (3,3), (5,2), (4,0), (0,0.5)]
-s = (mconcat (map (place (dot blue)) ps) <>
+s = (mconcat (map (place (disk blue)) ps) <>
     cubicSpline False ps # lwG 0.20)
     # scale 0.8
 
-dot c = circle 0.4 # fc c # lwG 0
+disk c = circle 0.4 # fc c # lwG 0
 
 ------------------------------------------------------------
 -- Logo

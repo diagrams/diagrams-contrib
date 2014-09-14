@@ -1,7 +1,8 @@
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
-{-# LANGUAGE FlexibleContexts      #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -34,13 +35,13 @@ module Diagrams.TwoD.Sunburst
   , colors
   ) where
 
-import           Control.Lens        (makeLenses)
+import           Control.Lens       (makeLenses)
 
-import           Data.Tree
-import           Data.Foldable       (foldMap)
+import           Data.Data
 import           Data.Default.Class
-import Data.Data
-import           Diagrams.Prelude    hiding (radius)
+import           Data.Foldable      (foldMap)
+import           Data.Tree
+import           Diagrams.Prelude   hiding (radius)
 
 data SunburstOpts n = SunburstOpts
   { _radius       :: n -- ^ Relative size of the root circle, usually 1.

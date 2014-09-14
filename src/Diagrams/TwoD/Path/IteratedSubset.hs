@@ -1,3 +1,4 @@
+{-# LANGUAGE ExplicitForAll        #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE TypeFamilies          #-}
@@ -47,15 +48,15 @@ module Diagrams.TwoD.Path.IteratedSubset
 import           Diagrams.Core.Points       ()
 import           Diagrams.Prelude
 
-import           Control.Lens ((^.))
+import           Control.Lens               ((^.))
 import           Control.Monad              (replicateM)
 import           Control.Monad.Random       (evalRandIO, getRandom, getRandomR)
 import           Control.Monad.Random.Class (MonadRandom)
 import           Data.Colour.SRGB           (sRGB)
 import           Data.List.Split            (chunksOf)
 import           Data.Maybe                 (mapMaybe)
-import Data.Typeable
-import System.Random (Random)
+import           Data.Typeable
+import           System.Random              (Random)
 
 ------------------------------------------------------------
 -- Iterated subset algorithm
@@ -208,9 +209,9 @@ sqUpDownOverlay
 -- Generating random iterated subset fractals
 
 -- | Parameters to generate an iterated subset fractal.
-data IterTrailConfig n = ITC { seed  :: Trail' Line V2 n -- ^ The seed trail
-                           , color :: Colour Double  -- ^ The line color to use
-                           , iters :: Int            -- ^ Number of iterations
+data IterTrailConfig n = ITC { seed :: Trail' Line V2 n -- ^ The seed trail
+                           , color  :: Colour Double  -- ^ The line color to use
+                           , iters  :: Int            -- ^ Number of iterations
                            }
 
 -- | Generate a random 'IterTrailConfig'.  This features many

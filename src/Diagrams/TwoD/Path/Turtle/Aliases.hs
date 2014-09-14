@@ -12,7 +12,7 @@
 
 module Diagrams.TwoD.Path.Turtle.Aliases where
 
-import Diagrams.TwoD.Path.Turtle
+import           Diagrams.TwoD.Path.Turtle
 
 fd, bk, lt, rt :: (Floating n, Ord n) => n -> Turtle n ()
 

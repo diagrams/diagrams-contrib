@@ -49,7 +49,7 @@ module Diagrams.Lens
 
 import           Control.Applicative
 import           Control.Lens
-import Data.Foldable
+import           Data.Foldable
 import           Diagrams.BoundingBox
 import           Diagrams.Core.Style
 import           Diagrams.Prelude

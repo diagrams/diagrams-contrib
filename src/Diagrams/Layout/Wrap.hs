@@ -19,7 +19,7 @@ import           Control.Arrow    (first, (&&&))
 import           Data.Foldable    (foldMap)
 import           Data.List        (find, inits, tails)
 import           Diagrams.Prelude hiding (start)
-import Linear.Epsilon
+import           Linear.Epsilon
 
 -- TODO: Take into account the negative bounds, and iteratively refine
 --   the list selection.

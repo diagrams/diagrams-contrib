@@ -1,5 +1,6 @@
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
+{-# LANGUAGE ScopedTypeVariables   #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -25,13 +26,13 @@ module Diagrams.TwoD.Layout.Grid
 
     ) where
 
-import Data.List       (maximumBy)
-import Data.Ord        (comparing)
-import Data.Typeable
+import           Data.List        (maximumBy)
+import           Data.Ord         (comparing)
+import           Data.Typeable
 
-import Data.List.Split (chunksOf)
+import           Data.List.Split  (chunksOf)
 
-import Diagrams.Prelude
+import           Diagrams.Prelude
 
 -- * Grid Layout
 

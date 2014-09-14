@@ -1,7 +1,7 @@
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE GADTs #-}
+{-# LANGUAGE DeriveFunctor   #-}
+{-# LANGUAGE GADTs           #-}
 {-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TypeFamilies    #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -25,17 +25,17 @@ module Diagrams.TwoD.Path.Metafont
        )
        where
 
-import Control.Lens hiding ((#), at)
-import Data.Text (Text)
-import Data.Either
-import Text.Parsec (ParseError, parse)
+import           Control.Lens                            hiding (at, ( # ))
+import           Data.Either
+import           Data.Text                               (Text)
+import           Text.Parsec                             (ParseError, parse)
 
-import Diagrams.Prelude hiding (view)
+import           Diagrams.Prelude                        hiding (view)
 
-import Diagrams.TwoD.Path.Metafont.Types
-import Diagrams.TwoD.Path.Metafont.Internal
-import Diagrams.TwoD.Path.Metafont.Combinators
-import Diagrams.TwoD.Path.Metafont.Parser
+import           Diagrams.TwoD.Path.Metafont.Combinators
+import           Diagrams.TwoD.Path.Metafont.Internal
+import           Diagrams.TwoD.Path.Metafont.Parser
+import           Diagrams.TwoD.Path.Metafont.Types
 
 -- | MF.fromString parses a Text value in MetaFont syntax, and
 -- attempts to return a TrailLike.  Only a subset of Metafont is

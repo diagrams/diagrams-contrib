@@ -1,7 +1,7 @@
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveFunctor       #-}
+{-# LANGUAGE GADTs               #-}
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE TemplateHaskell     #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -24,13 +24,13 @@ module Diagrams.TwoD.Path.Metafont.Internal
        )
     where
 
-import Control.Lens hiding ((#), at)
-import Data.Maybe
+import           Control.Lens                      hiding (at, ( # ))
+import           Data.Maybe
 
-import Diagrams.CubicSpline.Internal
-import Diagrams.Prelude hiding (view)
+import           Diagrams.CubicSpline.Internal
+import           Diagrams.Prelude                  hiding (view)
 
-import  Diagrams.TwoD.Path.Metafont.Types
+import           Diagrams.TwoD.Path.Metafont.Types
 
 
 -- | Reverse a MetaFont segment, including all directions & joins.

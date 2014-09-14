@@ -12,8 +12,8 @@ module Diagrams.TwoD.Path.Metafont.Combinators
        , leaving, arriving
        ) where
 
-import Diagrams.Prelude
-import Diagrams.TwoD.Path.Metafont.Types
+import           Diagrams.Prelude
+import           Diagrams.TwoD.Path.Metafont.Types
 
 -- internal alias to keep the signatures readable
 type Join n = PathJoin (Maybe (PathDir n)) (Maybe (BasicJoin n))

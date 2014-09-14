@@ -28,7 +28,7 @@ import           Diagrams.Prelude
 
 import           Math.NumberTheory.Primes.Factorisation (factorise)
 
-import Data.Data
+import           Data.Data
 
 -- | @primeLayout@ takes a positive integer p (the idea is for it to
 --   be prime, though it doesn't really matter) and a diagram, and lays

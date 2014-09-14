@@ -1,14 +1,17 @@
 {-# OPTIONS_GHC -fno-warn-unused-do-bind #-}
+
+{-# LANGUAGE MultiParamTypeClasses #-}
+
 module Diagrams.TwoD.Path.Metafont.Parser
        (metafontParser) where
 
-import Control.Lens ((^.))
+import           Control.Lens                      ((^.))
 
-import Text.Parsec
-import Text.Parsec.Text
+import           Text.Parsec
+import           Text.Parsec.Text
 
-import Diagrams.Prelude hiding (option)
-import Diagrams.TwoD.Path.Metafont.Types
+import           Diagrams.Prelude                  hiding (option)
+import           Diagrams.TwoD.Path.Metafont.Types
 
 num :: (Num n, Read n) => Parser n
 num = read <$> float where

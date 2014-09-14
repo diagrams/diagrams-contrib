@@ -1,16 +1,16 @@
-{-# LANGUAGE DeriveFunctor #-}
-{-# LANGUAGE EmptyDataDecls #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveFunctor     #-}
+{-# LANGUAGE EmptyDataDecls    #-}
 {-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GADTs             #-}
+{-# LANGUAGE TemplateHaskell   #-}
 
 module Diagrams.TwoD.Path.Metafont.Types where
 
-import Control.Lens hiding ((#))
-import Data.Monoid
-import Data.Semigroup
+import           Control.Lens        hiding (( # ))
+import           Data.Monoid
+import           Data.Semigroup
 
-import Diagrams.TwoD.Types
+import           Diagrams.TwoD.Types
 
 -- | A @PathJoin@ specifies the directions at both ends of a segment,
 -- and a join which describes the control points explicitly or implicitly.

@@ -79,9 +79,9 @@ import           Control.Monad.Writer
 import           Data.Function        (on)
 import           Data.List            (mapAccumL, sort)
 
+import           Data.Data
 import qualified Data.Foldable        as F
 import qualified Data.Set             as S
-import Data.Data
 
 import           Data.Colour
 import           Diagrams.Prelude

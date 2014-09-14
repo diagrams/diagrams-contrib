@@ -45,7 +45,7 @@ module Diagrams.TwoD.Path.Turtle.Internal
   , getTurtlePath
   ) where
 
-import Data.Data
+import           Data.Data
 import           Debug.Trace      (traceShow)
 
 import           Diagrams.Prelude

@@ -1,9 +1,10 @@
 {-# OPTIONS_GHC -Wall                      #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing   #-}
 
-{-# LANGUAGE TemplateHaskell               #-}
-{-# LANGUAGE FlexibleContexts              #-}
-{-# LANGUAGE NoMonomorphismRestriction     #-}
+{-# LANGUAGE FlexibleContexts          #-}
+{-# LANGUAGE MultiParamTypeClasses     #-}
+{-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE TemplateHaskell           #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -95,15 +96,15 @@ module Diagrams.TwoD.Grid (
   , placeDiagramOnGrid
   ) where
 
-import Diagrams.Prelude
-import Diagrams.TwoD.Text
+import           Diagrams.Prelude
+import           Diagrams.TwoD.Text
 
-import Control.Lens (makeLenses, (^.))
+import           Control.Lens       (makeLenses, (^.))
 
-import Data.Default.Class
-import Data.List
-import Data.List.Split
-import Data.Data
+import           Data.Data
+import           Data.Default.Class
+import           Data.List
+import           Data.List.Split
 
 
 data GridOpts n

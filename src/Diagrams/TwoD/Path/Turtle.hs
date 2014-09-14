@@ -33,7 +33,7 @@ module Diagrams.TwoD.Path.Turtle
 import qualified Control.Lens                       as L
 import           Control.Monad.Identity             (Identity (..))
 import qualified Control.Monad.State                as ST
-import Data.Data
+import           Data.Data
 
 import           Diagrams.Prelude
 import qualified Diagrams.TwoD.Path.Turtle.Internal as T

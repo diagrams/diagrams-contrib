@@ -60,7 +60,7 @@ module Diagrams.TwoD.Apollonian
        ) where
 
 import           Data.Complex
-import Data.Data
+import           Data.Data
 import           Data.Foldable    (foldMap)
 
 import           Diagrams.Prelude hiding (center, radius)
@@ -80,7 +80,7 @@ data Circle n = Circle { bend :: n
                        --   switched.  The bends of any four mutually
                        --   tangent circles satisfy Descartes'
                        --   Theorem.
-                     , cb   :: Complex n
+                     , cb     :: Complex n
                        -- ^ /Product/ of bend and center represented
                        --   as a complex number.  Amazingly, these
                        --   products also satisfy the equation of

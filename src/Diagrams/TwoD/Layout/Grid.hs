@@ -120,10 +120,10 @@ sameBoundingSquare
   -> [Diagram b V2 n]
 sameBoundingSquare diagrams = map frameOne diagrams
   where
-    biggest = maximumBy (comparing size) diagrams
-    size diagram = max (width diagram) (height diagram)
+    biggest = maximumBy (comparing maxDim) diagrams
+    maxDim diagram = max (width diagram) (height diagram)
     centerPoint = center2D biggest
-    padSquare = (square (size biggest) :: D V2 n) # phantom
+    padSquare = (square (maxDim biggest) :: D V2 n) # phantom
     frameOne = atop padSquare . moveOriginTo centerPoint
 
 

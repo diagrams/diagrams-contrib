@@ -104,10 +104,10 @@ center (Circle b (cbx :+ cby)) = p2 (cbx / b, cby / b)
 radius :: Fractional n => Circle n -> n
 radius = abs . recip . bend
 
-liftF :: RealFloat n => (forall n. Floating n => n -> n) -> Circle n -> Circle n
+liftF :: RealFloat n => (forall a. Floating a => a -> a) -> Circle n -> Circle n
 liftF f (Circle b c) = Circle (f b) (f c)
 
-liftF2 :: RealFloat n => (forall n. Floating n => n -> n -> n) ->
+liftF2 :: RealFloat n => (forall a. Floating a => a -> a -> a) ->
           Circle n -> Circle n -> Circle n
 liftF2 f (Circle b1 cb1) (Circle b2 cb2) = Circle (f b1 b2) (f cb1 cb2)
 

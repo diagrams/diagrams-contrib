@@ -266,3 +266,4 @@ randIterGrid :: (Renderable (Path V2 n) b, Random n, TypeableFloat n) =>
 randIterGrid = do
   itcs <- evalRandIO (replicateM 100 randITC)
   return (vcat . map hcat . chunksOf 10 . map drawITCScaled $ itcs)
+

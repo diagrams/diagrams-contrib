@@ -114,7 +114,7 @@ refineSegment t seg
 -- | Seed for the Koch curve (side of the famous Koch 'snowflake').
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_kochD.svg#diagram=kochD&width=400>>
-koch :: (TrailLike t, Vn t ~ V2 n, Floating n) => t
+koch :: (TrailLike t, V t ~ V2, N t ~ n, Floating n) => t
 koch = fromOffsets [unitX, unitX # rotateBy (1/6), unitX # rotateBy (-1/6), unitX]
 
 -- > kochD = showTrail 4 koch
@@ -122,7 +122,7 @@ koch = fromOffsets [unitX, unitX # rotateBy (1/6), unitX # rotateBy (-1/6), unit
 -- | Seed for the Lévy dragon curve.
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_levyD.svg#diagram=levyD&width=400>>
-levy :: (TrailLike t, Vn t ~ V2 n) => t
+levy :: (TrailLike t, V t ~ V2, N t ~ n) => t
 levy = fromOffsets [unitY, unitX]
 
 -- > levyD = showTrail 9 levy
@@ -131,7 +131,7 @@ levy = fromOffsets [unitY, unitX]
 --   of triangles.
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_zagD.svg#diagram=zagD&width=400>>
-zag :: (TrailLike t, Vn t ~ V2 n) => t
+zag :: (TrailLike t, V t ~ V2, N t ~ n) => t
 zag = fromOffsets [unitX, (-0.5) ^& 1, unitX]
 
 -- > zagD = showTrail 5 zag
@@ -140,7 +140,7 @@ zag = fromOffsets [unitX, (-0.5) ^& 1, unitX]
 --   curve.
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_sqUpD.svg#diagram=sqUpD&width=400>>
-sqUp :: (TrailLike t, Vn t ~ V2 n) => t
+sqUp :: (TrailLike t, V t ~ V2, N t ~ n) => t
 sqUp = fromOffsets [unitX, unitY, unitX, unit_Y, unitX]
 
 -- > sqUpD = showTrail 3 sqUp
@@ -149,7 +149,7 @@ sqUp = fromOffsets [unitX, unitY, unitX, unit_Y, unitX]
 --   rectilinear spiral patterns.
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_sqUpDownD.svg#diagram=sqUpDownD&width=400>>
-sqUpDown :: (TrailLike t, Vn t ~ V2 n) => t
+sqUpDown :: (TrailLike t, V t ~ V2, N t ~ n) => t
 sqUpDown = fromOffsets [unitX, unitY, unitX, 2 *^ unit_Y, unitX, unitY, unitX]
 
 -- > sqUpDownD = showTrail 3 sqUpDown
@@ -158,7 +158,7 @@ sqUpDown = fromOffsets [unitX, unitY, unitX, 2 *^ unit_Y, unitX, unitY, unitX]
 --   version.
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_sqUpDownD2.svg#diagram=sqUpDownD2&width=400>>
-sqUpDown' :: (TrailLike t, Vn t ~ V2 n) => t
+sqUpDown' :: (TrailLike t, V t ~ V2, N t ~ n) => t
 sqUpDown' = cubicSpline False sqUpDown
 
 -- > sqUpDownD2 = showTrail 3 sqUpDown'

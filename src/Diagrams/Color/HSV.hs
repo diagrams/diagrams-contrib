@@ -46,10 +46,10 @@ lerpWrap a b m t = lerp' a b' t `dmod` m
     b' = minimumBy (comparing (abs . subtract a)) [b - m, b, b + m]
 
 -- | Interpolate linearly between two values.  The third argument is
--- the parameter.  A parameter of @0@ results in the first argument;
--- with a parameter of @1@, @lerp'@ returns its second argument.
+--   the parameter.  A parameter of @0@ results in the first argument;
+--   with a parameter of @1@, @lerp'@ returns its second argument.
 lerp' :: Num n => n -> n -> n -> n
 lerp' a b t = (1 - t) * a + t * b
 
 dmod :: RealFrac n => n -> n -> n
-dmod a m = a - m * fromIntegral (floor (a/m) :: Integer)
+dmod a m = a - m * fromInteger (floor (a/m))

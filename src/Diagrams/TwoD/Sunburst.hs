@@ -37,7 +37,6 @@ module Diagrams.TwoD.Sunburst
 
 import           Control.Lens       (makeLenses)
 
-import           Data.Data
 import           Data.Default.Class
 import           Data.Foldable      (foldMap)
 import           Data.Tree
@@ -68,11 +67,11 @@ data SData n = SData
   (Colour Double) -- color
 
 -- Make n sections (annular wedges) starting in direction d and sweeping a
-sections :: (Renderable (Path V2 n) b, RealFloat n, Data n) =>
+sections :: (Renderable (Path V2 n) b, DataFloat n) =>
             SData n -> Diagram b V2 n
 sections (SData r s d a n c) = mconcat $ iterateN n (rotate theta) w
   where
-    theta = a ^/ (fromIntegral n)
+    theta = a ^/ fromIntegral n
     w = annularWedge (s + r) r d theta # lc white # lwG 0.008 # fc c
 
 -- Convert an arbitrary @Tree a@ to a @Tree SData@ storing the sections info
@@ -85,8 +84,8 @@ toTree (SunburstOpts r s []) x q1 q2 =
 toTree (SunburstOpts r s (c:cs)) (Node _ ts) d a = Node (SData r s d a n c) ts'
   where
     n = length ts
-    dt =  a ^/ (fromIntegral n)
-    qs = [rotate ((fromIntegral i) *^ dt ) d  | i <- [0..n]]
+    dt =  a ^/ fromIntegral n
+    qs = [rotate (fromIntegral i *^ dt ) d  | i <- [0..n]]
     fs = toTree (SunburstOpts(r + s) s (cs ++ [c]))
     ts' = zipWith3 fs ts (take (n-1) qs) (repeat dt)
 
@@ -95,10 +94,10 @@ toTree (SunburstOpts r s (c:cs)) (Node _ ts) d a = Node (SData r s d a n c) ts'
 --   The root is the center of the sunburst and its circumference is divided
 --   evenly according to the number of child nodes it has. Then each of those
 --   sections is treated the same way.
-sunburst' :: (Renderable (Path V2 n) b, RealFloat n, Data n) =>
+sunburst' :: (Renderable (Path V2 n) b, DataFloat n) =>
              SunburstOpts n -> Tree a -> Diagram b V2 n
 sunburst' opts t = sunB $ toTree opts t xDir fullTurn
-  where sunB (Node sd ts') = sections sd <> (foldMap sunB ts')
+  where sunB (Node sd ts') = sections sd <> foldMap sunB ts'
 
 -- | @sunburst@ with default opts
 --
@@ -108,5 +107,5 @@ sunburst' opts t = sunB $ toTree opts t xDir fullTurn
 --   > sunburstEx = sunburst aTree # pad 1.1
 --
 --   <<diagrams/src_Diagrams_TwoD_Sunburst_sunburstEx.svg#diagram=sunburstEx&width=500>>
-sunburst :: (Renderable (Path V2 n) b, RealFloat n, Data n) => Tree a -> Diagram b V2 n
+sunburst :: (Renderable (Path V2 n) b, DataFloat n) => Tree a -> Diagram b V2 n
 sunburst = sunburst' def

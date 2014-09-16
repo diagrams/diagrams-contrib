@@ -26,7 +26,6 @@ import           Diagrams.TwoD.Layout.Tree
 import           Diagrams.TwoD.Path.Turtle
 
 import           Control.Monad
-import           Data.Data
 
 ------------------------------------------------------------
 -- D
@@ -78,7 +77,7 @@ grid = verts # centerXY <> horiz # centerXY
         horiz = rotateBy (1/4) verts
 
 gbkg :: forall b n m. (TrailLike (QDiagram b V2 n m), Monoid m, Semigroup m,
-                       RealFloat n, Data n) =>
+                       DataFloat n) =>
         QDiagram b V2 n m
 gbkg = grid
     # lc gray

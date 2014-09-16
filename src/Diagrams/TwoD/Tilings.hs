@@ -79,7 +79,6 @@ import           Control.Monad.Writer
 import           Data.Function        (on)
 import           Data.List            (mapAccumL, sort)
 
-import           Data.Data
 import qualified Data.Foldable        as F
 import qualified Data.Set             as S
 
@@ -126,14 +125,14 @@ instance Num Q236 where
   signum = error "no signum for Q236"
 
 instance Fractional Q236 where
-    recip q@(Q236 a b c d) = Q236 (a3/α) (b3/α) (c3/α) (d3/α)
-      where
-        q' = (Q236 a (-b) (-c) d)
-        rs@(Q236 r 0 0 s) = q * q'
-        rs' = (Q236 r 0 0 (-s))
-        (Q236 α 0 0 0) = rs * rs'
-        (Q236 a3 b3 c3 d3) = q' * rs'
-    fromRational r = Q236 r 0 0 0
+  recip q@(Q236 a b c d) = Q236 (a3/α) (b3/α) (c3/α) (d3/α)
+    where
+      q'                 = Q236 a (-b) (-c) d
+      rs@(Q236 r 0 0 s)  = q * q'
+      rs'                = Q236 r 0 0 (-s)
+      (Q236 α 0 0 0)     = rs * rs'
+      (Q236 a3 b3 c3 d3) = q' * rs'
+  fromRational r = Q236 r 0 0 0
 
 type Q2 = V2 Q236
 
@@ -168,11 +167,11 @@ polyFromSides n  = error $ "Bad polygon number: " ++ show n
 
 -- | Cosine of a polygon's internal angle.
 polyCos :: TilingPoly -> Q236
-polyCos Triangle  = (1/2)
+polyCos Triangle  = 1/2
 polyCos Square    = 0
-polyCos Hexagon   = (-1/2)
-polyCos Octagon   = (-1/2)
-polyCos Dodecagon = (-1/2) * rt3
+polyCos Hexagon   = -1/2
+polyCos Octagon   = -1/2
+polyCos Dodecagon = -1/2 * rt3
 
 -- | Sine of a polygon's internal angle.
 polySin :: TilingPoly -> Q236
@@ -246,9 +245,9 @@ instance Ord Polygon where
 -- | The state maintained while generating a tiling, recording which
 --   vertices have been visited and which edges and polygons have been
 --   drawn.
-data TilingState = TP { visitedVertices :: (S.Set Q2)
-                      , visitedEdges    :: (S.Set Edge)
-                      , visitedPolygons :: (S.Set Polygon)
+data TilingState = TP { visitedVertices :: S.Set Q2
+                      , visitedEdges    :: S.Set Edge
+                      , visitedPolygons :: S.Set Polygon
                       }
 
 initTilingState :: TilingState
@@ -305,7 +304,7 @@ generateTiling t v d vPred e p
 
           -- follow edges and continue recursively
           zipWithM_ (\d i -> generateTiling' (follow t i) (v ^+^ d) d)
-            (map (^-^ v) $ neighbors) [0..]
+            (map (^-^ v) neighbors) [0..]
 
 -- | Generate the neighboring vertices and polygons of a given vertex.
 genNeighbors :: Tiling -> Q2 -> Q2 -> ([Q2], S.Set Polygon)
@@ -334,12 +333,12 @@ genPolyVs p v d = Polygon
 ------------------------------------------------------------
 
 -- | Draw an edge with the given style.
-drawEdge :: (Renderable (Path V2 n) b, RealFloat n, Typeable n) =>
+drawEdge :: (Renderable (Path V2 n) b, TypeableFloat n) =>
             Style V2 n -> Edge -> Diagram b V2 n
 drawEdge s (Edge v1 v2) = (toP2 v1 ~~ toP2 v2) # applyStyle s
 
 -- | Draw a polygon with the given style.
-drawPoly :: (Renderable (Path V2 n) b, RealFloat n, Ord n, Typeable n) =>
+drawPoly :: (Renderable (Path V2 n) b, TypeableFloat n) =>
             (Polygon -> Style V2 n) -> Polygon -> Diagram b V2 n
 drawPoly s p = applyStyle (s p) . fromVertices . map toP2 . polygonVertices $ p
 
@@ -353,11 +352,11 @@ polyColor Dodecagon = cornflowerblue
 
 -- | Draw a tiling, with a given width and height and default colors
 --   for the polygons.
-drawTiling :: (Renderable (Path V2 n) b, Backend b V2 n, RealFloat n, Data n)
+drawTiling :: (Renderable (Path V2 n) b, DataFloat n)
            => Tiling -> n -> n -> Diagram b V2 n
 drawTiling =
   drawTilingStyled
-    (mempty)
+    mempty
     (\p -> mempty
            # lw none
            # fc ( polyColor
@@ -371,8 +370,7 @@ drawTiling =
 -- | Draw a tiling with customizable styles for the polygons.  This is
 --   just an example, which you can use as the basis of your own
 --   tiling-drawing routine.
-drawTilingStyled :: forall b n. (Renderable (Path V2 n) b, Backend b V2 n,
-                                 RealFloat n, Typeable n)
+drawTilingStyled :: forall b n. (Renderable (Path V2 n) b, TypeableFloat n)
                  => Style V2 n -> (Polygon -> Style V2 n)
                  -> Tiling -> n -> n -> Diagram b V2 n
 drawTilingStyled eStyle pStyle t w h =
@@ -384,7 +382,7 @@ drawTilingStyled eStyle pStyle t w h =
             (liftA2 (,) (drawEdge eStyle) mempty)
             (liftA2 (,) mempty (drawPoly pStyle))
   where
-    inRect ((unr2 . toV2) -> (x,y)) = -w/2 <= x && x <= w/2 && -h/2 <= y && y <= h/2
+    inRect (toV2 -> V2 x y) = -w/2 <= x && x <= w/2 && -h/2 <= y && y <= h/2
     mkDia (es, ps) = viewRect (es <> ps)
     viewRect = withEnvelope (rect w h :: D V2 n)
 

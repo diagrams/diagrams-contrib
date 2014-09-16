@@ -45,7 +45,6 @@ module Diagrams.TwoD.Path.Turtle.Internal
   , getTurtlePath
   ) where
 
-import           Data.Data
 import           Debug.Trace      (traceShow)
 
 import           Diagrams.Prelude
@@ -157,7 +156,7 @@ setHeading :: (Floating n, Ord n) => n       -- ^ Degree of orientation
 setHeading d = turnTurtle (const $ d @@ deg)
 
 -- | Sets the turtle orientation towards a given location.
-towards :: (RealFloat n, Ord n) =>
+towards :: RealFloat n =>
            P2 n           -- ^ Point to orient turtle towards
         -> TurtleState n  -- ^ Turtle to orient
         -> TurtleState n  -- ^ Resulting turtle
@@ -239,7 +238,7 @@ setPenColor = setPenColour
 --
 -- Applies the styles to each trails in @paths@ separately and combines them
 -- into a single diagram
-getTurtleDiagram :: (Renderable (Path V2 n) b, Ord n, RealFloat n, Data n)
+getTurtleDiagram :: (Renderable (Path V2 n) b, DataFloat n)
                  => TurtleState n
                  -> Diagram b V2 n
 getTurtleDiagram t =
@@ -282,11 +281,11 @@ modifyCurrStyle :: (Floating n, Ord n) =>
 modifyCurrStyle f t =  t # makeNewTrail # \t' -> t' { currPenStyle = (f . currPenStyle) t' }
 
 -- Creates any TrailLike from a TurtlePath.
-turtlePathToTrailLike :: (Vn t ~ V2 n, TrailLike t) => TurtlePath n -> t
+turtlePathToTrailLike :: (V t ~ V2, N t ~ n, TrailLike t) => TurtlePath n -> t
 turtlePathToTrailLike (TurtlePath _ t) = trailLike t
 
 -- Creates a diagram from a TurtlePath using the provided styles
-turtlePathToStroke :: (Renderable (Path V2 n) b, RealFloat n, Data n) =>
+turtlePathToStroke :: (Renderable (Path V2 n) b, DataFloat n) =>
                       TurtlePath n
                    -> Diagram b V2 n
 turtlePathToStroke t@(TurtlePath (PenStyle lineWidth_  lineColor_) _) = d

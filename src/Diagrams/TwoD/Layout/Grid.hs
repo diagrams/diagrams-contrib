@@ -28,7 +28,6 @@ module Diagrams.TwoD.Layout.Grid
 
 import           Data.List        (maximumBy)
 import           Data.Ord         (comparing)
-import           Data.Typeable
 
 import           Data.List.Split  (chunksOf)
 
@@ -45,7 +44,7 @@ import           Diagrams.Prelude
 -- <<#diagram=gridCatExample&width=200>>
 
 gridCat
-  :: (Backend b V2 n, Renderable (Path V2 n) b, RealFloat n, Typeable n)
+  :: (Renderable (Path V2 n) b, TypeableFloat n)
   => [Diagram b V2 n]
   -> Diagram b V2 n
 gridCat diagrams = gridCat' (intSqrt $ length diagrams) diagrams
@@ -58,7 +57,7 @@ gridCat diagrams = gridCat' (intSqrt $ length diagrams) diagrams
 -- <<#diagram=gridCatExample'&width=200>>
 
 gridCat'
-  :: (Backend b V2 n, Renderable (Path V2 n) b, RealFloat n, Typeable n)
+  :: (Renderable (Path V2 n) b, TypeableFloat n)
   => Int -> [Diagram b V2 n]
   -> Diagram b V2 n
 gridCat' = gridAnimal id
@@ -73,7 +72,7 @@ gridCat' = gridAnimal id
 -- <<#diagram=gridSnakeExample&width=200>>
 
 gridSnake
-  :: (Backend b V2 n, Renderable (Path V2 n) b, Typeable n, RealFloat n)
+  :: (Renderable (Path V2 n) b, TypeableFloat n)
   => [Diagram b V2 n]
   -> Diagram b V2 n
 gridSnake diagrams = gridSnake' (intSqrt $ length diagrams) diagrams
@@ -86,14 +85,14 @@ gridSnake diagrams = gridSnake' (intSqrt $ length diagrams) diagrams
 -- <<#diagram=gridSnakeExample'&width=200>>
 
 gridSnake'
-  :: (Backend b V2 n, Renderable (Path V2 n) b, RealFloat n, Typeable n)
+  :: (Renderable (Path V2 n) b, TypeableFloat n)
   => Int -> [Diagram b V2 n]
   -> Diagram b V2 n
 gridSnake' = gridAnimal (everyOther reverse)
 
 -- | Generalisation of gridCat and gridSnake to not repeat code.
 gridAnimal
-  :: (Backend b V2 n, Renderable (Path V2 n) b, TypeableFloat n)
+  :: (Renderable (Path V2 n) b, TypeableFloat n)
   => ([[Diagram b V2 n]] -> [[Diagram b V2 n]]) -> Int -> [Diagram b V2 n]
   -> Diagram b V2 n
 gridAnimal rowFunction cols = vcat . map hcat . rowFunction
@@ -103,7 +102,7 @@ gridAnimal rowFunction cols = vcat . map hcat . rowFunction
 --   zero-indexed integer coordinates, to generate a grid of diagrams
 --   with the specified dimensions.
 gridWith
-  :: (Backend b V2 n, Renderable (Path V2 n) b, RealFloat n, Typeable n)
+  :: (Renderable (Path V2 n) b, TypeableFloat n)
   => (Int -> Int -> Diagram b V2 n) -> (Int, Int)
   -> Diagram b V2 n
 gridWith f (cols, rows) = gridCat' cols diagrams
@@ -115,7 +114,7 @@ gridWith f (cols, rows) = gridCat' cols diagrams
 -- | Make all diagrams have the same bounding square,
 --   one that bounds them all.
 sameBoundingSquare
-  :: forall b n. (Backend b V2 n, Renderable (Path V2 n) b, Ord n, RealFloat n, Typeable n)
+  :: forall b n. (Renderable (Path V2 n) b, TypeableFloat n)
   => [Diagram b V2 n]
   -> [Diagram b V2 n]
 sameBoundingSquare diagrams = map frameOne diagrams
@@ -130,7 +129,7 @@ sameBoundingSquare diagrams = map frameOne diagrams
 -- | Make all diagrams have the same bounding rect,
 --   one that bounds them all.
 sameBoundingRect
-  :: forall n b. (Backend b V2 n, Renderable (Path V2 n) b, Ord n, RealFloat n, Typeable n)
+  :: forall n b. (Renderable (Path V2 n) b, TypeableFloat n)
   => [Diagram b V2 n]
   -> [Diagram b V2 n]
 sameBoundingRect diagrams = map frameOne diagrams

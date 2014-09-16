@@ -75,7 +75,7 @@ import           System.Random              (Random)
 --   >             $ iterTrail koch
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_iterTrailEx.svg#diagram=iterTrailEx&width=200>>
-iterTrail :: (RealFloat n, Ord n) => Trail' Line V2 n -> [Trail' Line V2 n]
+iterTrail :: RealFloat n => Trail' Line V2 n -> [Trail' Line V2 n]
 iterTrail t = iterate (mconcat . mapMaybe (refineSegment t) . lineSegments)
                       (fromOffsets [unitX])
 
@@ -177,7 +177,7 @@ sqUpDown' = cubicSpline False sqUpDown
 --   together. @snowflake n@ yields an order-@n@ snowflake.
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_snowflake4.svg#diagram=snowflake4&width=300>>
-snowflake :: (RealFloat n, Ord n) => Int -> Trail V2 n
+snowflake :: RealFloat n => Int -> Trail V2 n
 snowflake n = iterateN 3 (rotateBy (-1/3)) edge
             # mconcat
             # glueLine
@@ -191,8 +191,8 @@ snowflake n = iterateN 3 (rotateBy (-1/3)) edge
 --   superimposed atop one another.
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_sqUpDownOverlayD.svg#diagram=sqUpDownOverlayD&width=400>>
-sqUpDownOverlay :: (RealFloat n, Typeable n) =>
-                   Renderable (Path V2 n) b => Diagram b V2 n
+sqUpDownOverlay :: (TypeableFloat n, Renderable (Path V2 n) b)
+                => Diagram b V2 n
 sqUpDownOverlay
   = sized (Width 4)
   . mconcat
@@ -244,14 +244,14 @@ randITC = do
   return $ ITC s' c i
 
 -- | Generate an iterated subset fractal based on the given parameters.
-drawITC :: (Renderable (Path V2 n) b, RealFloat n, Ord n, Typeable n) =>
+drawITC :: (Renderable (Path V2 n) b, TypeableFloat n) =>
            IterTrailConfig n -> Diagram b V2 n
 drawITC (ITC s c i) = (iterTrail s !! i) # strokeLine # lc c
 
 -- | Like 'drawITC', but also scales, centers, and pads the result so
 -- that it fits nicely inside a 4x4 box.
 drawITCScaled
-  :: (Renderable (Path V2 n) b, Backend b V2 n, RealFloat n, Typeable n)
+  :: (Renderable (Path V2 n) b, RealFloat n, Typeable n)
   => IterTrailConfig n -> Diagram b V2 n
 drawITCScaled itc
   = drawITC itc
@@ -261,8 +261,7 @@ drawITCScaled itc
 
 -- | Create a grid of 100 random iterated subset fractals.  Impress
 --   your friends!
-randIterGrid :: (Renderable (Path V2 n) b, Backend b V2 n,
-                 Random n, Typeable n, RealFloat n) =>
+randIterGrid :: (Renderable (Path V2 n) b, Random n, TypeableFloat n) =>
                 IO (Diagram b V2 n)
 randIterGrid = do
   itcs <- evalRandIO (replicateM 100 randITC)

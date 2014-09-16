@@ -33,7 +33,6 @@ module Diagrams.TwoD.Path.Turtle
 import qualified Control.Lens                       as L
 import           Control.Monad.Identity             (Identity (..))
 import qualified Control.Monad.State                as ST
-import           Data.Data
 
 import           Diagrams.Prelude
 import qualified Diagrams.TwoD.Path.Turtle.Internal as T
@@ -54,12 +53,12 @@ runTurtle = runIdentity . runTurtleT
 
 -- | A more general way to run the turtle.  Returns a computation in
 --   the underlying monad @m@ yielding the final diagram.
-drawTurtleT :: (Monad m, Functor m, Renderable (Path V2 n) b, RealFloat n, Data n)
+drawTurtleT :: (Monad m, Functor m, Renderable (Path V2 n) b, DataFloat n)
             => TurtleT n m a -> m (Diagram b V2 n)
 drawTurtleT = fmap T.getTurtleDiagram . runTurtleT
 
 -- | Run the turtle, yielding a diagram.
-drawTurtle :: (Renderable (Path V2 n) b, RealFloat n, Data n) =>
+drawTurtle :: (Renderable (Path V2 n) b, DataFloat n) =>
               Turtle n a -> Diagram b V2 n
 drawTurtle = runIdentity . drawTurtleT
 

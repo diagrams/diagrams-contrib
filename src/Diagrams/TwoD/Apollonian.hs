@@ -60,7 +60,6 @@ module Diagrams.TwoD.Apollonian
        ) where
 
 import           Data.Complex
-import           Data.Data
 import           Data.Foldable    (foldMap)
 
 import           Diagrams.Prelude hiding (center, radius)
@@ -218,14 +217,14 @@ apollonian' thresh cur others
 ------------------------------------------------------------
 
 -- | Draw a circle.
-drawCircle :: (Renderable (Path V2 n) b, RealFloat n, Data n) =>
+drawCircle :: (Renderable (Path V2 n) b, DataFloat n) =>
               n -> Circle n -> Diagram b V2 n
 drawCircle w c = circle (radius c) # moveTo (center c)
                                    # lwG w # fcA transparent
 
 -- | Draw a generated gasket, using a line width 0.003 times the
 --   radius of the largest circle.
-drawGasket :: (Renderable (Path V2 n) b, RealFloat n, Data n) =>
+drawGasket :: (Renderable (Path V2 n) b, DataFloat n) =>
               [Circle n] -> Diagram b V2 n
 drawGasket cs = foldMap (drawCircle w) cs
   where w = (*0.003) . maximum . map radius $ cs
@@ -233,6 +232,6 @@ drawGasket cs = foldMap (drawCircle w) cs
 -- | Draw an Apollonian gasket: the first argument is the threshold;
 --   the recursion will stop upon reaching circles with radii less than
 --   it. The next three arguments are bends of three circles.
-apollonianGasket :: (Renderable (Path V2 n) b, RealFloat n, Data n)
+apollonianGasket :: (Renderable (Path V2 n) b, DataFloat n)
                  => n -> n -> n -> n -> Diagram b V2 n
 apollonianGasket thresh b1 b2 b3 = drawGasket . apollonian thresh $ (initialConfig b1 b2 b3)

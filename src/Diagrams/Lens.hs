@@ -4,7 +4,6 @@
 {-# LANGUAGE GADTs                 #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE RankNTypes            #-}
-{-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE ViewPatterns          #-}
 
@@ -132,7 +131,7 @@ _mkAttr
 _mkAttr = prism' mkAttr unwrapAttr
 
 _mkTAttr
-  :: (AttributeClass a, Transformable a, Vn a ~ v n)
+  :: (AttributeClass a, Transformable a, V a ~ v, N a ~ n)
   => Prism' (Attribute v n) a
 _mkTAttr = prism' mkTAttr unwrapAttr
 

@@ -65,7 +65,7 @@ combinatorTests = map (second metafont)
   goingLeft = leaving unit_X
 
 boundedTests :: [(FilePath, Diagram SVG V2 n)]
-boundedTests = map (second (mconcat . map (metafont)))
+boundedTests = map (second (mconcat . map metafont))
                [ ("p18a", demo mempty)
                , ("p18b", map (withJoin mempty . Deg) [0,10..90])
                , ("p18c", demo bounded)
@@ -74,7 +74,7 @@ boundedTests = map (second (mconcat . map (metafont)))
     bounded = simpleJoin & j .~ (Just . Left $ TJ (TensionAtLeast 1) (TensionAtLeast 1))
     left = leaving (fromDirection . Deg $ 60)
     demo jj = map (withJoin jj . Deg) [0,(-10)..(-120)]
-    withJoin jj d = origin .- left <> jj <> arriving (fromDirection d) -. (endpt $ p2 (6,0))
+    withJoin jj d = origin .- left <> jj <> arriving (fromDirection d) -. endpt (p2 (6,0))
 
 illustrateSegment :: FixedSegment V2 n -> Diagram SVG V2 n
 illustrateSegment (FLinear from to) = position [
@@ -95,7 +95,7 @@ refPts = position $ zip (map p2 $ (,) <$> [0,1,2] <*> [0,1]) (repeat c) where
   c = circle 0.02 # fc blue # lw 0
 
 toSVG :: (FilePath,Trail V2 n) -> IO ()
-toSVG (fn,tr) = do
+toSVG (fn,tr) =
   renderSVG (replaceExtension fn "svg") (Width 400) $
     illustrateTrailCtls tr
 

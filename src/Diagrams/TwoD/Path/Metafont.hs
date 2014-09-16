@@ -1,6 +1,4 @@
-{-# LANGUAGE DeriveFunctor   #-}
 {-# LANGUAGE GADTs           #-}
-{-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies    #-}
 
 -----------------------------------------------------------------------------
@@ -66,10 +64,10 @@ fromPath = trailLike . locatedTrail . over (segs.mapped) computeControls . solve
 -- flex command defined in plain MetaFont.
 flex :: (TrailLike t, V t ~ V2, N t ~ n, RealFloat n) => [P2 n] -> t
 flex ps = fromPath . MFP False $ (s0:rest) where
-  tj = (Left (TJ (TensionAmt 1) (TensionAmt 1)))
+  tj = Left (TJ (TensionAmt 1) (TensionAmt 1))
   jj = PJ Nothing tj Nothing
   s0 = MFS (head ps) jj (head.tail $ ps)
-  d = Just . PathDirDir $ (last ps) .-. (head ps)
+  d = Just . PathDirDir $ last ps .-. head ps
   seg z1 z2 = MFS z1 (PJ d tj Nothing) z2
   rest = zipWith seg (init . tail $ ps) (tail . tail $ ps)
 

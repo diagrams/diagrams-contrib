@@ -94,7 +94,9 @@ import           Diagrams.Prelude
 -- adjoined.
 
 -- | @Q236 a b c d@ represents @a + b sqrt(2) + c sqrt(3) + d
---   sqrt(6)@.
+--   sqrt(6)@.  Note that the @Ord@ instance is suitable for use in
+--   `Map` and `Set`, but does not correspond to numeric ordering
+--   (@Q236@ is not an ordered field under this ordering).
 data Q236 = Q236 Rational Rational Rational Rational
   deriving (Eq, Ord, Show, Read)
 

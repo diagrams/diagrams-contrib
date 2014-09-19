@@ -26,7 +26,7 @@
 -- > import Diagrams.TwoD.Grid
 -- > import Diagrams.TwoD.Text
 -- >
--- > example :: (Renderable (Text n) b, Renderable (Path V2 n) b, Backend b V2 n) =>
+-- > example :: (Renderable (Text n) b, Renderable (Path V2 n) b) =>
 -- >            Int -> Int -> Diagram b V2 n
 -- > example n m =
 -- >

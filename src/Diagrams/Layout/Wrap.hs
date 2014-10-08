@@ -41,7 +41,7 @@ wrapOutside :: ( Enveloped a, V a ~ v, N a ~ n
             => (Point v n -> Bool) -> [v n] -> Point v n -> [a] -> ([(v n, a)], [a])
 wrapOutside f = wrapInside (not . f)
 
--- | fillInside greedily wraps content to fill a space defined by a
+-- | @wrapInside@ greedily wraps content to fill a space defined by a
 --   predicate.  It is passed a list of vectors which express the
 --   order of dimensions to be filled.  In other words, wrapping RTL
 --   text is done by passing in [unitX, unitY], to first exhaust

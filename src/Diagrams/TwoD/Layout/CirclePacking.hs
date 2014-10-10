@@ -48,13 +48,13 @@ import           Diagrams.TwoD.Vector       (e)
 -- | Combines the passed objects, whose radius is estimated using the given
 -- 'RadiusFunction', so that they do not overlap (according to the radius
 -- function) and otherwise form, as far as possible, a tight circle.
-renderCirclePacking :: Monoid' m => RadiusFunction b m -> [QDiagram b R2 m] -> QDiagram b R2 m
+renderCirclePacking :: Monoid' m => RadiusFunction b m -> [QDiagram b V2 Double m] -> QDiagram b V2 Double m
 renderCirclePacking radiusFunc = createCirclePacking radiusFunc id
 
 -- | More general version of 'renderCirclePacking'. You can use this if you
 -- have more information available in the values of type @a@ that allows you to
 -- calculate the radius better (or even exactly).
-createCirclePacking :: Monoid' m => (a -> Double) -> (a -> QDiagram b R2 m) -> [a] -> QDiagram b R2 m
+createCirclePacking :: Monoid' m => (a -> Double) -> (a -> QDiagram b V2 Double m) -> [a] -> QDiagram b V2 Double m
 createCirclePacking radiusFunc diagramFunc =
     position .
     map (\(o,(x,y)) -> (p2 (x,y), diagramFunc o)) .
@@ -63,7 +63,7 @@ createCirclePacking radiusFunc diagramFunc =
 -- | The type of radius-estimating functions for Diagrams such as
 -- 'approxRadius' and 'circleRadius'. When you can calculate the radius better,
 -- but not any more once you converted your data to a diagram, use 'createCirclePacking'.
-type RadiusFunction b m = QDiagram b R2 m -> Double
+type RadiusFunction b m = QDiagram b V2 Double m -> Double
 
 -- | A safe approximation. Calculates the outer radius of the smallest
 -- axis-aligned polygon with the given number of edges that contains the

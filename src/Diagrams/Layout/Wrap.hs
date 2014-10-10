@@ -19,6 +19,7 @@ import           Control.Arrow    (first, (&&&))
 import           Data.Foldable    (foldMap)
 import           Data.List        (find, inits, tails)
 import           Diagrams.Prelude hiding (start)
+import           Linear.Epsilon
 
 -- TODO: Take into account the negative bounds, and iteratively refine
 --   the list selection.
@@ -28,19 +29,19 @@ import           Diagrams.Prelude hiding (start)
 -- | @wrapDiagram@ post-processes the results of @wrapOutside@ /
 --   @wrapInside@ into a Diagram of the result.  This only works when
 --   applying them to a list of diagrams.
-wrapDiagram :: (HasLinearMap v, InnerSpace v, OrderedField (Scalar v))
-            => ([(v, Diagram b v)], [Diagram b v]) -> Diagram b v
+wrapDiagram :: (HasLinearMap v, Metric v, OrderedField n)
+            => ([(v n, Diagram b v n)], [Diagram b v n]) -> Diagram b v n
 wrapDiagram = foldMap (uncurry translate) . fst
 
 -- | @wrapOutside@ is the same as @wrapInside@, but with an inverted
 --   predicate.
-wrapOutside :: ( Enveloped a, v ~ V a
-               , InnerSpace v, OrderedField (Scalar v) -- See [6.12.3] note below
+wrapOutside :: ( Enveloped a, V a ~ v, N a ~ n
+               , Metric v, OrderedField n, Epsilon n -- See [6.12.3] note below
                )
-            => (Point v -> Bool) -> [v] -> Point v -> [a] -> ([(v, a)], [a])
+            => (Point v n -> Bool) -> [v n] -> Point v n -> [a] -> ([(v n, a)], [a])
 wrapOutside f = wrapInside (not . f)
 
--- | fillInside greedily wraps content to fill a space defined by a
+-- | @wrapInside@ greedily wraps content to fill a space defined by a
 --   predicate.  It is passed a list of vectors which express the
 --   order of dimensions to be filled.  In other words, wrapping RTL
 --   text is done by passing in [unitX, unitY], to first exhaust
@@ -50,28 +51,28 @@ wrapOutside f = wrapInside (not . f)
 --   points inside each positioned item for which the predicate is
 --   False.  Instead, only the corners of the bounds, along each axii,
 --   are used.
-wrapInside :: forall a v.
-           ( Enveloped a, v ~ V a
-           , InnerSpace v, OrderedField (Scalar v) -- See [6.12.3] note below
+wrapInside :: forall a v n.
+           ( Enveloped a, V a ~ v, N a ~ n
+           , Metric v, OrderedField n, Epsilon n -- See [6.12.3] note below
            )
-           => (Point v -> Bool) -> [v] -> Point v
-           -> [a] -> ([(v, a)], [a])
+           => (Point v n -> Bool) -> [v n] -> Point v n
+           -> [a] -> ([(v n, a)], [a])
 wrapInside f axis start = rec zeros
  where
   zeros = map snd . zip axis $ repeat (0, 0)
-  norms = map normalized axis
+  norms = map normalize axis
   getVector = sumV . zipWith (^*) norms
 
 -- [[min bound, max bound]] of each axis.
-  boundsScalars :: a -> [[v]]
+  boundsScalars :: a -> [[v n]]
   boundsScalars d
     = flip map norms
-    $ \v -> map (.-. origin) [envelopeP (negateV v) d, envelopeP v d]
+    $ \v -> map (.-. origin) [envelopeP (negated v) d, envelopeP v d]
 
 -- Recurses on the list of items to lay out, maintaing a current set of
 -- coefficients for the different axii, each paired with the maximum
 -- boundary seen in that direction.
-  rec :: [(Scalar v, Scalar v)] -> [a] -> ([(v, a)], [a])
+  rec :: [(n, n)] -> [a] -> ([(v n, a)], [a])
   rec _ [] = (mempty, [])
   rec scs (d:ds)
 -- Recurse a satisfactory position can be found, otherwise yields the
@@ -86,7 +87,7 @@ wrapInside f axis start = rec zeros
     check v = all (f . (start .+^) . sumV . (v:)) $ sequence curB
 
 -- Updates the max bounds of an axis.
-    maxB [_, b] (x, m) = (x, max m $ x + magnitude b)
+    maxB [_, b] (x, m) = (x, max m $ x + norm b)
     maxB _ _ = error "Diagrams.Layout.Wrap.wrapInside:maxB: pattern-match failure.  Please report this as a bug."
 
 -- List of potential offsets to try, each paired with an updated list
@@ -100,11 +101,11 @@ wrapInside f axis start = rec zeros
     dupFirstY ((_,x):xs) = (x,x):xs
     dupFirstY _          = error "Diagrams.Layout.Wrap.wrapInside:dupFirstY: pattern-match failure.  Please report this as a bug."
 
--- [6.12.3]: It should be possible to infer the InnerSpace v and
---   OrderedField (Scalar v) constraints from Enveloped a, v ~ V a,
+-- [6.12.3]: It should be possible to infer the Metric v and
+--   OrderedField n constraints from Enveloped a, v ~ V a,
 --   but GHC 6.12.3 cannot, so we redundantly list them here to
 --   preserve support for 6.12.3.
-
+-- TODO this comment is obsolete; we certainly do not support GHC 6.12.3
 
 --   Attempt at diagrams-haddock example, but I don't understand how Wrap works
 --
@@ -112,7 +113,7 @@ wrapInside f axis start = rec zeros
 --   > import Control.Arrow (first)
 --   > wrapInsideEx = position ((map . first $ (origin .+^)) ds)
 --   >   where (ds,_) = wrapInside
---   >                    (getAny . (runQuery . query $ (circle 15 :: D R2)))
+--   >                    (getAny . (runQuery . query $ (circle 15 :: D V2 n)))
 --   >                    [unitX, unitY]
 --   >                    (origin)
 --   >                    (repeat (circle 1 # fc black))

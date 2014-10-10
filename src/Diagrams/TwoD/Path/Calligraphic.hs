@@ -35,7 +35,7 @@ import           Diagrams.Prelude
 --   >   # fc black
 --   >   # hcat' (with & sep .~ 10)
 
-calligraphic :: R2 -> Trail' Line R2 -> Trail' Loop R2
+calligraphic :: (Floating n, Ord n) => V2 n -> Trail' Line V2 n -> Trail' Loop V2 n
 calligraphic pen p
-  = (p <> fromOffsets [pen] <> reverseLine p <> fromOffsets [negateV pen])
+  = (p <> fromOffsets [pen] <> reverseLine p <> fromOffsets [negated pen])
   # closeLine

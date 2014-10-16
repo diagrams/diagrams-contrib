@@ -27,7 +27,7 @@
 -- > import Diagrams.TwoD.Text
 -- >
 -- > example :: (Renderable (Text n) b, Renderable (Path V2 n) b) =>
--- >            Int -> Int -> Diagram b V2 n
+-- >            Int -> Int -> QDiagram b V2 n Any
 -- > example n m =
 -- >
 -- >   (gridWithHalves n m) #
@@ -148,12 +148,12 @@ makeLenses ''HighlightLineOpts
 
 -- | Name a point by grid co-ordinates.
 tick :: (Renderable (Text n) b, Renderable (Path V2 n) b, Floating n, Ord n)
-     => (Int, Int) -> Diagram b V2 n
+     => (Int, Int) -> QDiagram b V2 n Any
 tick (n, m) = pointDiagram origin # named (n, m)
 
 -- | @gridWithHalves@ with default opts.
 gridWithHalves :: (Renderable (Text n) b, Renderable (Path V2 n) b, DataFloat n)
-               => Int -> Int -> Diagram b V2 n
+               => Int -> Int -> QDiagram b V2 n Any
 gridWithHalves = gridWithHalves' def
 
 -- | Create a n by m grid. Diagrams can be placed on either the grid
@@ -161,7 +161,7 @@ gridWithHalves = gridWithHalves' def
 -- latter includes points a half grid length outside of the grid
 -- itself.
 gridWithHalves' :: (Renderable (Text n) b, Renderable (Path V2 n) b, DataFloat n)
-                => GridOpts n -> Int -> Int -> Diagram b V2 n
+                => GridOpts n -> Int -> Int -> QDiagram b V2 n Any
 gridWithHalves' opts n m =
   (mconcat lineXs # translate (r2 (llx, lly))) <>
   (mconcat lineYs # translate (r2 (llx, lly))) <>
@@ -208,17 +208,17 @@ gridWithHalves' opts n m =
 -- co-ordinates specified.
 placeDiagramOnGrid :: (IsName n, Renderable (Text n) b,
                        Renderable (Path V2 n) b, Floating n) =>
-                      Diagram b V2 n -> [n] -> Diagram b V2 n -> Diagram b V2 n
+                      QDiagram b V2 n Any -> [n] -> QDiagram b V2 n Any -> QDiagram b V2 n Any
 placeDiagramOnGrid d = flip $ foldr (\n -> withName n (atop . place d . location))
 
 annotate :: (Renderable (Text n) b, Renderable (Path V2 n) b, Floating n, Ord n, Typeable n) =>
              String ->
-             (String -> Diagram b V2 n) ->
+             (String -> QDiagram b V2 n Any) ->
              Colour Double ->
              Int ->
              Int ->
-             Diagram b V2 n ->
-             Diagram b V2 n
+             QDiagram b V2 n Any ->
+             QDiagram b V2 n Any
 annotate s txtPt h n m =
   withName (n, m) (atop . place (addText s h) . location)
   where
@@ -227,13 +227,13 @@ annotate s txtPt h n m =
 -- | Draw a line between two named points on the grid.
 gridLine :: (IsName a, IsName b, Renderable (Text n) c,
              Renderable (Path V2 n) c, DataFloat n) =>
-            a -> b -> Diagram c V2 n -> Diagram c V2 n
+            a -> b -> QDiagram c V2 n Any -> QDiagram c V2 n Any
 gridLine = gridLine' def
 
 -- | Draw a line between two named points on the grid.
 gridLine' :: (IsName a, IsName b, Renderable (Text n) c,
               Renderable (Path V2 n) c, DataFloat n) =>
-            HighlightLineOpts n -> a -> b -> Diagram c V2 n -> Diagram c V2 n
+            HighlightLineOpts n -> a -> b -> QDiagram c V2 n Any -> QDiagram c V2 n Any
 gridLine' opts u v =
   withName u $ \x ->
   withName v $ \y ->
@@ -245,5 +245,5 @@ gridLine' opts u v =
 -- | Draw lines between a list of pairs of named points on the grid.
 gridLines :: (Renderable (Text n) c, Renderable (Path V2 n) c, DataFloat n,
               IsName a, IsName b) =>
-             [(a, b)] -> Diagram c V2 n -> Diagram c V2 n
+             [(a, b)] -> QDiagram c V2 n Any -> QDiagram c V2 n Any
 gridLines xs = foldr (.) id [ gridLine x y | (x, y) <- xs ]

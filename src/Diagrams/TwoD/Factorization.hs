@@ -56,7 +56,7 @@ import           Math.NumberTheory.Primes.Factorisation (factorise)
 --
 --   <<diagrams/src_Diagrams_TwoD_Factorization_plExample.svg#diagram=plExample&width=400>>
 primeLayout :: (Renderable (Path V2 n) b, DataFloat n)
-            => [Colour Double] -> Integer -> Diagram b V2 n -> Diagram b V2 n
+            => [Colour Double] -> Integer -> QDiagram b V2 n Any -> QDiagram b V2 n Any
 primeLayout _ 2 d
   | width d >= height d = (d === strutY (height d / 3) === d # reflectY)
                         # centerY
@@ -85,7 +85,7 @@ primeLayout colors p d
 --
 --   <<diagrams/src_Diagrams_TwoD_Factorization_colorBarsEx.svg#diagram=colorBarsEx&width=200>>
 colorBars :: (Renderable (Path V2 n) b, DataFloat n)
-          => [Colour Double] -> Integer -> Path V2 n -> Diagram b V2 n
+          => [Colour Double] -> Integer -> Path V2 n -> QDiagram b V2 n Any
 colorBars colors p poly | p <= 11 = stroke poly
                              # fc (colors!!(fromIntegral p `mod` 10))
                              # lw none
@@ -122,7 +122,7 @@ defaultColors = map (blend 0.1 white)
 --
 --   <<diagrams/src_Diagrams_TwoD_Factorization_factorDiagram'Ex.svg#diagram=factorDiagram'Ex&height=200>>
 factorDiagram' :: (Renderable (Path V2 n) b, DataFloat n)
-               => [Integer] -> Diagram b V2 n
+               => [Integer] -> QDiagram b V2 n Any
 factorDiagram' = centerXY . foldr (primeLayout defaultColors) (circle 1 # fc black # lw none)
 
 -- | Create a default factorization diagram for the given integer, by
@@ -135,7 +135,7 @@ factorDiagram' = centerXY . foldr (primeLayout defaultColors) (circle 1 # fc bla
 --
 --   <<diagrams/src_Diagrams_TwoD_Factorization_factorDiagramEx.svg#diagram=factorDiagramEx&width=400>>
 factorDiagram :: (Renderable (Path V2 n) b, DataFloat n)
-              => Integer -> Diagram b V2 n
+              => Integer -> QDiagram b V2 n Any
 factorDiagram = factorDiagram'
               . concatMap (uncurry $ flip replicate)
               . factorise
@@ -149,7 +149,7 @@ factorDiagram = factorDiagram'
 --   <<diagrams/src_Diagrams_TwoD_Factorization_ensquareEx.svg#diagram=ensquareEx&width=200>>
 ensquare
   :: (Renderable (Path V2 n) b, TypeableFloat n)
-  => n -> Diagram b V2 n -> Diagram b V2 n
+  => n -> QDiagram b V2 n Any -> QDiagram b V2 n Any
 ensquare n d = d # centerXY # sized (Dims (0.8*n) (0.8*n)) <> square n
 
 -- | @fdGrid n@ creates a grid of factorization diagrams, given a list
@@ -162,7 +162,7 @@ ensquare n d = d # centerXY # sized (Dims (0.8*n) (0.8*n)) <> square n
 --   <<diagrams/src_Diagrams_TwoD_Factorization_fdGridEx.svg#diagram=fdGridEx&width=200>>
 fdGrid
   :: (Renderable (Path V2 n) b, DataFloat n)
-  => [[Integer]] -> Diagram b V2 n
+  => [[Integer]] -> QDiagram b V2 n Any
 fdGrid  = vcat . map hcat . (map . map) (ensquare 1 . factorDiagram)
 
 -- | @fdGridList n@ creates a grid containing the factorization
@@ -177,7 +177,7 @@ fdGrid  = vcat . map hcat . (map . map) (ensquare 1 . factorDiagram)
 --   <<diagrams/src_Diagrams_TwoD_Factorization_grid100.svg#diagram=grid100&width=400>>
 fdGridList
   :: (Renderable (Path V2 n) b, DataFloat n)
-  => Integer -> Diagram b V2 n
+  => Integer -> QDiagram b V2 n Any
 fdGridList n = fdGrid . chunksOf (fromIntegral n) $ [1..n*n]
 
 -- | @fdTable n@ creates a \"multiplication table\" of factorization
@@ -191,5 +191,5 @@ fdGridList n = fdGrid . chunksOf (fromIntegral n) $ [1..n*n]
 --   <<diagrams/src_Diagrams_TwoD_Factorization_fdMultTableEx.svg#diagram=fdMultTableEx&width=600>>
 fdMultTable
   :: (Renderable (Path V2 n) b, DataFloat n)
-  => Integer -> Diagram b V2 n
+  => Integer -> QDiagram b V2 n Any
 fdMultTable n = fdGrid [ [r*c | c <- [1 .. n]] | r <- [1 .. n] ]

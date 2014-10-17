@@ -45,8 +45,8 @@ import           Diagrams.Prelude
 
 gridCat
   :: (Renderable (Path V2 n) b, TypeableFloat n)
-  => [Diagram b V2 n]
-  -> Diagram b V2 n
+  => [QDiagram b V2 n Any]
+  -> QDiagram b V2 n Any
 gridCat diagrams = gridCat' (intSqrt $ length diagrams) diagrams
 
 -- | Same as 'gridCat', but with a specified number of columns.
@@ -58,8 +58,8 @@ gridCat diagrams = gridCat' (intSqrt $ length diagrams) diagrams
 
 gridCat'
   :: (Renderable (Path V2 n) b, TypeableFloat n)
-  => Int -> [Diagram b V2 n]
-  -> Diagram b V2 n
+  => Int -> [QDiagram b V2 n Any]
+  -> QDiagram b V2 n Any
 gridCat' = gridAnimal id
 
 -- | Puts a list of diagrams in a grid, alternating left-to-right
@@ -73,8 +73,8 @@ gridCat' = gridAnimal id
 
 gridSnake
   :: (Renderable (Path V2 n) b, TypeableFloat n)
-  => [Diagram b V2 n]
-  -> Diagram b V2 n
+  => [QDiagram b V2 n Any]
+  -> QDiagram b V2 n Any
 gridSnake diagrams = gridSnake' (intSqrt $ length diagrams) diagrams
 
 -- | Same as 'gridSnake', but with a specified number of columns.
@@ -86,15 +86,15 @@ gridSnake diagrams = gridSnake' (intSqrt $ length diagrams) diagrams
 
 gridSnake'
   :: (Renderable (Path V2 n) b, TypeableFloat n)
-  => Int -> [Diagram b V2 n]
-  -> Diagram b V2 n
+  => Int -> [QDiagram b V2 n Any]
+  -> QDiagram b V2 n Any
 gridSnake' = gridAnimal (everyOther reverse)
 
 -- | Generalisation of gridCat and gridSnake to not repeat code.
 gridAnimal
   :: (Renderable (Path V2 n) b, TypeableFloat n)
-  => ([[Diagram b V2 n]] -> [[Diagram b V2 n]]) -> Int -> [Diagram b V2 n]
-  -> Diagram b V2 n
+  => ([[QDiagram b V2 n Any]] -> [[QDiagram b V2 n Any]]) -> Int -> [QDiagram b V2 n Any]
+  -> QDiagram b V2 n Any
 gridAnimal rowFunction cols = vcat . map hcat . rowFunction
     . chunksOf cols . sameBoundingRect . padList cols mempty
 
@@ -103,8 +103,8 @@ gridAnimal rowFunction cols = vcat . map hcat . rowFunction
 --   with the specified dimensions.
 gridWith
   :: (Renderable (Path V2 n) b, TypeableFloat n)
-  => (Int -> Int -> Diagram b V2 n) -> (Int, Int)
-  -> Diagram b V2 n
+  => (Int -> Int -> QDiagram b V2 n Any) -> (Int, Int)
+  -> QDiagram b V2 n Any
 gridWith f (cols, rows) = gridCat' cols diagrams
   where
     diagrams = [ f x y | y <- [0..rows - 1] , x <- [0..cols - 1] ]
@@ -115,8 +115,8 @@ gridWith f (cols, rows) = gridCat' cols diagrams
 --   one that bounds them all.
 sameBoundingSquare
   :: forall b n. (Renderable (Path V2 n) b, TypeableFloat n)
-  => [Diagram b V2 n]
-  -> [Diagram b V2 n]
+  => [QDiagram b V2 n Any]
+  -> [QDiagram b V2 n Any]
 sameBoundingSquare diagrams = map frameOne diagrams
   where
     biggest = maximumBy (comparing maxDim) diagrams
@@ -130,8 +130,8 @@ sameBoundingSquare diagrams = map frameOne diagrams
 --   one that bounds them all.
 sameBoundingRect
   :: forall n b. (Renderable (Path V2 n) b, TypeableFloat n)
-  => [Diagram b V2 n]
-  -> [Diagram b V2 n]
+  => [QDiagram b V2 n Any]
+  -> [QDiagram b V2 n Any]
 sameBoundingRect diagrams = map frameOne diagrams
   where
     widest = maximumBy (comparing width) diagrams

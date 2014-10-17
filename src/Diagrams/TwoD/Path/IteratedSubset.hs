@@ -192,7 +192,7 @@ snowflake n = iterateN 3 (rotateBy (-1/3)) edge
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_sqUpDownOverlayD.svg#diagram=sqUpDownOverlayD&width=400>>
 sqUpDownOverlay :: (TypeableFloat n, Renderable (Path V2 n) b)
-                => Diagram b V2 n
+                => QDiagram b V2 n Any
 sqUpDownOverlay
   = sized (Width 4)
   . mconcat
@@ -245,14 +245,14 @@ randITC = do
 
 -- | Generate an iterated subset fractal based on the given parameters.
 drawITC :: (Renderable (Path V2 n) b, TypeableFloat n) =>
-           IterTrailConfig n -> Diagram b V2 n
+           IterTrailConfig n -> QDiagram b V2 n Any
 drawITC (ITC s c i) = (iterTrail s !! i) # strokeLine # lc c
 
 -- | Like 'drawITC', but also scales, centers, and pads the result so
 -- that it fits nicely inside a 4x4 box.
 drawITCScaled
   :: (Renderable (Path V2 n) b, RealFloat n, Typeable n)
-  => IterTrailConfig n -> Diagram b V2 n
+  => IterTrailConfig n -> QDiagram b V2 n Any
 drawITCScaled itc
   = drawITC itc
   # sized (Dims 4 4)
@@ -262,7 +262,7 @@ drawITCScaled itc
 -- | Create a grid of 100 random iterated subset fractals.  Impress
 --   your friends!
 randIterGrid :: (Renderable (Path V2 n) b, Random n, TypeableFloat n) =>
-                IO (Diagram b V2 n)
+                IO (QDiagram b V2 n Any)
 randIterGrid = do
   itcs <- evalRandIO (replicateM 100 randITC)
   return (vcat . map hcat . chunksOf 10 . map drawITCScaled $ itcs)

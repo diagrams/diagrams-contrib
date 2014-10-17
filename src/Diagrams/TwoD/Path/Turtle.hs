@@ -54,12 +54,12 @@ runTurtle = runIdentity . runTurtleT
 -- | A more general way to run the turtle.  Returns a computation in
 --   the underlying monad @m@ yielding the final diagram.
 drawTurtleT :: (Monad m, Functor m, Renderable (Path V2 n) b, DataFloat n)
-            => TurtleT n m a -> m (Diagram b V2 n)
+            => TurtleT n m a -> m (QDiagram b V2 n Any)
 drawTurtleT = fmap T.getTurtleDiagram . runTurtleT
 
 -- | Run the turtle, yielding a diagram.
 drawTurtle :: (Renderable (Path V2 n) b, DataFloat n) =>
-              Turtle n a -> Diagram b V2 n
+              Turtle n a -> QDiagram b V2 n Any
 drawTurtle = runIdentity . drawTurtleT
 
 -- | A more general way to run the turtle. Returns a computation in

@@ -240,7 +240,7 @@ setPenColor = setPenColour
 -- into a single diagram
 getTurtleDiagram :: (Renderable (Path V2 n) b, DataFloat n)
                  => TurtleState n
-                 -> Diagram b V2 n
+                 -> QDiagram b V2 n Any
 getTurtleDiagram t =
   mconcat .
   map turtlePathToStroke .
@@ -287,7 +287,7 @@ turtlePathToTrailLike (TurtlePath _ t) = trailLike t
 -- Creates a diagram from a TurtlePath using the provided styles
 turtlePathToStroke :: (Renderable (Path V2 n) b, DataFloat n) =>
                       TurtlePath n
-                   -> Diagram b V2 n
+                   -> QDiagram b V2 n Any
 turtlePathToStroke t@(TurtlePath (PenStyle lineWidth_  lineColor_) _) = d
  where d = lc lineColor_ .
            lwG lineWidth_ .

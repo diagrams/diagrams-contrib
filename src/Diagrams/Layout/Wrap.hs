@@ -30,7 +30,7 @@ import           Linear.Epsilon
 --   @wrapInside@ into a Diagram of the result.  This only works when
 --   applying them to a list of diagrams.
 wrapDiagram :: (HasLinearMap v, Metric v, OrderedField n)
-            => ([(v n, Diagram b v n)], [Diagram b v n]) -> Diagram b v n
+            => ([(v n, QDiagram b v n Any)], [QDiagram b v n Any]) -> QDiagram b v n Any
 wrapDiagram = foldMap (uncurry translate) . fst
 
 -- | @wrapOutside@ is the same as @wrapInside@, but with an inverted

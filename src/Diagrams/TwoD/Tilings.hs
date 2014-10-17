@@ -336,12 +336,12 @@ genPolyVs p v d = Polygon
 
 -- | Draw an edge with the given style.
 drawEdge :: (Renderable (Path V2 n) b, TypeableFloat n) =>
-            Style V2 n -> Edge -> Diagram b V2 n
+            Style V2 n -> Edge -> QDiagram b V2 n Any
 drawEdge s (Edge v1 v2) = (toP2 v1 ~~ toP2 v2) # applyStyle s
 
 -- | Draw a polygon with the given style.
 drawPoly :: (Renderable (Path V2 n) b, TypeableFloat n) =>
-            (Polygon -> Style V2 n) -> Polygon -> Diagram b V2 n
+            (Polygon -> Style V2 n) -> Polygon -> QDiagram b V2 n Any
 drawPoly s p = applyStyle (s p) . fromVertices . map toP2 . polygonVertices $ p
 
 -- Simple per-polygon color scheme
@@ -355,7 +355,7 @@ polyColor Dodecagon = cornflowerblue
 -- | Draw a tiling, with a given width and height and default colors
 --   for the polygons.
 drawTiling :: (Renderable (Path V2 n) b, DataFloat n)
-           => Tiling -> n -> n -> Diagram b V2 n
+           => Tiling -> n -> n -> QDiagram b V2 n Any
 drawTiling =
   drawTilingStyled
     mempty
@@ -374,7 +374,7 @@ drawTiling =
 --   tiling-drawing routine.
 drawTilingStyled :: forall b n. (Renderable (Path V2 n) b, TypeableFloat n)
                  => Style V2 n -> (Polygon -> Style V2 n)
-                 -> Tiling -> n -> n -> Diagram b V2 n
+                 -> Tiling -> n -> n -> QDiagram b V2 n Any
 drawTilingStyled eStyle pStyle t w h =
   mkDia $ generateTiling t (V2 0 0) (V2 1 0) inRect
 

@@ -68,7 +68,7 @@ data SData n = SData
 
 -- Make n sections (annular wedges) starting in direction d and sweeping a
 sections :: (Renderable (Path V2 n) b, DataFloat n) =>
-            SData n -> Diagram b V2 n
+            SData n -> QDiagram b V2 n Any
 sections (SData r s d a n c) = mconcat $ iterateN n (rotate theta) w
   where
     theta = a ^/ fromIntegral n
@@ -95,7 +95,7 @@ toTree (SunburstOpts r s (c:cs)) (Node _ ts) d a = Node (SData r s d a n c) ts'
 --   evenly according to the number of child nodes it has. Then each of those
 --   sections is treated the same way.
 sunburst' :: (Renderable (Path V2 n) b, DataFloat n) =>
-             SunburstOpts n -> Tree a -> Diagram b V2 n
+             SunburstOpts n -> Tree a -> QDiagram b V2 n Any
 sunburst' opts t = sunB $ toTree opts t xDir fullTurn
   where sunB (Node sd ts') = sections sd <> foldMap sunB ts'
 
@@ -107,5 +107,5 @@ sunburst' opts t = sunB $ toTree opts t xDir fullTurn
 --   > sunburstEx = sunburst aTree # pad 1.1
 --
 --   <<diagrams/src_Diagrams_TwoD_Sunburst_sunburstEx.svg#diagram=sunburstEx&width=500>>
-sunburst :: (Renderable (Path V2 n) b, DataFloat n) => Tree a -> Diagram b V2 n
+sunburst :: (Renderable (Path V2 n) b, DataFloat n) => Tree a -> QDiagram b V2 n Any
 sunburst = sunburst' def

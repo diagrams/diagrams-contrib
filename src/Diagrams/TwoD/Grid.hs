@@ -117,7 +117,7 @@ data GridOpts n
     , _gridUL        :: V2 n
     }
 
-instance Floating n => Default (GridOpts n) where
+instance (Floating n, Ord n) => Default (GridOpts n) where
   def = GridOpts
         { _gridLineWidth = thin
         , _gridXColour   = red
@@ -135,12 +135,12 @@ data HighlightLineOpts n
     , _highLightLineDashingOffset :: Measure n
     }
 
-instance Floating n => Default (HighlightLineOpts n) where
+instance (Floating n, Ord n) => Default (HighlightLineOpts n) where
   def = HighlightLineOpts
         { _highLightLineColour = black
         , _highLightLineWidth = medium
-        , _highLightLineDashingOnOff = [Normalized 0.03, Normalized 0.03]
-        , _highLightLineDashingOffset = Output 0
+        , _highLightLineDashingOnOff = [normalized 0.03, normalized 0.03]
+        , _highLightLineDashingOffset = output 0
         }
 
 makeLenses ''GridOpts
@@ -152,7 +152,7 @@ tick :: (Renderable (Text n) b, Renderable (Path V2 n) b, Floating n, Ord n)
 tick (n, m) = pointDiagram origin # named (n, m)
 
 -- | @gridWithHalves@ with default opts.
-gridWithHalves :: (Renderable (Text n) b, Renderable (Path V2 n) b, DataFloat n)
+gridWithHalves :: (Renderable (Text n) b, Renderable (Path V2 n) b, TypeableFloat n)
                => Int -> Int -> QDiagram b V2 n Any
 gridWithHalves = gridWithHalves' def
 
@@ -160,7 +160,7 @@ gridWithHalves = gridWithHalves' def
 -- points themselves or on points half way between grid points. The
 -- latter includes points a half grid length outside of the grid
 -- itself.
-gridWithHalves' :: (Renderable (Text n) b, Renderable (Path V2 n) b, DataFloat n)
+gridWithHalves' :: (Renderable (Text n) b, Renderable (Path V2 n) b, TypeableFloat n)
                 => GridOpts n -> Int -> Int -> QDiagram b V2 n Any
 gridWithHalves' opts n m =
   (mconcat lineXs # translate (r2 (llx, lly))) <>
@@ -226,13 +226,13 @@ annotate s txtPt h n m =
 
 -- | Draw a line between two named points on the grid.
 gridLine :: (IsName a, IsName b, Renderable (Text n) c,
-             Renderable (Path V2 n) c, DataFloat n) =>
+             Renderable (Path V2 n) c, TypeableFloat n) =>
             a -> b -> QDiagram c V2 n Any -> QDiagram c V2 n Any
 gridLine = gridLine' def
 
 -- | Draw a line between two named points on the grid.
 gridLine' :: (IsName a, IsName b, Renderable (Text n) c,
-              Renderable (Path V2 n) c, DataFloat n) =>
+              Renderable (Path V2 n) c, TypeableFloat n) =>
             HighlightLineOpts n -> a -> b -> QDiagram c V2 n Any -> QDiagram c V2 n Any
 gridLine' opts u v =
   withName u $ \x ->
@@ -243,7 +243,7 @@ gridLine' opts u v =
         dashing (opts^.highLightLineDashingOnOff) (opts^.highLightLineDashingOffset))
 
 -- | Draw lines between a list of pairs of named points on the grid.
-gridLines :: (Renderable (Text n) c, Renderable (Path V2 n) c, DataFloat n,
+gridLines :: (Renderable (Text n) c, Renderable (Path V2 n) c, TypeableFloat n,
               IsName a, IsName b) =>
              [(a, b)] -> QDiagram c V2 n Any -> QDiagram c V2 n Any
 gridLines xs = foldr (.) id [ gridLine x y | (x, y) <- xs ]

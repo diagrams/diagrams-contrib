@@ -194,7 +194,7 @@ snowflake n = iterateN 3 (rotateBy (-1/3)) edge
 sqUpDownOverlay :: (TypeableFloat n, Renderable (Path V2 n) b)
                 => QDiagram b V2 n Any
 sqUpDownOverlay
-  = sized (Width 4)
+  = sized (mkWidth 4)
   . mconcat
   . zipWith lc (iterate (blend 0.1 white) blue)
   . map strokeLine
@@ -255,7 +255,7 @@ drawITCScaled
   => IterTrailConfig n -> QDiagram b V2 n Any
 drawITCScaled itc
   = drawITC itc
-  # sized (Dims 4 4)
+  # sized (dims2D 4 4)
   # centerXY
   # pad 1.1
 

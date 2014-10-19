@@ -238,7 +238,7 @@ setPenColor = setPenColour
 --
 -- Applies the styles to each trails in @paths@ separately and combines them
 -- into a single diagram
-getTurtleDiagram :: (Renderable (Path V2 n) b, DataFloat n)
+getTurtleDiagram :: (Renderable (Path V2 n) b, TypeableFloat n)
                  => TurtleState n
                  -> QDiagram b V2 n Any
 getTurtleDiagram t =
@@ -285,7 +285,7 @@ turtlePathToTrailLike :: (V t ~ V2, N t ~ n, TrailLike t) => TurtlePath n -> t
 turtlePathToTrailLike (TurtlePath _ t) = trailLike t
 
 -- Creates a diagram from a TurtlePath using the provided styles
-turtlePathToStroke :: (Renderable (Path V2 n) b, DataFloat n) =>
+turtlePathToStroke :: (Renderable (Path V2 n) b, TypeableFloat n) =>
                       TurtlePath n
                    -> QDiagram b V2 n Any
 turtlePathToStroke t@(TurtlePath (PenStyle lineWidth_  lineColor_) _) = d

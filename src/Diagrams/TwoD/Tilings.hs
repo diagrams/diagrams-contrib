@@ -354,7 +354,7 @@ polyColor Dodecagon = cornflowerblue
 
 -- | Draw a tiling, with a given width and height and default colors
 --   for the polygons.
-drawTiling :: (Renderable (Path V2 n) b, DataFloat n)
+drawTiling :: (Renderable (Path V2 n) b, TypeableFloat n)
            => Tiling -> n -> n -> QDiagram b V2 n Any
 drawTiling =
   drawTilingStyled

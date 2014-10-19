@@ -32,6 +32,7 @@ import           Data.Ord         (comparing)
 import           Data.List.Split  (chunksOf)
 
 import           Diagrams.Prelude
+import           Diagrams.BoundingBox
 
 -- * Grid Layout
 
@@ -119,11 +120,11 @@ sameBoundingSquare
   -> [QDiagram b V2 n Any]
 sameBoundingSquare diagrams = map frameOne diagrams
   where
-    biggest = maximumBy (comparing maxDim) diagrams
+    biggest        = maximumBy (comparing maxDim) diagrams
     maxDim diagram = max (width diagram) (height diagram)
-    centerPoint = center2D biggest
-    padSquare = (square (maxDim biggest) :: D V2 n) # phantom
-    frameOne = atop padSquare . moveOriginTo centerPoint
+    centerP        = centerPoint biggest
+    padSquare      = (square (maxDim biggest) :: D V2 n) # phantom
+    frameOne       = atop padSquare . moveOriginTo centerP
 
 
 -- | Make all diagrams have the same bounding rect,
@@ -136,8 +137,8 @@ sameBoundingRect diagrams = map frameOne diagrams
   where
     widest = maximumBy (comparing width) diagrams
     tallest = maximumBy (comparing height) diagrams
-    (xCenter :& _) = coords (center2D widest)
-    (_ :& yCenter) = coords (center2D tallest)
+    (xCenter :& _) = coords (centerPoint widest)
+    (_ :& yCenter) = coords (centerPoint tallest)
     padRect = (rect (width widest) (height tallest) :: D V2 n) # phantom
     frameOne = atop padRect . moveOriginTo (xCenter ^& yCenter)
 
@@ -146,8 +147,8 @@ sameBoundingRect diagrams = map frameOne diagrams
 intSqrt :: Int -> Int
 intSqrt = round . sqrt . (fromIntegral :: Int -> Float)
 
-everyOther :: (a -> a) -> ([a] -> [a])
-everyOther f xs = zipWith ($) (cycle [id, f]) xs
+everyOther :: (a -> a) -> [a] -> [a]
+everyOther f = zipWith ($) (cycle [id, f])
 
 padList :: Int -> a -> [a] -> [a]
 padList m padding xs = xs ++ replicate (mod (- length xs) m) padding

@@ -77,7 +77,7 @@ grid = verts # centerXY <> horiz # centerXY
         horiz = rotateBy (1/4) verts
 
 gbkg :: forall b n m. (TrailLike (QDiagram b V2 n m), Monoid m, Semigroup m,
-                       DataFloat n) =>
+                       TypeableFloat n) =>
         QDiagram b V2 n m
 gbkg = grid
     # lc gray

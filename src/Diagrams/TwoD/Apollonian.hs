@@ -217,14 +217,14 @@ apollonian' thresh cur others
 ------------------------------------------------------------
 
 -- | Draw a circle.
-drawCircle :: (Renderable (Path V2 n) b, DataFloat n) =>
+drawCircle :: (Renderable (Path V2 n) b, TypeableFloat n) =>
               n -> Circle n -> QDiagram b V2 n Any
 drawCircle w c = circle (radius c) # moveTo (center c)
                                    # lwG w # fcA transparent
 
 -- | Draw a generated gasket, using a line width 0.003 times the
 --   radius of the largest circle.
-drawGasket :: (Renderable (Path V2 n) b, DataFloat n) =>
+drawGasket :: (Renderable (Path V2 n) b, TypeableFloat n) =>
               [Circle n] -> QDiagram b V2 n Any
 drawGasket cs = foldMap (drawCircle w) cs
   where w = (*0.003) . maximum . map radius $ cs
@@ -232,6 +232,6 @@ drawGasket cs = foldMap (drawCircle w) cs
 -- | Draw an Apollonian gasket: the first argument is the threshold;
 --   the recursion will stop upon reaching circles with radii less than
 --   it. The next three arguments are bends of three circles.
-apollonianGasket :: (Renderable (Path V2 n) b, DataFloat n)
+apollonianGasket :: (Renderable (Path V2 n) b, TypeableFloat n)
                  => n -> n -> n -> n -> QDiagram b V2 n Any
 apollonianGasket thresh b1 b2 b3 = drawGasket . apollonian thresh $ (initialConfig b1 b2 b3)

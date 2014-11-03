@@ -67,7 +67,7 @@ data SData n = SData
   (Colour Double) -- color
 
 -- Make n sections (annular wedges) starting in direction d and sweeping a
-sections :: (Renderable (Path V2 n) b, DataFloat n) =>
+sections :: (Renderable (Path V2 n) b, TypeableFloat n) =>
             SData n -> QDiagram b V2 n Any
 sections (SData r s d a n c) = mconcat $ iterateN n (rotate theta) w
   where
@@ -94,7 +94,7 @@ toTree (SunburstOpts r s (c:cs)) (Node _ ts) d a = Node (SData r s d a n c) ts'
 --   The root is the center of the sunburst and its circumference is divided
 --   evenly according to the number of child nodes it has. Then each of those
 --   sections is treated the same way.
-sunburst' :: (Renderable (Path V2 n) b, DataFloat n) =>
+sunburst' :: (Renderable (Path V2 n) b, TypeableFloat n) =>
              SunburstOpts n -> Tree a -> QDiagram b V2 n Any
 sunburst' opts t = sunB $ toTree opts t xDir fullTurn
   where sunB (Node sd ts') = sections sd <> foldMap sunB ts'
@@ -107,5 +107,5 @@ sunburst' opts t = sunB $ toTree opts t xDir fullTurn
 --   > sunburstEx = sunburst aTree # pad 1.1
 --
 --   <<diagrams/src_Diagrams_TwoD_Sunburst_sunburstEx.svg#diagram=sunburstEx&width=500>>
-sunburst :: (Renderable (Path V2 n) b, DataFloat n) => Tree a -> QDiagram b V2 n Any
+sunburst :: (Renderable (Path V2 n) b, TypeableFloat n) => Tree a -> QDiagram b V2 n Any
 sunburst = sunburst' def

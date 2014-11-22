@@ -22,11 +22,10 @@
 
 module Diagrams.TwoD.Factorization where
 
-import           Data.Char                              (digitToInt)
-import           Data.List.Split                        (chunksOf)
+import           Data.Char        (digitToInt)
+import           Data.List.Split  (chunksOf)
+import           Data.Maybe       (listToMaybe)
 import           Diagrams.Prelude
-
-import           Math.NumberTheory.Primes.Factorisation (factorise)
 
 -- | @primeLayout@ takes a positive integer p (the idea is for it to
 --   be prime, though it doesn't really matter) and a diagram, and lays
@@ -136,9 +135,14 @@ factorDiagram' = centerXY . foldr (primeLayout defaultColors) (circle 1 # fc bla
 --   <<diagrams/src_Diagrams_TwoD_Factorization_factorDiagramEx.svg#diagram=factorDiagramEx&width=400>>
 factorDiagram :: (Renderable (Path V2 n) b, TypeableFloat n)
               => Integer -> QDiagram b V2 n Any
-factorDiagram = factorDiagram'
-              . concatMap (uncurry $ flip replicate)
-              . factorise
+factorDiagram = factorDiagram' . factors
+
+factors :: Integer -> [Integer]
+factors 1 = []
+factors n = maybe [n] (\a -> a : factors (n `div` a)) mf
+  where
+    mf = listToMaybe $ filter (\x -> (n `mod` x) == 0) [2 .. n - 1]
+    -- only need to go to @intSqrt n@ really
 
 -- | Place a diagram inside a square with the given side length,
 --   centering and scaling it to fit with a bit of padding.

@@ -151,7 +151,7 @@ tick :: (Renderable (Text n) b, Renderable (Path V2 n) b, Floating n, Ord n)
      => (Int, Int) -> QDiagram b V2 n Any
 tick (n, m) = pointDiagram origin # named (n, m)
 
--- | @gridWithHalves@ with default opts.
+-- | @gridWithHalves'@ with default opts.
 gridWithHalves :: (Renderable (Text n) b, Renderable (Path V2 n) b, TypeableFloat n)
                => Int -> Int -> QDiagram b V2 n Any
 gridWithHalves = gridWithHalves' def

@@ -67,7 +67,7 @@ flex ps = fromPath . MFP False $ (s0:rest) where
   tj = Left (TJ (TensionAmt 1) (TensionAmt 1))
   jj = PJ Nothing tj Nothing
   s0 = MFS (head ps) jj (head.tail $ ps)
-  d = Just . PathDirDir $ last ps .-. head ps
+  d = Just . PathDirDir . direction $ last ps .-. head ps
   seg z1 z2 = MFS z1 (PJ d tj Nothing) z2
   rest = zipWith seg (init . tail $ ps) (tail . tail $ ps)
 

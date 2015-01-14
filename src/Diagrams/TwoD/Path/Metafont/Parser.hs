@@ -87,7 +87,7 @@ tenseLine = string "---" *> pure (Left $ TJ t t) where t = TensionAmt 4096
 -- Directions
 
 dir :: (Num n, Read n) => Parser (PathDir n)
-dir = PathDirDir . r2 <$> xy
+dir = PathDirDir . direction . r2 <$> xy
 
 curl :: (Num n, Read n) => Parser (PathDir n)
 curl = PathDirCurl <$> (string "curl" *> spaces *> num)

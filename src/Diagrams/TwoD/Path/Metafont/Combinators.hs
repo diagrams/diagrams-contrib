@@ -68,8 +68,8 @@ controls u v = simpleJoin & j.~ (Just . Right $ CJ u v)
 
 -- | A join with the left-end direction specified.
 leaving :: V2 n -> Join n
-leaving d = mempty & d1.~ (Just . PathDirDir $ d)
+leaving d = mempty & d1.~ (Just . PathDirDir . direction $ d)
 
 -- | A join with the right-end direction specified.
 arriving :: V2 n -> Join n
-arriving d = mempty & d2.~ (Just . PathDirDir $ d)
+arriving d = mempty & d2.~ (Just . PathDirDir . direction $ d)

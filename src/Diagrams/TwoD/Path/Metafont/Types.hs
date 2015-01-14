@@ -6,11 +6,12 @@
 
 module Diagrams.TwoD.Path.Metafont.Types where
 
-import           Control.Lens        hiding (( # ))
-import           Data.Monoid
-import           Data.Semigroup
+import Control.Lens hiding (( # ))
+import Data.Monoid
+import Data.Semigroup
 
-import           Diagrams.TwoD.Types
+import Diagrams.Direction
+import Diagrams.TwoD.Types
 
 -- | A @PathJoin@ specifies the directions at both ends of a segment,
 -- and a join which describes the control points explicitly or implicitly.
@@ -33,7 +34,7 @@ isCurl (PathDirDir _) = False
 isCurl (PathDirCurl _) = True
 
 type Curl n = n
-type Dir n  = V2 n
+type Dir n = Direction V2 n
 
 type BasicJoin n = Either (TensionJoin n) (ControlJoin n)
 

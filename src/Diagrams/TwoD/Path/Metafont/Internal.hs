@@ -137,7 +137,7 @@ controlPtDirs s@(MFS z0 (PJ _ jj@(Right (CJ u v)) _) z1) = s & pj .~ dirs where
   dirs = PJ (dir z0 u) jj (dir v z1)
   dir :: Num n => P2 n -> P2 n -> Maybe (PathDir n)
   dir p0 p1 | p0 == p1 = Just $ PathDirCurl 1
-  dir p0 p1 | otherwise = Just $ PathDirDir (p1 .-. p0)
+  dir p0 p1 | otherwise = Just . PathDirDir . direction $ (p1 .-. p0)
 controlPtDirs s = s
 
 -- | Run all the rules required to fully specify all segment directions,
@@ -237,7 +237,7 @@ setDirs :: Floating n => MFS n -- ^ The segment to be modified
         -> n -- ^ phi, the ofset angle at the endpoint
         -> MetafontSegment (Dir n) (BasicJoin n) n
 setDirs (MFS z0 (PJ w0' jj w1') z1) t p = MFS z0 (PJ w0 jj w1) z1 where
-    offs  = z1 .-. z0
+    offs  = direction $ z1 .-. z0
     w0 = case w0' of
       (Just (PathDirDir d)) -> d
       _ -> offs # rotate (t @@ turn)
@@ -262,8 +262,8 @@ lineDirs [] = []
 lineDirs [s] | leftCurl s && rightCurl s = [0, 0] where
 lineDirs [s] | rightCurl s = solveTriDiagonal [a] [1,c] [0] [normalizeTurns t, r] where
   (a,c,r) = solveOneSeg s
-  (PathDirDir dir) = s^.pj.d1.to fromJust
-  t = view turn $ angleBetween dir (s^.x2 .-. s^.x1)
+  (PathDirDir d) = s^.pj.d1.to fromJust
+  t = view turn $ angleBetweenDirs d (direction $ s^.x2 .-. s^.x1)
 lineDirs [s] | leftCurl s = reverse $ lineDirs [reverseSeg s]
 lineDirs _ = error $ "lineDirs was called on something inappropriate.  \
 \It should be called on a list of segments with directions specified at both ends.\
@@ -288,7 +288,7 @@ lineEqs ss = (lower, diag, upper, products) where
   (d0,c0,_) = solveOneSeg . reverseSeg $ s0
   r0 = r0' (s0^.pj.d1.to fromJust) where
     r0' (PathDirDir d) = normalizeTurns t where
-      t = view turn $ angleBetween d  (s0^.x2 .-. s0^.x1)
+      t = view turn $ angleBetweenDirs d  (direction $ s0^.x2 .-. s0^.x1)
     r0' (PathDirCurl _) = negate $ d0 * psi (s0, ss!!1)
   s0 = head ss
   (an, cn, rn) = solveOneSeg (last ss)
@@ -316,7 +316,7 @@ solveOneSeg s = (a, c, r) where
        c' (PathDirCurl g) = beta s **3 * g / (alpha s **2) + 3 - alpha s
   r = r' (s^.pj.d2.to fromJust) where
     r' (PathDirDir d) = normalizeTurns t where
-      t = view turn $ angleBetween d  (s^.x2 .-. s^.x1)
+      t = view turn $ angleBetween (fromDirection d)  (s^.x2 .-. s^.x1)
     r' (PathDirCurl _) = 0
 
 -- | Take a segment whose endpoint directions have been fully
@@ -341,10 +341,12 @@ computeControls (MFS z0 (PJ _ (Right cj) _) z1)
 computeControls (MFS z0 (PJ w0 (Left (TJ a b)) w1) z1)
   = MFS z0 (PJ () (CJ u v) ()) z1
   where
-    (u,v) = ctrlPts z0 w0 va vb w1 z1
+    w0' = fromDirection w0
+    w1' = fromDirection w1
+    (u,v) = ctrlPts z0 w0' va vb w1' z1
     offs  = z1 .-. z0
-    theta = angleBetween w0 offs
-    phi   = angleBetween offs w1
+    theta = angleBetween w0' offs
+    phi   = angleBetween offs w1'
     sinR  = sin . view rad
     boundingTriangleExists = signum (sinR theta) == signum (sinR phi)
                              && signum (sinR theta) == signum (sinR (theta^+^phi))

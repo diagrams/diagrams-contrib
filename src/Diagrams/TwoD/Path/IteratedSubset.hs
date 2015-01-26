@@ -18,8 +18,12 @@
 module Diagrams.TwoD.Path.IteratedSubset
        (
          -- * Iterated subset algorithm
+         -- ** Simplified version
+         refineSegment, iterTrail
 
-         iterTrail, refineSegment
+         -- ** General version
+       , GeneratorSegment(..), mkGS, Generator
+       , refineGeneratorSegment, iterGenerator
 
          -- * Examples
 
@@ -32,6 +36,9 @@ module Diagrams.TwoD.Path.IteratedSubset
        , sqUp
        , sqUpDown
        , sqUpDown'
+
+         -- ** Example generators
+         -- $gens
 
          -- ** Other stuff
          -- $other
@@ -59,16 +66,19 @@ import           Data.Typeable
 import           System.Random              (Random)
 
 ------------------------------------------------------------
--- Iterated subset algorithm
+-- Iterated subset algorithm (simplified version)
 ------------------------------------------------------------
 
 -- | Given a \"seed pattern\", produce a list of successive
---   refinements, where the nth trail in the list has iteratively had
---   all segments replaced by the seed pattern n times, starting from
---   a horizontal line.  In other words, the zeroth trail in the
---   output list is a horizontal unit segment, and each subsequent
---   trail is equal to the previous with all segments replaced by the
---   seed pattern.
+--   refinements: the zeroth trail in the output list is a horizontal
+--   unit segment, and the nth trail is formed by replacing each
+--   segment of the seed pattern with the (n-1)st trail.
+--   (Equivalently, the nth trail consists of the (n-1)st trail with
+--   every segment replaced by the seed pattern.)
+--
+--   See 'iterGenerator' for a more sophisticated variant which can
+--   associate one of four orientations with each segment of the seed
+--   pattern.
 --
 --   > import Diagrams.TwoD.Path.IteratedSubset
 --   > iterTrailEx = vcat' (with & sep .~ 0.3) . map strokeLine . take 5
@@ -76,22 +86,83 @@ import           System.Random              (Random)
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_iterTrailEx.svg#diagram=iterTrailEx&width=200>>
 iterTrail :: RealFloat n => Trail' Line V2 n -> [Trail' Line V2 n]
-iterTrail t = iterate (mconcat . mapMaybe (refineSegment t) . lineSegments)
-                      (fromOffsets [unitX])
+iterTrail seed = iterate (\tr -> mconcat . mapMaybe (refineSegment tr) $ offs)
+                         (fromOffsets [unitX])
+  where offs = map segOffset . lineSegments $ seed
 
--- | Use a trail to \"refine\" a segment, returning a scaled and/or
---   rotated copy of the trail with the same endpoint as the segment.
+-- | Use a trail to \"refine\" a linear segment (represented by a
+--   vector), returning a scaled and/or rotated copy of the trail with
+--   the same endpoint as the segment.
 refineSegment :: RealFloat n =>
-                 Trail' Line V2 n -> Segment Closed V2 n ->
+                 Trail' Line V2 n -> V2 n ->
                  Maybe (Trail' Line V2 n)
-refineSegment t seg
+refineSegment t sOff
   | tOff == zero || sOff == zero = Nothing
-  | otherwise              = Just $ t # scale k # rotate r
+  | otherwise                    = Just $ t # scale k # rotate r
   where
-    sOff = segOffset seg
     tOff = lineOffset t
     k    = norm sOff / norm tOff
     r    = (sOff^._theta) ^-^ (tOff^._theta)
+
+------------------------------------------------------------
+-- Generators
+------------------------------------------------------------
+
+-- XXX TODO
+--   - Finish commenting.  Cite Ventrella.
+--   - Transcribe a bunch of generators
+--   - Utilities for rounding corners etc., as in Ventrella
+
+-- $gens
+-- See Brain-filling XXX
+
+-- | A /generator segment/ is a vector along with two bits' worth of
+--   orientation information: whether there is a reflection swapping
+--   its start and end, and whether there is a reflection across its
+--   axis.  When a generator segment is replaced by a complex path,
+--   the endpoints of the path will match the endpoints of the
+--   segment, but the path may first have some reflections applied to
+--   it according to the orientation of the segment.
+data GeneratorSegment n = GS (V2 n) Bool Bool
+
+-- | A generator is a sequence of consecutive generator segments.
+type Generator n = [GeneratorSegment n]
+
+-- | Make a generator segment by specifying an x component, a y
+--   component, a \"horizontal\" orientation (1 means normal, -1 means
+--   reversing the start and end of the segment) and a \"vertical\"
+--   orientation (1 means normal, -1 means reflecting across the axis
+--   of the segment).  This corresponds to the notation used by
+--   Ventrella in XXX.
+mkGS :: (n, n, Int, Int) -> GeneratorSegment n
+mkGS (x, y, flip1, flip2) = GS (r2 (x,y)) (flip1 < 0) (flip2 < 0)
+
+-- | Use a trail to \"refine\" a generator segment, returning a scaled
+--   and/or rotated copy of the trail with the same endpoints as the
+--   segment, and with appropriate reflections applied depending on
+--   the orientation of the segment.
+refineGeneratorSegment :: RealFloat n =>
+                          Trail' Line V2 n -> GeneratorSegment n ->
+                          Maybe (Trail' Line V2 n)
+refineGeneratorSegment t (GS sOff flipX flipY) = refineSegment t' sOff
+  where
+    t' = t
+       # (if flipY then reflectY else id)
+       # (if flipX then (reflectY . reverseLine) else id)
+
+-- | Given a generator, produce a list of successive refinements: the
+--   zeroth trail in the output list is a horizontal unit segment, and
+--   the nth trail is formed by refining each segment of the generator
+--   with the (n-1)st trail.
+--
+--   > import Diagrams.TwoD.Path.IteratedSubset
+--   > iterTrailEx = vcat' (with & sep .~ 0.3) . map strokeLine . take 5
+--   >             $ iterTrail koch
+--
+--   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_iterTrailEx.svg#diagram=iterTrailEx&width=200>>
+iterGenerator :: RealFloat n => Generator n -> [Trail' Line V2 n]
+iterGenerator g = iterate (\tr -> mconcat . mapMaybe (refineGeneratorSegment tr) $ g)
+                          (fromOffsets [unitX])
 
 ------------------------------------------------------------
 -- Examples
@@ -266,4 +337,3 @@ randIterGrid :: (Renderable (Path V2 n) b, Random n, TypeableFloat n) =>
 randIterGrid = do
   itcs <- evalRandIO (replicateM 100 randITC)
   return (vcat . map hcat . chunksOf 10 . map drawITCScaled $ itcs)
-

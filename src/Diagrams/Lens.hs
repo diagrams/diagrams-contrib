@@ -25,10 +25,6 @@ module Diagrams.Lens
   -- * Diagrams.BoundingBox
   , _corners
   , _boxExtents
-  -- * Diagrams.Core.Style
-  , _attr
-  , _mkAttr
-  , _mkTAttr
   -- * Diagrams.Core.Types
   , _location
   , _mkSubdiagram
@@ -116,24 +112,6 @@ _boxExtents = lens boxExtents setExtent
   where
     setExtent (getCorners -> Just (l, _)) x = fromCorners l (l .+^ x)
     setExtent _ _ = emptyBox
-
-
--- * Diagrams.Core.Style
-
-_attr :: AttributeClass a => Lens' (Style v n) (Maybe a)
-_attr = lens getAttr setAttr'
-  where
-    setAttr' style (Just x) = setAttr x style
-    setAttr' style Nothing = style
-
-_mkAttr
-  :: AttributeClass a => Prism' (Attribute v n) a
-_mkAttr = prism' mkAttr unwrapAttr
-
-_mkTAttr
-  :: (AttributeClass a, Transformable a, V a ~ v, N a ~ n)
-  => Prism' (Attribute v n) a
-_mkTAttr = prism' mkTAttr unwrapAttr
 
 
 -- * Diagrams.Core.Types

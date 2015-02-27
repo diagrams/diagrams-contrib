@@ -86,9 +86,9 @@ import           System.Random              (Random)
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_iterTrailEx.svg#diagram=iterTrailEx&width=200>>
 iterTrail :: RealFloat n => Trail' Line V2 n -> [Trail' Line V2 n]
-iterTrail seed = iterate (\tr -> mconcat . mapMaybe (refineSegment tr) $ offs)
+iterTrail seed' = iterate (\tr -> mconcat . mapMaybe (refineSegment tr) $ offs)
                          (fromOffsets [unitX])
-  where offs = map segOffset . lineSegments $ seed
+  where offs = map segOffset . lineSegments $ seed'
 
 -- | Use a trail to \"refine\" a linear segment (represented by a
 --   vector), returning a scaled and/or rotated copy of the trail with

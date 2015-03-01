@@ -27,7 +27,7 @@ module Diagrams.TwoD.Path.Metafont.Internal
 import           Control.Lens                      hiding (at, ( # ))
 import           Data.Maybe
 
-import           Diagrams.CubicSpline.Internal
+import           Diagrams.Solve.Tridiagonal
 import           Diagrams.Prelude                  hiding (view)
 
 import           Diagrams.TwoD.Path.Metafont.Types

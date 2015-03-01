@@ -2,25 +2,26 @@ language: haskell
 
 env:
   matrix:
+    - HPVER=2012.4.0.0
     - HPVER=2013.2.0.0
-    - HPVER=2014.2.0.0
     - GHCVER=7.4.2
     - GHCVER=7.6.3
     - GHCVER=7.8.3
-    - GHCVER=7.10.1 SKIP_HADDOCK=true
     - GHCVER=head
   global:
-    - CABALVER=1.18
-    - HEAD_DEPS="diagrams-core diagrams-lib force-layout monoid-extras dual-tree"
+    - CABALVER=1.20
+    - UBUNTU_PKGS=""
+    - EXTRA_DEPS_PRE=""
+    - HEAD_DEPS=""
+    - EXTRA_DEPS=""
+    - CABAL_FLAGS=""
 
 matrix:
   allow_failures:
     - env: GHCVER=head
-    - env: GHCVER=7.10.1 SKIP_HADDOCK=true
-    - env: GHCVER=7.4.2
 
 before_install:
-  # - git clone http://github.com/diagrams/diagrams-travis travis
+  - git clone http://github.com/diagrams/diagrams-travis travis
   - source travis/scripts/set_env.sh
   - ./travis/scripts/before_install.sh
 
@@ -32,7 +33,7 @@ notifications:
   email: false
   irc:
     channels:
-      - irc.freenode.org#diagrams
+      - "irc.freenode.org#diagrams"
     skip_join: true
     template:
-      - "\x0313diagrams-contrib\x03/\x0306%{branch}\x03 \x0314%{commit}\x03 %{build_url} %{message}"
+      - "\x0313<<<REPONAME>>>\x03/\x0306%{branch}\x03 \x0314%{commit}\x03 %{build_url} %{message}"

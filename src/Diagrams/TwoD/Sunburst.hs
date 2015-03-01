@@ -38,7 +38,7 @@ module Diagrams.TwoD.Sunburst
 import           Control.Lens       (makeLenses)
 
 import           Data.Default.Class
-import           Data.Foldable      (foldMap)
+import qualified Data.Foldable as F
 import           Data.Tree
 import           Diagrams.Prelude   hiding (radius)
 
@@ -97,7 +97,7 @@ toTree (SunburstOpts r s (c:cs)) (Node _ ts) d a = Node (SData r s d a n c) ts'
 sunburst' :: (Renderable (Path V2 n) b, TypeableFloat n) =>
              SunburstOpts n -> Tree a -> QDiagram b V2 n Any
 sunburst' opts t = sunB $ toTree opts t xDir fullTurn
-  where sunB (Node sd ts') = sections sd <> foldMap sunB ts'
+  where sunB (Node sd ts') = sections sd <> F.foldMap sunB ts'
 
 -- | @sunburst@ with default opts
 --

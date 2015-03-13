@@ -99,9 +99,6 @@ module Diagrams.TwoD.Grid (
 import           Diagrams.Prelude
 import           Diagrams.TwoD.Text
 
-import           Control.Lens       (makeLenses, (^.))
-
-import           Data.Default.Class
 import           Data.List
 import           Data.List.Split
 import           Data.Typeable

@@ -35,8 +35,6 @@ module Diagrams.TwoD.Sunburst
   , colors
   ) where
 
-import           Control.Lens       (makeLenses)
-
 import           Data.Default.Class
 import           Data.Foldable      (foldMap)
 import           Data.Tree

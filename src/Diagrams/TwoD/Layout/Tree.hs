@@ -133,7 +133,6 @@ import           Physics.ForceLayout
 
 import           Control.Applicative
 import           Control.Arrow       (first, second, (&&&), (***))
-import           Control.Lens        (makeLenses, view, (+=), (-=), (^.))
 import           Control.Monad.State
 
 import           Data.Default
@@ -145,7 +144,7 @@ import           Data.Maybe
 import qualified Data.Traversable    as T
 import           Data.Tree
 
-import           Diagrams.Prelude    hiding (view)
+import           Diagrams.Prelude
 
 
 

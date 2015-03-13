@@ -33,7 +33,6 @@ import           Data.Ord         (comparing)
 import           Data.List.Split  (chunksOf)
 
 import           Diagrams.Prelude
-import           Diagrams.BoundingBox
 
 -- * Grid Layout
 

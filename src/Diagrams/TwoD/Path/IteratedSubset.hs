@@ -59,7 +59,6 @@ import           Control.Lens               ((^.))
 import           Control.Monad              (replicateM)
 import           Control.Monad.Random       (evalRandIO, getRandom, getRandomR)
 import           Control.Monad.Random.Class (MonadRandom)
-import           Data.Colour.SRGB           (sRGB)
 import           Data.List.Split            (chunksOf)
 import           Data.Maybe                 (mapMaybe)
 import           Data.Typeable

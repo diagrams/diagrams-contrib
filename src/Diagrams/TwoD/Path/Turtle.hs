@@ -31,7 +31,6 @@ module Diagrams.TwoD.Path.Turtle
   ) where
 
 import qualified Control.Lens                       as L
-import           Control.Monad.Identity             (Identity (..))
 import qualified Control.Monad.State                as ST
 
 import           Diagrams.Prelude

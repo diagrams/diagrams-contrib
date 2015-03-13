@@ -5,8 +5,6 @@
 module Diagrams.TwoD.Path.Metafont.Parser
        (metafontParser) where
 
-import           Control.Lens                      ((^.))
-
 import           Text.Parsec
 import           Text.Parsec.Text
 

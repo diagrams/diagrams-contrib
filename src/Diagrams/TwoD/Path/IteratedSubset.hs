@@ -55,7 +55,6 @@ module Diagrams.TwoD.Path.IteratedSubset
 import           Diagrams.Core.Points       ()
 import           Diagrams.Prelude
 
-import           Control.Lens               ((^.))
 import           Control.Monad              (replicateM)
 import           Control.Monad.Random       (evalRandIO, getRandom, getRandomR)
 import           Control.Monad.Random.Class (MonadRandom)

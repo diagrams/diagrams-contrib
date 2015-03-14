@@ -60,7 +60,7 @@ module Diagrams.TwoD.Apollonian
        ) where
 
 import           Data.Complex
-import           Data.Foldable    (foldMap)
+import qualified Data.Foldable as F
 
 import           Diagrams.Prelude hiding (center, radius)
 
@@ -226,7 +226,7 @@ drawCircle w c = circle (radius c) # moveTo (center c)
 --   radius of the largest circle.
 drawGasket :: (Renderable (Path V2 n) b, TypeableFloat n) =>
               [Circle n] -> QDiagram b V2 n Any
-drawGasket cs = foldMap (drawCircle w) cs
+drawGasket cs = F.foldMap (drawCircle w) cs
   where w = (*0.003) . maximum . map radius $ cs
 
 -- | Draw an Apollonian gasket: the first argument is the threshold;

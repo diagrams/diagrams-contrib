@@ -131,7 +131,6 @@ module Diagrams.TwoD.Layout.Tree
 
 import           Physics.ForceLayout
 
-import           Control.Applicative
 import           Control.Arrow       (first, second, (&&&), (***))
 import           Control.Monad.State
 

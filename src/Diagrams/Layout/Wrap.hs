@@ -16,7 +16,7 @@
 module Diagrams.Layout.Wrap where
 
 import           Control.Arrow    (first, (&&&))
-import           Data.Foldable    (foldMap)
+import qualified Data.Foldable as F
 import           Data.List        (find, inits, tails)
 import           Diagrams.Prelude hiding (start)
 import           Linear.Epsilon
@@ -31,7 +31,7 @@ import           Linear.Epsilon
 --   applying them to a list of diagrams.
 wrapDiagram :: (HasLinearMap v, Metric v, OrderedField n)
             => ([(v n, QDiagram b v n Any)], [QDiagram b v n Any]) -> QDiagram b v n Any
-wrapDiagram = foldMap (uncurry translate) . fst
+wrapDiagram = F.foldMap (uncurry translate) . fst
 
 -- | @wrapOutside@ is the same as @wrapInside@, but with an inverted
 --   predicate.

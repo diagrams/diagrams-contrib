@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                        #-}
 {-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
@@ -36,7 +37,9 @@ module Diagrams.Lens
 
 import           Control.Applicative
 import           Control.Lens
+#if __GLASGOW_HASKELL__ < 710
 import           Data.Foldable
+#endif
 import           Diagrams.BoundingBox
 import           Diagrams.Prelude
 

@@ -422,6 +422,3 @@ mfPathToSegments = fixCycleSegment . snd . mfPathToSegments'
             Just bj -> jj & j .~ bj
     fixCycleSegment (MFP True ss) = MFP True (ss & _last.x2 .~ ss^?!_head.x1)
     fixCycleSegment p = p
-
-signedAngleBetween :: RealFloat n => V2 n -> V2 n -> Angle n
-signedAngleBetween u v = (u ^. _theta) ^-^ (v ^. _theta)

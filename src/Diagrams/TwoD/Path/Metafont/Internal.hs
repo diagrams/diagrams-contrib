@@ -250,7 +250,7 @@ setDirs (MFS z0 (PJ w0' jj w1') z1) t p = MFS z0 (PJ w0 jj w1) z1 where
 -- is assumed to be the starting point of r; this is not checked.
 psi :: RealFloat n => (MetafontSegment p j1 n, MetafontSegment p j1 n) -> n
 psi (l,r) = normalizeTurns t where
-  t = view turn $ (mfSegmentOffset r ^. _theta) ^-^ (mfSegmentOffset l ^. _theta)
+  t = view turn $ signedAngleBetween (mfSegmentOffset r) (mfSegmentOffset l)
 
 -- | lineDirs calculates the offset angles θ for a Line.  Most of the work
 -- done by lineEqs and solveTriDiagonal, but lineDirs handles the separate cases
@@ -334,7 +334,7 @@ solveOneSeg s = (a, c, r) where
 --   recovered by subtracting the control points from the endpoints
 --   anyway).
 computeControls
-  :: (Floating n, Ord n) => MetafontSegment (Dir n) (BasicJoin n) n
+  :: (RealFloat n, Ord n) => MetafontSegment (Dir n) (BasicJoin n) n
   -> MetafontSegment () (ControlJoin n) n
 computeControls (MFS z0 (PJ _ (Right cj) _) z1)
   = MFS z0 (PJ () cj ()) z1
@@ -345,8 +345,8 @@ computeControls (MFS z0 (PJ w0 (Left (TJ a b)) w1) z1)
     w1' = fromDirection w1
     (u,v) = ctrlPts z0 w0' va vb w1' z1
     offs  = z1 .-. z0
-    theta = angleBetween w0' offs
-    phi   = angleBetween offs w1'
+    theta = signedAngleBetween w0' offs
+    phi   = signedAngleBetween offs w1'
     sinR  = sin . view rad
     boundingTriangleExists = signum (sinR theta) == signum (sinR phi)
                              && signum (sinR theta) == signum (sinR (theta^+^phi))
@@ -374,12 +374,12 @@ computeControls (MFS z0 (PJ w0 (Left (TJ a b)) w1) z1)
 --   @z0 .. controls u and v .. z1@.
 --
 --   This uses a mysterious, magical formula due to John Hobby.
-ctrlPts :: (Floating n, Eq n) => P2 n -> V2 n -> n -> n -> V2 n -> P2 n -> (P2 n, P2 n)
+ctrlPts :: (RealFloat n, Eq n) => P2 n -> V2 n -> n -> n -> V2 n -> P2 n -> (P2 n, P2 n)
 ctrlPts z0 w0 va vb w1 z1 = (u,v)
   where
     offs  = z1 .-. z0
-    theta = angleBetween w0 offs
-    phi   = angleBetween offs w1
+    theta = signedAngleBetween w0 offs
+    phi   = signedAngleBetween offs w1
     u     = z0 .+^ (offs # rotate theta  # scale va)
     v     = z1 .-^ (offs # rotate (negated phi) # scale vb)
 
@@ -422,3 +422,6 @@ mfPathToSegments = fixCycleSegment . snd . mfPathToSegments'
             Just bj -> jj & j .~ bj
     fixCycleSegment (MFP True ss) = MFP True (ss & _last.x2 .~ ss^?!_head.x1)
     fixCycleSegment p = p
+
+signedAngleBetween :: RealFloat n => V2 n -> V2 n -> Angle n
+signedAngleBetween u v = (u ^. _theta) ^-^ (v ^. _theta)

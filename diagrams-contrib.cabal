@@ -1,5 +1,5 @@
 name:                diagrams-contrib
-version:             1.1.2
+version:             1.3.0
 synopsis:            Collection of user contributions to diagrams EDSL
 description:         A collection of user contributions for diagrams,
                      an embedded domain-specific language for generation
@@ -50,12 +50,12 @@ library
                        split >= 0.2.1 && < 0.3,
                        colour >= 2.3.1 && < 2.4,
                        split >= 0.2.1 && < 0.3,
-                       diagrams-core >= 1.2 && < 1.3,
-                       diagrams-lib >= 1.2 && < 1.3,
+                       diagrams-core >= 1.3 && < 1.4,
+                       diagrams-lib >= 1.3 && < 1.4,
                        diagrams-solve >= 0.1 && < 0.2,
                        lens >= 4.0 && < 4.9,
-                       linear >= 1.11.3 && < 1.18,
-                       force-layout >= 0.3 && < 0.4,
+                       linear >= 1.11.3 && < 1.19,
+                       force-layout >= 0.4 && < 0.5,
                        data-default >= 0.5.2 && < 0.6,
                        MonadRandom >= 0.1.8 && < 0.4,
                        random >= 1.0 && < 1.2,

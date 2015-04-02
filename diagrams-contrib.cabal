@@ -1,5 +1,5 @@
 name:                diagrams-contrib
-version:             1.1.2.5
+version:             1.1.2.6
 synopsis:            Collection of user contributions to diagrams EDSL
 description:         A collection of user contributions for diagrams,
                      an embedded domain-specific language for generation

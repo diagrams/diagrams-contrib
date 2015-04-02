@@ -3,19 +3,24 @@
 
 * **New features**
 
-    - Added generators to interated subset.
+    - Added generators to iterated subset.
 
 * **API changes**
 
-    - `Diagrams`Lens` has had a log of its lenses removed becuase
+    - `Diagrams.Lens` has had a log of its lenses removed because
       they're either invalid lenses or are now in lib.
 
 * **Dependency/version changes**
 
     - Allow `diagrams-core-1.3`
     - Allow `diarams-lib-1.3`
-    - Allow `lens-4.9`
-    - Allow `linear-1.18`
+    - use `linear` instead of `vector-space`
+
+1.1.2.6 (2 April 2015)
+----------------------
+
+ - allow `lens-4.9`
+ - allow `vector-space-0.10`
 
 1.1.2.5 (13 Jan 2015)
 ---------------------

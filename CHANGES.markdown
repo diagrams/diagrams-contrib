@@ -3,12 +3,13 @@
 
 * **New features**
 
-    - Added generators to iterated subset.
+    - Generalized `Diagrams.TwoD.IteratedSubset` and added more examples.
+    - New module `Diagrams.TwoD.Layout.Grid`.
 
 * **API changes**
 
-    - `Diagrams.Lens` has had a log of its lenses removed because
-      they're either invalid lenses or are now in lib.
+    - `Diagrams.Lens` has had a lot of its lenses removed because
+      they're either invalid lenses or are now in diagrams-lib.
 
 * **Dependency/version changes**
 

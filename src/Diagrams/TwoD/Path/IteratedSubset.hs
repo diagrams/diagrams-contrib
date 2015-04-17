@@ -223,15 +223,6 @@ sqUpDown = fromOffsets [unitX, unitY, unitX, 2 *^ unit_Y, unitX, unitY, unitX]
 
 -- > sqUpDownD = showTrail 3 sqUpDown
 
--- | Like 'sqUpDown' but with 'cubicSpline' applied to produce a curvy
---   version.
---
---   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_sqUpDownD2.svg#diagram=sqUpDownD2&width=400>>
-sqUpDown' :: (TrailLike t, V t ~ V2, N t ~ n) => t
-sqUpDown' = cubicSpline False sqUpDown
-
--- > sqUpDownD2 = showTrail 3 sqUpDown'
-
 --------------------------------------------------
 -- Miscellaneous examples
 
@@ -255,24 +246,6 @@ snowflake n = iterateN 3 (rotateBy (-1/3)) edge
 
 -- > import Diagrams.TwoD.Path.IteratedSubset
 -- > snowflake4 = snowflake 4 # strokeT # centerXY # pad 1.1
-
--- | A cool diagram featuring successive iterations of @sqUpDown'@
---   superimposed atop one another.
---
---   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_sqUpDownOverlayD.svg#diagram=sqUpDownOverlayD&width=400>>
-sqUpDownOverlay :: (TypeableFloat n, Renderable (Path V2 n) b)
-                => QDiagram b V2 n Any
-sqUpDownOverlay
-  = sized (mkWidth 4)
-  . mconcat
-  . zipWith lc (iterate (blend 0.1 white) blue)
-  . map strokeLine
-  . take 5
-  . iterTrail
-  $ sqUpDown'
-
--- > import Diagrams.TwoD.Path.IteratedSubset
--- > sqUpDownOverlayD = sqUpDownOverlay
 
 --------------------------------------------------
 -- Generating random iterated subset fractals

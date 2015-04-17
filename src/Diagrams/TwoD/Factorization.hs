@@ -46,8 +46,8 @@ import           Diagrams.Prelude
 --   > import Diagrams.TwoD.Factorization
 --   > plExample
 --   >   = pad 1.1 . centerXY
---   >   . hcat' (with & sep .~ 0.5)
---   >   . map (sized (Width 1))
+--   >   . hsep 0.5
+--   >   . map (sized (mkWidth 1))
 --   >   $ [ primeLayout defaultColors 5 (circle 1 # fc black)
 --   >     , primeLayout defaultColors 103 (square 1 # fc green # lw none)
 --   >     , primeLayout (repeat white) 13 (circle 1 # lc orange)

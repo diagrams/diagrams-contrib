@@ -26,8 +26,8 @@
 -- > import Diagrams.TwoD.Grid
 -- > import Diagrams.TwoD.Text
 -- >
--- > example :: (Renderable (Text n) b, Renderable (Path V2 n) b) =>
--- >            Int -> Int -> QDiagram b V2 n Any
+-- > example :: (Renderable (Text Double) b, Renderable (Path V2 Double) b) =>
+-- >            Int -> Int -> QDiagram b V2 Double Any
 -- > example n m =
 -- >
 -- >   (gridWithHalves n m) #
@@ -75,7 +75,7 @@
 -- >
 -- >     txtPt t = circle cSize # opacity 0.0 # lw none
 -- >               ===
--- >               text t # fontSize (Local 0.06)
+-- >               text t # fontSize (local 0.06)
 -- >
 -- >     intPts = placeDiagramOnGrid (circle (cSize / 2) # fc blue # opacity 0.5 # lw none)
 -- >     bndPts = placeDiagramOnGrid (circle (cSize / 2) # fc red  # opacity 0.5 # lw none)

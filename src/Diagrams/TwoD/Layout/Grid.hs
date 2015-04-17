@@ -42,7 +42,7 @@ import           Diagrams.Prelude
 -- > import Diagrams.TwoD.Layout.Grid
 -- > gridCatExample = gridCat $ map (flip regPoly 1) [3..10]
 --
--- <<#diagram=gridCatExample&width=200>>
+-- <<diagrams/src_Diagrams_TwoD_Layout_Grid_gridCatExample.svg#diagram=gridCatExample&width=200>>
 
 gridCat
   :: (Renderable (Path V2 n) b, TypeableFloat n)
@@ -55,7 +55,7 @@ gridCat diagrams = gridCat' (intSqrt $ length diagrams) diagrams
 -- > import Diagrams.TwoD.Layout.Grid
 -- > gridCatExample' = gridCat' 4 $ map (flip regPoly 1) [3..10]
 --
--- <<#diagram=gridCatExample'&width=200>>
+-- <<diagrams/src_Diagrams_TwoD_Layout_Grid_gridCatExample'.svg#diagram=gridCatExample'&width=200>>
 
 gridCat'
   :: (Renderable (Path V2 n) b, TypeableFloat n)
@@ -70,7 +70,7 @@ gridCat' = gridAnimal id
 -- > import Diagrams.TwoD.Layout.Grid
 -- > gridSnakeExample = gridSnake $ map (flip regPoly 1) [3..10]
 --
--- <<#diagram=gridSnakeExample&width=200>>
+-- <<diagrams/src_Diagrams_TwoD_Layout_Grid_gridSnakeExample.svg#diagram=gridSnakeExample&width=200>>
 
 gridSnake
   :: (Renderable (Path V2 n) b, TypeableFloat n)
@@ -83,7 +83,7 @@ gridSnake diagrams = gridSnake' (intSqrt $ length diagrams) diagrams
 -- > import Diagrams.TwoD.Layout.Grid
 -- > gridSnakeExample' = gridSnake' 4 $ map (flip regPoly 1) [3..10]
 --
--- <<#diagram=gridSnakeExample'&width=200>>
+-- <<diagrams/src_Diagrams_TwoD_Layout_Grid_gridSnakeExample'.svg#diagram=gridSnakeExample'&width=200>>
 
 gridSnake'
   :: (Renderable (Path V2 n) b, TypeableFloat n)

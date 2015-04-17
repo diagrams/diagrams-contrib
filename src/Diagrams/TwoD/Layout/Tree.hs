@@ -62,7 +62,7 @@
 -- > drawT = maybe mempty (renderTree (const (circle 0.05 # fc black)) (~~))
 -- >       . symmLayoutBin' (with & slVSep .~ 0.5)
 -- >
--- > tree500 = drawT t # centerXY # pad 1.1 # sized (Width 4)
+-- > tree500 = drawT t # centerXY # pad 1.1
 -- >   where t = genTree 500 0.05
 -- >         -- genTree 500 0.05 randomly generates trees of size 500 +/- 5%,
 -- >         -- definition not shown

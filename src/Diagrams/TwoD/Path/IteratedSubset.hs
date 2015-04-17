@@ -35,7 +35,6 @@ module Diagrams.TwoD.Path.IteratedSubset
        , zag
        , sqUp
        , sqUpDown
-       , sqUpDown'
 
          -- ** Example generators
          -- $gens
@@ -44,8 +43,6 @@ module Diagrams.TwoD.Path.IteratedSubset
          -- $other
 
        , snowflake
-
-       , sqUpDownOverlay
 
        , IterTrailConfig(..), randITC, drawITC, drawITCScaled
        , randIterGrid
@@ -62,6 +59,8 @@ import           Data.List.Split            (chunksOf)
 import           Data.Maybe                 (mapMaybe)
 import           Data.Typeable
 import           System.Random              (Random)
+
+import qualified Diagrams.TwoD.Layout.Grid  as LG
 
 ------------------------------------------------------------
 -- Iterated subset algorithm (simplified version)
@@ -296,10 +295,15 @@ drawITCScaled itc
   # centerXY
   # pad 1.1
 
--- | Create a grid of 100 random iterated subset fractals.  Impress
+-- | Create a grid of 25 random iterated subset fractals.  Impress
 --   your friends!
+--
+-- <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_randIterGridEx.svg#diagram=randIterGridEx&width=500>>
 randIterGrid :: (Renderable (Path V2 n) b, Random n, TypeableFloat n) =>
                 IO (QDiagram b V2 n Any)
 randIterGrid = do
-  itcs <- evalRandIO (replicateM 100 randITC)
-  return (vcat . map hcat . chunksOf 10 . map drawITCScaled $ itcs)
+  itcs <- evalRandIO (replicateM 25 randITC)
+  return (LG.gridCat . map drawITCScaled $ itcs)
+
+-- > import Diagrams.TwoD.Path.IteratedSubset
+-- > randIterGridEx = randIterGrid

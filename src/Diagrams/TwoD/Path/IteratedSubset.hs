@@ -153,11 +153,6 @@ refineGeneratorSegment t (GS sOff flipX flipY) = refineSegment t' sOff
 --   the nth trail is formed by refining each segment of the generator
 --   with the (n-1)st trail.
 --
---   > import Diagrams.TwoD.Path.IteratedSubset
---   > iterTrailEx = vcat' (with & sep .~ 0.3) . map strokeLine . take 5
---   >             $ iterTrail koch
---
---   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_iterTrailEx.svg#diagram=iterTrailEx&width=200>>
 iterGenerator :: RealFloat n => Generator n -> [Trail' Line V2 n]
 iterGenerator g = iterate (\tr -> mconcat . mapMaybe (refineGeneratorSegment tr) $ g)
                           (fromOffsets [unitX])

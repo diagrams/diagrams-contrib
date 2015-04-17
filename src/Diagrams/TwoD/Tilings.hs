@@ -342,7 +342,7 @@ drawEdge s (Edge v1 v2) = (toP2 v1 ~~ toP2 v2) # applyStyle s
 -- | Draw a polygon with the given style.
 drawPoly :: (Renderable (Path V2 n) b, TypeableFloat n) =>
             (Polygon -> Style V2 n) -> Polygon -> QDiagram b V2 n Any
-drawPoly s p = applyStyle (s p) . fromVertices . map toP2 . polygonVertices $ p
+drawPoly s p = applyStyle (s p) . strokeLocLoop . mapLoc closeLine . fromVertices . map toP2 . polygonVertices $ p
 
 -- Simple per-polygon color scheme
 polyColor :: (Floating a, Ord a) => TilingPoly -> Colour a

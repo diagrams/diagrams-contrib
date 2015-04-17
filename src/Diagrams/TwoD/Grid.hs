@@ -203,9 +203,9 @@ gridWithHalves' opts n m =
 
 -- | Place a diagram on a grid (which is itself a diagram) at all the
 -- co-ordinates specified.
-placeDiagramOnGrid :: (IsName n, Renderable (Text n) b,
-                       Renderable (Path V2 n) b, Floating n) =>
-                      QDiagram b V2 n Any -> [n] -> QDiagram b V2 n Any -> QDiagram b V2 n Any
+placeDiagramOnGrid :: (IsName nm, Renderable (Text n) b,
+                       Renderable (Path V2 n) b, Floating n, Ord n) =>
+                      QDiagram b V2 n Any -> [nm] -> QDiagram b V2 n Any -> QDiagram b V2 n Any
 placeDiagramOnGrid d = flip $ foldr (\n -> withName n (atop . place d . location))
 
 annotate :: (Renderable (Text n) b, Renderable (Path V2 n) b, Floating n, Ord n, Typeable n) =>

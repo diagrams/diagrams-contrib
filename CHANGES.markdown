@@ -1,3 +1,7 @@
+1.3.0.1 (29 April 2015)
+
+- allow `QuickCheck-2.8` in test suite
+
 1.3.0.0 (19 April 2015)
 -----------------------
 

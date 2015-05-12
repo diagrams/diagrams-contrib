@@ -1,4 +1,10 @@
+1.3.0.2 (12 May 2015)
+---------------------
+
+- allow `MonadRandom-0.4`
+
 1.3.0.1 (29 April 2015)
+-----------------------
 
 - allow `QuickCheck-2.8` in test suite
 

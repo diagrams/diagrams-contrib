@@ -37,30 +37,25 @@ module Diagrams.TwoD.Path.Turtle.Internal
     -- * Drawing control
   , penUp, penDown, penHop, closeCurrent
 
-    -- * Debugging
-  , traceTurtle
-
     -- * Diagram related
   , getTurtleDiagram
   , getTurtlePath
   ) where
 
-import           Debug.Trace      (traceShow)
-
 import           Diagrams.Prelude
 
 -- | Style attributes associated with the turtle pen
 data PenStyle n = PenStyle
-  { penWidth :: n -- ^ Width of pen. Default is 1.0
+  { penWidth :: Measure n -- ^ Width of pen. Default is 1.0
   , penColor :: Colour Double  -- ^ Color of pen. Default is @black@
-  } deriving Show
+  }
 
 -- | Turtle path type that captures a list of paths and the style attributes
 -- associated with them
 data TurtlePath n = TurtlePath
   { penStyle    :: PenStyle n            -- ^ Style
   , turtleTrail :: Located (Trail V2 n)  -- ^ Path
-  } deriving Show
+  }
 
 -- | Core turtle data type. A turtle needs to keep track of its current
 -- position, like its position, heading etc., and all the paths that it has
@@ -85,11 +80,11 @@ data TurtleState n = TurtleState
      -- | List of paths along with style information, traversed by the turtle
      -- previously
   , paths        :: [TurtlePath n]
-  } deriving Show
+  }
 
 -- | Default pen style, with @penWidth@ set to 1.0 and @penColor@ set to black
-defaultPenStyle :: Fractional n => PenStyle n
-defaultPenStyle = PenStyle 1.0 black
+defaultPenStyle :: (Floating n, Ord n) => PenStyle n
+defaultPenStyle = PenStyle (normalized 0.004 `atLeast` output 0.5) black
 
 -- | The initial state of turtle. The turtle is located at the origin, at an
 -- orientation of 0 degrees with its pen position down. The pen style is
@@ -215,7 +210,7 @@ setPenPos newPos t = t {penPos = newPos } # makeNewTrail
 --
 -- If pen is down, this adds the current trail to @paths@ and starts a new empty
 -- trail.
-setPenWidth :: (Ord n, Floating n) => n -- ^ Width of Pen
+setPenWidth :: (Ord n, Floating n) => Measure n -- ^ Width of Pen
             -> TurtleState n  -- ^ Turtle to change
             -> TurtleState n  -- ^ Resulting Turtle
 setPenWidth w = modifyCurrStyle (\s -> s { penWidth = w })
@@ -290,10 +285,5 @@ turtlePathToStroke :: (Renderable (Path V2 n) b, TypeableFloat n) =>
                    -> QDiagram b V2 n Any
 turtlePathToStroke t@(TurtlePath (PenStyle lineWidth_  lineColor_) _) = d
  where d = lc lineColor_ .
-           lwG lineWidth_ .
+           lw lineWidth_ .
            strokeLocTrail $ turtlePathToTrailLike t
-
--- | Prints out turtle representation and returns it. Use for debugging
-traceTurtle :: Show n => TurtleState n
-            -> TurtleState n
-traceTurtle t = traceShow t t

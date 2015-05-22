@@ -140,5 +140,5 @@ setPenColor :: (OrderedField n, Monad m) => Colour Double -> TurtleT n m ()
 setPenColor c = ST.modify $ T.setPenColor c
 
 -- | Sets the pen size
-setPenWidth  :: (OrderedField n, Monad m) => n -> TurtleT n m ()
+setPenWidth  :: (OrderedField n, Monad m) => Measure n -> TurtleT n m ()
 setPenWidth s = ST.modify $ T.setPenWidth s

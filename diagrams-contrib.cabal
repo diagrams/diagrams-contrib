@@ -36,6 +36,7 @@ library
                        Diagrams.TwoD.Layout.CirclePacking,
                        Diagrams.TwoD.Path.Calligraphic,
                        Diagrams.TwoD.Path.IteratedSubset,
+                       Diagrams.TwoD.Path.LSystem,
                        Diagrams.TwoD.Path.Turtle,
                        Diagrams.TwoD.Path.Turtle.Aliases,
                        Diagrams.TwoD.Path.Turtle.Internal

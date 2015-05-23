@@ -36,6 +36,7 @@ module Diagrams.TwoD.Path.LSystem
   , tree1, tree2, tree3, tree4, tree5, tree6
 
     -- * Re-exports from "Diagrams.TwoD.Path.Turtle"
+  , TurtleState
   , getTurtlePath, getTurtleDiagram
   ) where
 
@@ -56,6 +57,7 @@ import           Data.Maybe                         (fromMaybe)
 --     * @Push (\'[\') push the current state onto the stack.@
 --     * @Pop (\']\') pop the current state.@
 --     * @Width x (\'\<\', \'\>\') increase (decrease) stroke width by factor of 1.1 (0.9).@
+--     * @Delta x (\'\(\', \'\)\') increase (decrease) turn angle by factor of 1.1 (0.9).@
 --     * @X n (\'X\',\'Y\',\'Z\',\'A\',\'B\') constants.@
 data Symbol n
   = F
@@ -67,10 +69,25 @@ data Symbol n
   | Pop
   | X Int
   | Width n
+  | Delta n
   deriving (Eq, Ord, Show)
 
 -- | Production rules.
 type Rules n = Map (Symbol n) [Symbol n]
+
+data Environment n = Environment
+  { angleInc    :: Angle n
+  , turtleStack :: [TurtleState n]
+  }
+
+push :: TurtleState n -> Environment n -> Environment n
+push t (Environment a ts) = Environment a (t:ts)
+
+pop :: Environment n -> Environment n
+pop (Environment a (t:ts)) = Environment a ts
+
+incAngle :: Num n => n -> Environment n -> Environment n
+incAngle n (Environment a ts) = Environment (fmap (* n) a) ts
 
 -- | Successive generations of the production rules applied to the
 --   starting symbols.
@@ -81,26 +98,30 @@ generations dict syms = iterate (concatMap (produce dict)) syms
 
 -- | Interpret a list of symbols as turtle graphics commands
 --   to create a 'TurtleState'. The turtle data is tracked in a Reader monad.
-lSystemR :: (Floating n, Ord n)
-          => Angle n -> [Symbol n] -> Reader [TurtleState n] (TurtleState n)
-lSystemR delta syms = go startTurtle syms
+lSystemR :: (Floating n, Ord n) => [Symbol n] -> Reader (Environment n) (TurtleState n)
+lSystemR syms = go startTurtle syms
   where
   go turtle []     = return turtle
   go turtle (x:xs) = case x of
     F       -> go (forward 1 . penDown $ turtle) xs
     G       -> go (forward 1 . penUp   $ turtle) xs
-    Plus    -> go (left  (delta ^. deg) turtle) xs
-    Minus   -> go (right (delta ^. deg) turtle) xs
+    Plus    -> do
+      env <- ask
+      go (left  (angleInc env ^. deg) turtle) xs
+    Minus   -> do
+      env <- ask
+      go (right (angleInc env ^. deg) turtle) xs
     Reverse -> go (left 180 turtle) xs
-    Push    -> local (\ts -> penUp turtle:ts) $ go turtle xs
+    Push    -> local (push (penUp turtle)) (go turtle xs)
     Pop     -> do
-      s <- ask
-      case s of
+      env <- ask
+      case turtleStack env of
         []    -> error "Nothing to pop"
-        (t:_) -> local tail $ go (t { currTrail = currTrail turtle
-                                    , paths = paths turtle}) xs
+        (t:_) -> local pop $ go (t { currTrail = currTrail turtle
+                                   , paths = paths turtle}) xs
     Width w -> go (setPenWidth ((* (1+w)) <$> (penWidth . currPenStyle $ turtle))
                                turtle) xs
+    Delta d -> local (incAngle (1+d)) (go turtle xs)
     _       -> go turtle xs
 
 -- | Create a 'TurtelState' using n iterations of the rules with given axiom symbols
@@ -108,7 +129,7 @@ lSystemR delta syms = go startTurtle syms
 lSystem :: (Floating n, Ord n)
          => Int -> Angle n -> [Symbol n] -> Rules n -> TurtleState n
 lSystem n delta axiom rules =
-  runReader (lSystemR delta (generations rules axiom !! n)) []
+  runReader (lSystemR (generations rules axiom !! n)) (Environment delta [])
 
 -- | Create a path using n iterations of the rules with given axiom symbols
 --   and the angle increment, delta. The first segment is in the unitX direction.
@@ -141,6 +162,8 @@ symbol 'B' = X 4
 symbol 'C' = X 5
 symbol '<' = Width 0.1
 symbol '>' = Width (-0.1)
+symbol '(' = Delta 0.1
+symbol ')' = Delta (-0.1)
 symbol c   = error ("Invalid character " ++ [c])
 
 symbols :: Fractional n => String -> [Symbol n]

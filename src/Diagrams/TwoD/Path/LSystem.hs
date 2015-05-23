@@ -11,7 +11,7 @@
 -- Create LSystem diagrams and paths.
 --
 -- See "The Algorithmic Beauty of Plants".
--- http://algorithmicbotany.org/papers/abop/abop-ch1.pdf
+-- <http://algorithmicbotany.org/papers/abop/abop-ch1.pdf>
 -------------------------------------------------------------------------------
 
 module Diagrams.TwoD.Path.LSystem
@@ -19,7 +19,7 @@ module Diagrams.TwoD.Path.LSystem
 
     -- ** L-Systems
     Symbol(..)
-  , Rules(..)
+  , Rules
   , generations
 
     -- ** L-System graphics
@@ -35,8 +35,7 @@ module Diagrams.TwoD.Path.LSystem
   , koch1, koch2, koch3, koch4, koch5, koch6
   , tree1, tree2, tree3, tree4, tree5, tree6
 
-    -- * Re-exports from Diagrams.TwoD.Path.Turtle
-  , TurtleState
+    -- * Re-exports from "Diagrams.TwoD.Path.Turtle"
   , getTurtlePath, getTurtleDiagram
   ) where
 
@@ -74,7 +73,7 @@ data Symbol n
 type Rules n = Map (Symbol n) [Symbol n]
 
 -- | Successive generations of the production rules applied to the
---   stating symbols.
+--   starting symbols.
 generations :: Ord n => Rules n -> [Symbol n] -> [[Symbol n]]
 generations dict syms = iterate (concatMap (produce dict)) syms
   where
@@ -100,7 +99,7 @@ lSystemR delta syms = go startTurtle syms
         []    -> error "Nothing to pop"
         (t:_) -> local tail $ go (t { currTrail = currTrail turtle
                                     , paths = paths turtle}) xs
-    Width x -> go (setPenWidth ((* (1+x)) <$> (penWidth . currPenStyle $ turtle))
+    Width w -> go (setPenWidth ((* (1+w)) <$> (penWidth . currPenStyle $ turtle))
                                turtle) xs
     _       -> go turtle xs
 
@@ -151,12 +150,14 @@ rule :: Fractional n => Char -> String -> (Symbol n, [Symbol n])
 rule c cs = (symbol c, symbols cs)
 
 -------------------------------------------------------------------------------
--- | Examples
+-- Examples
+
 -- > import Diagrams.TwoD.Path.LSystem
 -- > sierpinskiEx = lwO 4 . stroke . getTurtlePath $ sierpinski 6 :: Diagram B
 
 -- | Sierpinski triangle.
---   <<#diagram=sierpinskiEx&height=400>
+--
+--   <<diagrams/src_Diagrams_TwoD_Path_LSystem_sierpinskiEx.svg#diagram=sierpinskiEx&height=400>>
 sierpinski :: RealFloat n => Int -> TurtleState n
 sierpinski n = lSystem n (60 @@ deg) (symbols "FX") rules
   where
@@ -168,11 +169,12 @@ sierpinski n = lSystem n (60 @@ deg) (symbols "FX") rules
 -- > cantorEx = cantor 4 :: Diagram B
 
 -- | Cantor dust
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_cantorEx.svg#diagram=cantorEx&width=400>>
 cantor :: (Renderable (Path V2 n) b, TypeableFloat n) => Int -> QDiagram b V2 n Any
 cantor n = vsep 0.05 $ map dust [0..n]
   where
-  dust n =  scaleToX 1 . lw ultraThick $ lSystemDiagram n (0 @@ turn) (symbols "F") rules
+  dust i =  scaleToX 1 . lw ultraThick $ lSystemDiagram i (0 @@ turn) (symbols "F") rules
   rules = M.fromList [ rule 'F' "FfF"
                      , rule 'f' "fff" ]
 
@@ -180,6 +182,7 @@ cantor n = vsep 0.05 $ map dust [0..n]
 -- > dragonEx = rotateBy (1/4) . getTurtleDiagram $ dragon 10 :: Diagram B
 
 -- | Dragon curve
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_dragonEx.svg#diagram=dragonEx&height=400>>
 dragon :: RealFloat n => Int -> TurtleState n
 dragon n = lSystem n (90 @@ deg) (symbols "FX") rules
@@ -192,6 +195,7 @@ dragon n = lSystem n (90 @@ deg) (symbols "FX") rules
 -- > hexGosperEx = rotateBy (1/4) . getTurtleDiagram $ hexGosper 4 :: Diagram B
 
 -- | Hexagonal Gosper curve
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_hexGosperEx.svg#diagram=hexGosperEx&height=400>>
 hexGosper :: RealFloat n => Int -> TurtleState n
 hexGosper n = lSystem n (60 @@ deg) (symbols "FX") hex
@@ -204,6 +208,7 @@ hexGosper n = lSystem n (60 @@ deg) (symbols "FX") hex
 -- > kochIslandEx = lwO 3 . stroke . getTurtlePath $ kochIsland 3 :: Diagram B
 
 -- | Koch Island
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_kochIslandEx.svg#diagram=kochIslandEx&height=400>>
 kochIsland :: RealFloat n => Int -> TurtleState n
 kochIsland n = lSystem n (90 @@ deg) axiom koch
@@ -215,6 +220,7 @@ kochIsland n = lSystem n (90 @@ deg) axiom koch
 -- > kochLakeEx = rotateBy (1/4) . getTurtleDiagram $ kochLake 2 :: Diagram B
 
 -- | Koch lake
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_kochLakeEx.svg#diagram=kochLakeEx&height=400>>
 kochLake :: RealFloat n => Int -> TurtleState n
 kochLake n = lSystem n (1/4 @@ turn) (symbols "F+F+F+F") lake
@@ -226,6 +232,7 @@ kochLake n = lSystem n (1/4 @@ turn) (symbols "F+F+F+F") lake
 -- > koch1Ex = lwO 3 . stroke . getTurtlePath $ koch1 4 :: Diagram B
 
 -- | Koch curve 1
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_koch1Ex.svg#diagram=koch1Ex&height=400>>
 koch1 :: RealFloat n => Int -> TurtleState n
 koch1 n = lSystem n (1/4 @@ turn) axiom koch
@@ -237,6 +244,7 @@ koch1 n = lSystem n (1/4 @@ turn) axiom koch
 -- > koch2Ex =  getTurtleDiagram $ koch2 4 :: Diagram B
 
 -- | Koch curve 2
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_koch2Ex.svg#diagram=koch2Ex&height=400>>
 koch2 :: RealFloat n => Int -> TurtleState n
 koch2 n = lSystem n (1/4 @@ turn) axiom koch
@@ -248,6 +256,7 @@ koch2 n = lSystem n (1/4 @@ turn) axiom koch
 -- > koch3Ex =  getTurtleDiagram $ koch3 3 :: Diagram B
 
 -- | Koch curve 3
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_koch3Ex.svg#diagram=koch3Ex&height=400>>
 koch3 :: RealFloat n => Int -> TurtleState n
 koch3 n = lSystem n (1/4 @@ turn) axiom koch
@@ -259,6 +268,7 @@ koch3 n = lSystem n (1/4 @@ turn) axiom koch
 -- > koch4Ex =  getTurtleDiagram $ koch4 4 :: Diagram B
 
 -- | Koch curve 4
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_koch4Ex.svg#diagram=koch4Ex&height=400>>
 koch4 :: RealFloat n => Int -> TurtleState n
 koch4 n = lSystem n (1/4 @@ turn) axiom koch
@@ -270,6 +280,7 @@ koch4 n = lSystem n (1/4 @@ turn) axiom koch
 -- > koch5Ex =  getTurtleDiagram $ koch5 5:: Diagram B
 
 -- | Koch curve 5
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_koch5Ex.svg#diagram=koch5Ex&height=400>>
 koch5 :: RealFloat n => Int -> TurtleState n
 koch5 n = lSystem n (1/4 @@ turn) axiom koch
@@ -281,6 +292,7 @@ koch5 n = lSystem n (1/4 @@ turn) axiom koch
 -- > koch6Ex =  getTurtleDiagram $ koch6 4:: Diagram B
 
 -- | Koch curve 6
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_koch6Ex.svg#diagram=koch6Ex&height=400>>
 koch6 :: RealFloat n => Int -> TurtleState n
 koch6 n = lSystem n (1/4 @@ turn) axiom koch
@@ -292,6 +304,7 @@ koch6 n = lSystem n (1/4 @@ turn) axiom koch
 -- > tree1Ex =  rotateBy (1/4) . getTurtleDiagram $ tree1 5 :: Diagram B
 
 -- | Tree 1
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_tree1Ex.svg#diagram=tree1Ex&width=150>>
 tree1 :: RealFloat n => Int -> TurtleState n
 tree1 n = lSystem n (1/14 @@ turn) (symbols "F") tree
@@ -302,6 +315,7 @@ tree1 n = lSystem n (1/14 @@ turn) (symbols "F") tree
 -- > tree2Ex =  rotateBy (1/4) . getTurtleDiagram $ tree2 6 :: Diagram B
 
 -- | Tree 2
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_tree2Ex.svg#diagram=tree2Ex&height=400>>
 tree2 :: RealFloat n => Int -> TurtleState n
 tree2 n = lSystem n (1/18 @@ turn) (symbols "F") tree
@@ -312,6 +326,7 @@ tree2 n = lSystem n (1/18 @@ turn) (symbols "F") tree
 -- > tree3Ex =  rotateBy (1/4) . getTurtleDiagram $ tree3 4 :: Diagram B
 
 -- | Tree 3
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_tree3Ex.svg#diagram=tree3Ex&height=400>>
 tree3 :: RealFloat n => Int -> TurtleState n
 tree3 n = lSystem n (1/16 @@ turn) (symbols "F") tree
@@ -322,6 +337,7 @@ tree3 n = lSystem n (1/16 @@ turn) (symbols "F") tree
 -- > tree4Ex =  rotateBy (1/4) . getTurtleDiagram $ tree4 7 :: Diagram B
 
 -- | Tree 4
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_tree4Ex.svg#diagram=tree4Ex&height=400>>
 tree4 :: RealFloat n => Int -> TurtleState n
 tree4 n = lSystem n (1/18 @@ turn) (symbols "X") tree
@@ -333,6 +349,7 @@ tree4 n = lSystem n (1/18 @@ turn) (symbols "X") tree
 -- > tree5Ex =  rotateBy (1/4) . getTurtleDiagram $ tree5 7 :: Diagram B
 
 -- | Tree 5
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_tree5Ex.svg#diagram=tree5Ex&height=400>>
 tree5 :: RealFloat n => Int -> TurtleState n
 tree5 n = lSystem n (1/14 @@ turn) (symbols "X") tree
@@ -344,6 +361,7 @@ tree5 n = lSystem n (1/14 @@ turn) (symbols "X") tree
 -- > tree6Ex =  rotateBy (1/4) . getTurtleDiagram $ tree6 5 :: Diagram B
 
 -- | Tree 6
+--
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_tree6Ex.svg#diagram=tree6Ex&height=400>>
 tree6 :: RealFloat n => Int -> TurtleState n
 tree6 n = lSystem n (1/16 @@ turn) (symbols "X") tree

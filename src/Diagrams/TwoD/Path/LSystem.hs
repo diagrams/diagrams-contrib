@@ -19,7 +19,7 @@ module Diagrams.TwoD.Path.LSystem
 
     -- ** L-Systems
     Symbol(..)
-  , Rules(..)
+  , Rules
   , generations
 
     -- ** L-System graphics
@@ -99,7 +99,7 @@ lSystemR delta syms = go startTurtle syms
         []    -> error "Nothing to pop"
         (t:_) -> local tail $ go (t { currTrail = currTrail turtle
                                     , paths = paths turtle}) xs
-    Width x -> go (setPenWidth ((* (1+x)) <$> (penWidth . currPenStyle $ turtle))
+    Width w -> go (setPenWidth ((* (1+w)) <$> (penWidth . currPenStyle $ turtle))
                                turtle) xs
     _       -> go turtle xs
 
@@ -171,7 +171,7 @@ sierpinski n = lSystem n (60 @@ deg) (symbols "FX") rules
 cantor :: (Renderable (Path V2 n) b, TypeableFloat n) => Int -> QDiagram b V2 n Any
 cantor n = vsep 0.05 $ map dust [0..n]
   where
-  dust n =  scaleToX 1 . lw ultraThick $ lSystemDiagram n (0 @@ turn) (symbols "F") rules
+  dust i =  scaleToX 1 . lw ultraThick $ lSystemDiagram i (0 @@ turn) (symbols "F") rules
   rules = M.fromList [ rule 'F' "FfF"
                      , rule 'f' "fff" ]
 

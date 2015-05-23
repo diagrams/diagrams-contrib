@@ -8,7 +8,7 @@
 -- License     :  BSD-style (see LICENSE)
 -- Maintainer  :  jeffrey.rosenbluth@gmail.com
 --
--- Create LSystem diagrams and trails.
+-- Create LSystem diagrams and paths.
 --
 -- See "The Algorithmic Beauty of Plants".
 -- http://algorithmicbotany.org/papers/abop/abop-ch1.pdf
@@ -36,6 +36,7 @@ module Diagrams.TwoD.Path.LSystem
   , tree1, tree2, tree3, tree4, tree5, tree6
 
     -- * Re-exports from Diagrams.TwoD.Path.Turtle
+  , TurtleState
   , getTurtlePath, getTurtleDiagram
   ) where
 
@@ -80,7 +81,7 @@ generations dict syms = iterate (concatMap (produce dict)) syms
   produce d s = fromMaybe [s] (M.lookup s d)
 
 -- | Interpret a list of symbols as turtle graphics commands
---   to create a 'TurtleState'. The turtle date is tracked in a Reader monad.
+--   to create a 'TurtleState'. The turtle data is tracked in a Reader monad.
 lSystemR :: (Floating n, Ord n)
           => Angle n -> [Symbol n] -> Reader [TurtleState n] (TurtleState n)
 lSystemR delta syms = go startTurtle syms

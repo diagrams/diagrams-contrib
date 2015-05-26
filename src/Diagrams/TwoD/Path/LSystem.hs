@@ -54,6 +54,7 @@ import           Data.Maybe                         (fromMaybe)
 --     * @Plus (\'+\') turn the turtle clockwise.@
 --     * @Minus (\'-\') turn the turtle anti-clockwise.@
 --     * @Reverse (\'!\') turn the turtle 180 degrees.@
+--     * @Flip ('~') switch right and left
 --     * @Push (\'[\') push the current state onto the stack.@
 --     * @Pop (\']\') pop the current state.@
 --     * @Width x (\'\<\', \'\>\') increase (decrease) stroke width by factor of 1.1 (0.9).@
@@ -65,6 +66,7 @@ data Symbol n
   | Plus
   | Minus
   | Reverse
+  | Flip
   | Push
   | Pop
   | X Int
@@ -112,6 +114,7 @@ lSystemR syms = go startTurtle syms
       env <- ask
       go (right (angleInc env ^. deg) turtle) xs
     Reverse -> go (left 180 turtle) xs
+    Flip    -> local (incAngle (-1)) (go turtle xs)
     Push    -> local (push (penUp turtle)) (go turtle xs)
     Pop     -> do
       env <- ask
@@ -152,6 +155,7 @@ symbol 'f' = G
 symbol '+' = Plus
 symbol '-' = Minus
 symbol '!' = Reverse
+symbol '~' = Flip
 symbol '[' = Push
 symbol ']' = Pop
 symbol 'X' = X 0

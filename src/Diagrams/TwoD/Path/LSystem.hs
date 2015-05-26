@@ -54,7 +54,7 @@ import           Data.Maybe                         (fromMaybe)
 --     * @Plus (\'+\') turn the turtle clockwise.@
 --     * @Minus (\'-\') turn the turtle anti-clockwise.@
 --     * @Reverse (\'!\') turn the turtle 180 degrees.@
---     * @Flip ('~') switch right and left
+--     * @Flip ('~') switch right and left.@
 --     * @Push (\'[\') push the current state onto the stack.@
 --     * @Pop (\']\') pop the current state.@
 --     * @Width x (\'\<\', \'\>\') increase (decrease) stroke width by factor of 1.1 (0.9).@

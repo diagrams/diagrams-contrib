@@ -86,7 +86,8 @@ push :: TurtleState n -> Environment n -> Environment n
 push t (Environment a ts) = Environment a (t:ts)
 
 pop :: Environment n -> Environment n
-pop (Environment a (t:ts)) = Environment a ts
+pop (Environment a (_:ts)) = Environment a ts
+pop _ = error "Tried to pop from an empty stack in LSystem"
 
 incAngle :: Num n => n -> Environment n -> Environment n
 incAngle n (Environment a ts) = Environment (fmap (* n) a) ts

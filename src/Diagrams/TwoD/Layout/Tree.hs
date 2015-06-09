@@ -74,7 +74,8 @@
 -- > {-# LANGUAGE NoMonomorphismRestriction #-}
 -- > import Diagrams.Prelude
 -- > import Diagrams.TwoD.Layout.Tree
--- >
+-- > import Data.Tree
+-- > 
 -- > t 0 = Empty
 -- > t n = BNode n (t (n-1)) (t (n-1))
 -- >
@@ -87,6 +88,20 @@
 -- >         # centerXY # pad 1.1
 --
 -- <<diagrams/src_Diagrams_TwoD_Layout_Tree_fblEx.svg#diagram=fblEx&width=300>>
+--
+-- Using Radial Layout on rose trees
+--
+-- > {-# LANGUAGE NoMonomorphismRestriction #-}
+-- > import Diagrams.Prelude
+-- > import Diagrams.TwoD.Layout.Tree
+-- >
+-- > t = Node 'A' [Node 'B' [], Node 'C'[], Node 'D'[], Node 'E'[], Node 'F'[], Node 'G'[], Node 'H'[], Node 'I'[] ]
+-- >
+-- > example =
+-- >   renderTree (\n -> (text (show n) # fontSizeG 0.5
+-- >                            <> circle 0.5 # fc white))
+-- >             (~~) (radialLayout t)
+-- >   # centerXY # pad 1.1
 --
 
 module Diagrams.TwoD.Layout.Tree
@@ -101,6 +116,9 @@ module Diagrams.TwoD.Layout.Tree
          -- ** Unique-x layout
 
        , uniqueXLayout
+       
+         -- ** Radial Layout
+       , radialLayout
 
          -- ** Symmetric layout
 
@@ -144,6 +162,9 @@ import qualified Data.Traversable    as T
 import           Data.Tree
 
 import           Diagrams.Prelude
+import           Diagrams.TwoD.Types
+import           Diagrams.TwoD.Vector
+import           Diagrams.TwoD.Transform
 
 
 
@@ -530,6 +551,50 @@ forceLayoutTree' :: (Floating n, Ord n) =>
                     ForceLayoutTreeOpts n -> Tree (a, P2 n) -> Tree (a, P2 n)
 forceLayoutTree' opts t = reconstruct (forceLayout (opts^.forceLayoutOpts) e) ti
   where (ti, e) = treeToEnsemble opts t
+
+
+--------------------------------------------------------------------
+-- Radial Layout for Trees
+--
+-- alpha beta defines annulus wedge of a vertex
+-- d is the depth of any vertex from root
+-- k is #leaves of root and lambda is #leaves of vertex
+-- weight assigns the length of radius wrt the number of
+-- number of children to avoid node overlapping
+-- Algotihm 1, Page 18 http://www.cs.cmu.edu/~pavlo/static/papers/APavloThesis032006.pdf
+-- Example: https://drive.google.com/file/d/0B3el1oMKFsOIVGVRYzJzWGwzWDA/view
+-------------------------------------------------------------------
+
+radialLayout :: Tree a -> Tree (a, P2 Double)
+radialLayout t = finalTree $ 
+		radialLayout' 0 pi 0 (countLeaves $ decorateDepth 0 t) (weight t) (decorateDepth 0 t)
+
+radialLayout' :: Double -> Double -> Double -> Int -> Double -> Tree (a, P2 Double, Int) ->  Tree (a, P2 Double, Int)
+radialLayout' alpha beta theta k w (Node (a, pt, d) ts) = Node (a, pt, d) (assignPos alpha beta theta k w ts)
+
+assignPos :: Double -> Double -> Double -> Int -> Double  -> [Tree (a, P2 Double, Int)] -> [Tree (a, P2 Double, Int)]
+assignPos alpha beta theta k w [] = []
+assignPos alpha beta theta k w (Node (a, pt, d) ts1:ts2)
+		= Node (a, pt2, d) (assignPos theta u theta lambda w ts1) : assignPos alpha beta u k w ts2	
+	where	
+		lambda  = countLeaves (Node (a, pt, d) ts1) 	
+		u       = theta + (beta - alpha) * fromIntegral lambda / fromIntegral k
+		pt2 	= mkP2 (w * fromIntegral d * cos (theta + u)/2) (w * fromIntegral d * sin (theta + u)/2)
+
+decorateDepth:: Int -> Tree a -> Tree (a, P2 Double, Int)
+decorateDepth d (Node a ts) = Node (a, mkP2 0 0, d) $ L.map (decorateDepth (d+1)) ts
+
+countLeaves :: Tree (a, P2 Double, Int) -> Int
+countLeaves (Node _ []) = 1
+countLeaves (Node _ ts) = L.sum (L.map countLeaves ts)
+
+weight :: Tree a -> Double  
+weight t = L.maximum $ 
+		  L.map (((\ x -> fromIntegral x / 2) . length) . L.map rootLabel)
+		    (takeWhile (not . null) $ iterate (concatMap subForest) [t])
+
+finalTree :: Tree (a, P2 Double, Int) -> Tree (a, P2 Double)
+finalTree (Node (a, pt, d) ts) = Node (a, pt) $ L.map finalTree ts
 
 ------------------------------------------------------------
 --  Rendering

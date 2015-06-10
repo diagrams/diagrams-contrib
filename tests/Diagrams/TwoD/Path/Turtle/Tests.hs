@@ -1,5 +1,6 @@
 {-# LANGUAGE FlexibleContexts     #-}
 {-# LANGUAGE FlexibleInstances    #-}
+{-# LANGUAGE StandaloneDeriving   #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE ViewPatterns         #-}
@@ -138,6 +139,24 @@ closeCurrentSingle t = (isPenDown t) ==> ((length . paths $ t') == (succ . lengt
 
 currEmpty :: TurtleState Double -> Bool
 currEmpty = null . lineSegments . unLoc . currTrail
+
+-- There is no Show instance for Measure than fulfills `show . read :=
+-- id`.  We define orphan instances here so that they do not polute
+-- the library, but failing tests can show the geometry that caused
+-- the failure.
+
+instance Show (Measure n) where
+  show _ = "<measure>"
+
+deriving instance Show (PenStyle n)
+deriving instance Show n => Show (TurtlePath n)
+deriving instance Show n => Show (TurtleState n)
+
+instance (Num n, Arbitrary n) => Arbitrary (Measure n) where
+  arbitrary = oneof
+              [ local <$> arbitrary
+              , global <$> arbitrary
+              , normalized <$> arbitrary]
 
 -- | Arbitrary instance for the TurtleState type.
 --

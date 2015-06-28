@@ -161,8 +161,8 @@ import qualified Data.Traversable    as T
 import           Data.Tree
 
 import           Diagrams.Prelude
-import 		 Diagrams.TwoD.Vector
-import 		 Diagrams.TwoD.Transform
+import 		 Diagrams.TwoD.Vector()
+import 		 Diagrams.TwoD.Transform()
 import 		 Diagrams.TwoD.Types
 
 
@@ -558,7 +558,7 @@ forceLayoutTree' opts t = reconstruct (forceLayout (opts^.forceLayoutOpts) e) ti
 -- k is #leaves of root and lambda is #leaves of vertex
 -- weight assigns the length of radius wrt the number of
 -- number of children to avoid node overlapping
--- Algotihm 1, Page 18 http://www.cs.cmu.edu/~pavlo/static/papers/APavloThesis032006.pdf
+-- Extension of Algotihm 1, Page 18 http://www.cs.cmu.edu/~pavlo/static/papers/APavloThesis032006.pdf
 -- Example: https://drive.google.com/file/d/0B3el1oMKFsOIVGVRYzJzWGwzWDA/view
 -------------------------------------------------------------------
 
@@ -570,7 +570,7 @@ radialLayout' :: Double -> Double -> Double -> Int -> Double -> Tree (a, P2 Doub
 radialLayout' alpha beta theta k w (Node (a, pt, d) ts) = Node (a, pt, d) (assignPos alpha beta theta k w ts)
 
 assignPos :: Double -> Double -> Double -> Int -> Double  -> [Tree (a, P2 Double, Int)] -> [Tree (a, P2 Double, Int)]
-assignPos alpha beta theta k w [] = []
+assignPos _ _ _ _ _ [] = []
 assignPos alpha beta theta k w (Node (a, pt, d) ts1:ts2)
 		= Node (a, pt2, d) (assignPos theta u theta lambda w ts1) : assignPos alpha beta u k w ts2	
 	where	
@@ -591,7 +591,7 @@ weight t = maximum $
 		    (takeWhile (not . null) $ iterate (concatMap subForest) [t])
 
 finalTree :: Tree (a, P2 Double, Int) -> Tree (a, P2 Double)
-finalTree (Node (a, pt, d) ts) = Node (a, pt) $ map finalTree ts
+finalTree (Node (a, pt, _) ts) = Node (a, pt) $ map finalTree ts
 
 ------------------------------------------------------------
 --  Rendering

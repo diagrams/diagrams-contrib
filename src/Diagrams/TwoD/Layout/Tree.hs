@@ -115,7 +115,7 @@ module Diagrams.TwoD.Layout.Tree
 
        , uniqueXLayout
 
-	 -- ** Radial-Layout
+         -- ** Radial-Layout
 
        , radialLayout
 
@@ -161,9 +161,9 @@ import qualified Data.Traversable    as T
 import           Data.Tree
 
 import           Diagrams.Prelude
-import 		 Diagrams.TwoD.Vector()
-import 		 Diagrams.TwoD.Transform()
-import 		 Diagrams.TwoD.Types()
+import 	         Diagrams.TwoD.Vector()
+import 	         Diagrams.TwoD.Transform()
+import 	         Diagrams.TwoD.Types()
 
 
 ------------------------------------------------------------
@@ -564,7 +564,7 @@ forceLayoutTree' opts t = reconstruct (forceLayout (opts^.forceLayoutOpts) e) ti
 
 radialLayout :: Tree a -> Tree (a, P2 Double)
 radialLayout t = finalTree $ 
-		radialLayout' 0 pi 0 (countLeaves $ decorateDepth 0 t) (weight t) (decorateDepth 0 t)
+                    radialLayout' 0 pi 0 (countLeaves $ decorateDepth 0 t) (weight t) (decorateDepth 0 t)
 
 radialLayout' :: Double -> Double -> Double -> Int -> Double -> Tree (a, P2 Double, Int) ->  Tree (a, P2 Double, Int)
 radialLayout' alpha beta theta k w (Node (a, pt, d) ts) = Node (a, pt, d) (assignPos alpha beta theta k w ts)
@@ -572,11 +572,11 @@ radialLayout' alpha beta theta k w (Node (a, pt, d) ts) = Node (a, pt, d) (assig
 assignPos :: Double -> Double -> Double -> Int -> Double  -> [Tree (a, P2 Double, Int)] -> [Tree (a, P2 Double, Int)]
 assignPos _ _ _ _ _ [] = []
 assignPos alpha beta theta k w (Node (a, pt, d) ts1:ts2)
-		= Node (a, pt2, d) (assignPos theta u theta lambda w ts1) : assignPos alpha beta u k w ts2	
-	where	
-		lambda  = countLeaves (Node (a, pt, d) ts1) 	
-		u       = theta + (beta - alpha) * fromIntegral lambda / fromIntegral k
-		pt2 	= mkP2 (w * fromIntegral d * cos (theta + u)/2) (w * fromIntegral d * sin (theta + u)/2)
+               = Node (a, pt2, d) (assignPos theta u theta lambda w ts1) : assignPos alpha beta u k w ts2
+            where
+                lambda  = countLeaves (Node (a, pt, d) ts1)
+                u       = theta + (beta - alpha) * fromIntegral lambda / fromIntegral k
+                pt2     = mkP2 (w * fromIntegral d * cos (theta + u)/2) (w * fromIntegral d * sin (theta + u)/2)
 
 decorateDepth:: Int -> Tree a -> Tree (a, P2 Double, Int)
 decorateDepth d (Node a ts) = Node (a, mkP2 0 0, d) $ map (decorateDepth (d+1)) ts
@@ -587,8 +587,8 @@ countLeaves (Node _ ts) = sum (map countLeaves ts)
 
 weight :: Tree a -> Double  
 weight t = maximum $ 
-		  map (((\ x -> fromIntegral x / 2) . length) . map rootLabel)
-		    (takeWhile (not . null) $ iterate (concatMap subForest) [t])
+               map (((\ x -> fromIntegral x / 2) . length) . map rootLabel)
+                    (takeWhile (not . null) $ iterate (concatMap subForest) [t])
 
 finalTree :: Tree (a, P2 Double, Int) -> Tree (a, P2 Double)
 finalTree (Node (a, pt, _) ts) = Node (a, pt) $ map finalTree ts

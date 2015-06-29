@@ -161,9 +161,9 @@ import qualified Data.Traversable    as T
 import           Data.Tree
 
 import           Diagrams.Prelude
-import 	         Diagrams.TwoD.Vector()
-import 	         Diagrams.TwoD.Transform()
-import 	         Diagrams.TwoD.Types()
+import           Diagrams.TwoD.Vector()
+import           Diagrams.TwoD.Transform()
+import           Diagrams.TwoD.Types()
 
 
 ------------------------------------------------------------

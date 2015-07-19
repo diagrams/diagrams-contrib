@@ -1,3 +1,7 @@
+## [v1.3.0.4](https://github.com/diagrams/diagrams-contrib/tree/v1.3.0.4) (2015-07-19)
+
+[Full Changelog](https://github.com/diagrams/diagrams-contrib/compare/v1.3.0.3...v1.3.0.4)
+
 [v1.3.0.3](https://github.com/diagrams/diagrams-contrib/tree/v1.3.0.3) (26 May 2015)
 -----------------------------------------------------------------------------------
 

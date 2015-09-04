@@ -1,3 +1,8 @@
+1.3.0.5 (4 September 2015)
+--------------------------
+
+- allow `HUnit-1.3`
+
 ## [v1.3.0.4](https://github.com/diagrams/diagrams-contrib/tree/v1.3.0.4) (2015-07-19)
 
 [Full Changelog](https://github.com/diagrams/diagrams-contrib/compare/v1.3.0.3...v1.3.0.4)

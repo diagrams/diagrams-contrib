@@ -1,5 +1,15 @@
-Directory Structure
--------------------
+Work In Progress
+----------------
+
+* Lowercase letters for Dotmatrix
+* Horizontal grid
+* Enhanced plot
+* Barplot
+* More and better documentation
+
+
+Directory Structure of Swimunit
+-------------------------------
 
     src             Sources for Diagrams.Swimunit library
 

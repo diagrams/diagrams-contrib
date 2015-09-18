@@ -1,0 +1,12 @@
+Directory Structure
+-------------------
+
+    src             Sources for Diagrams.Swimunit library
+
+    drv             Sources for development and example drivers
+
+    tst             Sources for automatized tests
+
+    output/drv      Diagrams produced by drivers
+
+    output/tst      Diagrams produced by automatized tests

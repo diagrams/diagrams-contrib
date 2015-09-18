@@ -1,0 +1,22 @@
+Work In Progress
+----------------
+
+* Lowercase letters for Dotmatrix
+* Horizontal grid
+* Enhanced plot
+* Barplot
+* More and better documentation
+
+
+Directory Structure of Swimunit
+-------------------------------
+
+    src             Sources for Diagrams.Swimunit library
+
+    drv             Sources for development and example drivers
+
+    tst             Sources for automatized tests
+
+    output/drv      Diagrams produced by drivers
+
+    output/tst      Diagrams produced by automatized tests

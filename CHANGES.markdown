@@ -1,3 +1,19 @@
+1.3.6.7 (18 September 2015)
+---------------------------
+
+* **New features**
+
+- included package "swimunit".
+  "swimunit" will be a very versatile plotting library.
+  As one of its main design goals will be that every part
+  of the plot can be put together like playing with lego.
+  In addition error messages are displayed as diagrams in
+  the plot.
+  As a goodi "swimunit" comes with a function that generates
+  a diagram that renders text like beeing displayed on an old
+  dotmatrix panel.
+
+
 1.3.0.6 (17 September 2015)
 ---------------------------
 

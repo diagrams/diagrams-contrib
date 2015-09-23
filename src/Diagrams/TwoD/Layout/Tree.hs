@@ -160,7 +160,7 @@ import           Data.Maybe
 import qualified Data.Traversable    as T
 import           Data.Tree
 
-import           Diagrams.Prelude
+import           Diagrams.Prelude    hiding (Empty)
 import           Diagrams.TwoD.Vector()
 import           Diagrams.TwoD.Transform()
 import           Diagrams.TwoD.Types()

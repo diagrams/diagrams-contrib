@@ -1,3 +1,8 @@
+1.3.0.7 (28 September 2015)
+---------------------------
+
+Fix compilation error with `lens-4.13` under `ghc-7.10`.
+
 1.3.0.6 (17 September 2015)
 ---------------------------
 

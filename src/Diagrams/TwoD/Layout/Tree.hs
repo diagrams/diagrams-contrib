@@ -91,9 +91,9 @@
 -- > import Diagrams.Prelude
 -- > import Diagrams.TwoD.Layout.Tree
 -- > import Data.Tree
--- > 
+-- >
 -- > t = Node 'A' [Node 'B' [], Node 'C'[], Node 'D'[], Node 'E'[], Node 'F'[], Node 'G'[], Node 'H'[], Node 'I'[] ]
--- > 
+-- >
 -- > example =
 -- >    renderTree (\n -> (text (show n) # fontSizeG 0.5
 -- >                             <> circle 0.5 # fc white))
@@ -161,10 +161,6 @@ import qualified Data.Traversable    as T
 import           Data.Tree
 
 import           Diagrams.Prelude    hiding (Empty)
-import           Diagrams.TwoD.Vector()
-import           Diagrams.TwoD.Transform()
-import           Diagrams.TwoD.Types()
-
 
 ------------------------------------------------------------
 --  Binary trees
@@ -563,7 +559,7 @@ forceLayoutTree' opts t = reconstruct (forceLayout (opts^.forceLayoutOpts) e) ti
 -------------------------------------------------------------------
 
 radialLayout :: Tree a -> Tree (a, P2 Double)
-radialLayout t = finalTree $ 
+radialLayout t = finalTree $
                     radialLayout' 0 pi 0 (countLeaves $ decorateDepth 0 t) (weight t) (decorateDepth 0 t)
 
 radialLayout' :: Double -> Double -> Double -> Int -> Double -> Tree (a, P2 Double, Int) ->  Tree (a, P2 Double, Int)
@@ -585,8 +581,8 @@ countLeaves :: Tree (a, P2 Double, Int) -> Int
 countLeaves (Node _ []) = 1
 countLeaves (Node _ ts) = sum (map countLeaves ts)
 
-weight :: Tree a -> Double  
-weight t = maximum $ 
+weight :: Tree a -> Double
+weight t = maximum $
                map (((\ x -> fromIntegral x / 2) . length) . map rootLabel)
                     (takeWhile (not . null) $ iterate (concatMap subForest) [t])
 

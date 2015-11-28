@@ -167,6 +167,10 @@ import           Diagrams
 import           Linear
 import           Linear.Affine
 
+#if __GLASGOW_HASKELL__ < 710
+import           Control.Applicative
+#endif
+
 ------------------------------------------------------------
 --  Binary trees
 ------------------------------------------------------------

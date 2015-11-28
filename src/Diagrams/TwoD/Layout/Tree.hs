@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                       #-}
 {-# LANGUAGE DeriveFoldable            #-}
 {-# LANGUAGE DeriveFunctor             #-}
 {-# LANGUAGE DeriveTraversable         #-}
@@ -160,7 +161,11 @@ import           Data.Maybe
 import qualified Data.Traversable    as T
 import           Data.Tree
 
-import           Diagrams.Prelude    hiding (Empty)
+import           Control.Lens        (makeLenses, view, (+=), (-=), (^.))
+import           Data.Semigroup
+import           Diagrams
+import           Linear
+import           Linear.Affine
 
 ------------------------------------------------------------
 --  Binary trees

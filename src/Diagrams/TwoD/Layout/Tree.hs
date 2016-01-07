@@ -59,6 +59,7 @@
 -- Using a variant symmetric layout algorithm specifically for binary trees:
 --
 -- > import Diagrams.TwoD.Layout.Tree
+-- > import Diagrams.Prelude hiding (Empty)
 -- >
 -- > drawT = maybe mempty (renderTree (const (circle 0.05 # fc black)) (~~))
 -- >       . symmLayoutBin' (with & slVSep .~ 0.5)
@@ -73,13 +74,13 @@
 -- Using force-based layout on a binary tree:
 --
 -- > {-# LANGUAGE NoMonomorphismRestriction #-}
--- > import Diagrams.Prelude
+-- > import Diagrams.Prelude hiding (Empty)
 -- > import Diagrams.TwoD.Layout.Tree
 -- >
--- > t 0 = Empty
--- > t n = BNode n (t (n-1)) (t (n-1))
+-- > gent 0 = Empty
+-- > gent n = BNode n (gent (n-1)) (gent (n-1))
 -- >
--- > Just t' = uniqueXLayout 1 1 (t 4)
+-- > Just t' = uniqueXLayout 1 1 (gent 4)
 -- >
 -- > fblEx = renderTree (\n -> (text (show n) # fontSizeL 0.5
 -- >                             <> circle 0.3 # fc white))
@@ -627,7 +628,7 @@ renderTree' renderNode renderEdge = alignT . centerX . renderTreeR
 -- > -- Critical size-limited Boltzmann generator for binary trees (used in example)
 -- >
 -- > import           Control.Applicative
--- > import           Control.Lens                   hiding (( # ))
+-- > import           Control.Lens                   hiding (( # ), Empty)
 -- > import           Control.Monad.Random
 -- > import           Control.Monad.Reader
 -- > import           Control.Monad.State

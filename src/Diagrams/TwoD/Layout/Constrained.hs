@@ -105,7 +105,7 @@
 
 module Diagrams.TwoD.Layout.Constrained
        ( -- * Basic types
-         Expr, mkExpr, Constrained
+         Expr, mkExpr, Constrained, ConstrainedState, DiaID
 
          -- * Layout
        , layout
@@ -288,9 +288,9 @@ initConstrainedState = ConstrainedState
   }
 
 -- | A monad for constrained systems.  It suffices to think of it as
---   an abstract monadic type; the type of the internal state is
---   intentionally not exported.  'Constrained' values can be created
---   using the combinators below; combined using the @Monad@
+--   an abstract monadic type; the constructor for the internal state
+--   is intentionally not exported.  'Constrained' values can be
+--   created using the combinators below; combined using the @Monad@
 --   interface; and discharged by the 'layout' function.
 --
 --   Note that @s@ is a phantom parameter, used in a similar fashion

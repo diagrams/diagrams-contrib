@@ -329,7 +329,7 @@ newDia dia = do
 newScalableDia :: QDiagram b V2 n m -> Constrained s b n m (DiaID s)
 newScalableDia dia = do
   d <- DiaID <$> (diaCounter <+= 1)
-  diagrams %= (\m -> m & L.at d .~ Just dia)
+  diagrams . L.at d ?= dia
   return d
 
 -- | Introduce a list of diagrams into the constrained system.

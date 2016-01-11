@@ -136,7 +136,6 @@ module Diagrams.TwoD.Layout.Constrained
        )
        where
 
-import           Control.Lens         (makeLenses)
 import qualified Control.Lens         as L
 import qualified Control.Lens.Extras  as L
 import           Control.Monad.Except
@@ -179,7 +178,7 @@ data VarType = S   -- ^ scaling factor
 data Var s = Var { _varID :: Maybe (DiaID s), _varName :: String, _varType :: VarType }
   deriving (Eq, Ord, Generic, Show)
 
-makeLenses ''Var
+makeLensesWith (lensRulesFor [("_varType", "varType")]) ''Var
 
 -- Auto-derive Hashable instances using Generic
 instance Hashable (DiaID s)

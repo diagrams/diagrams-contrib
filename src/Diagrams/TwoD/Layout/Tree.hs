@@ -586,7 +586,7 @@ radialLayout t@(Node a _)
 --   for more examples.
 assignPos :: Double -> Double -> Double -> Int -> Double  -> [Tree (a, NodeInfo)] -> [Tree (a, P2 Double)]
 assignPos _ _ _ _ _ [] = []
-assignPos alpha beta theta k w (t@(Node (a, info) ts1) : ts2)
+assignPos alpha beta theta k w (Node (a, info) ts1 : ts2)
   = Node (a, pt) (assignPos theta u theta lambda w ts1) : assignPos alpha beta u k w ts2
     where
       lambda  = nodeLeaves info

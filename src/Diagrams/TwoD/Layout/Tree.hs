@@ -568,7 +568,7 @@ forceLayoutTree' opts t = reconstruct (forceLayout (opts^.forceLayoutOpts) e) ti
 --   (<http://www.cs.cmu.edu/~pavlo/static/papers/APavloThesis032006.pdf>)
 radialLayout :: Tree a -> Tree (a, P2 Double)
 radialLayout t
-  = radialLayout' 0 pi 0 (countLeaves $ decorateDepth 0 t) (weight t) (decorateDepth 0 t)
+  = radialLayout' 0 pi 0 (countLeaves t) (weight t) (decorateDepth 0 t)
 
 -- | Implementation of radial layout: @radialLayout' alpha beta theta k w t@
 --

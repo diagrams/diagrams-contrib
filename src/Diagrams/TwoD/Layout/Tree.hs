@@ -614,6 +614,25 @@ weight t = maximum $
                map (((\ x -> fromIntegral x / 2) . length) . map rootLabel)
                     (takeWhile (not . null) $ iterate (concatMap subForest) [t])
 
+data NodeInfo = NodeInfo
+  { nodeLeaves :: Int
+  , nodeDepth  :: Int
+  }
+
+decorate :: Tree a -> Tree (a, NodeInfo)
+decorate = decorate' 0
+
+decorate' :: Int -> Tree a -> Tree (a, NodeInfo)
+decorate' d (Node a ts) = Node (a, info) ts'
+  where
+    ts'   = map (decorate' (d+1)) ts
+    infos = map (snd . rootLabel) ts'
+    leaves
+      | null ts   = 1
+      | otherwise = sum . map nodeLeaves $ infos
+
+    info  = NodeInfo leaves d
+
 ------------------------------------------------------------
 --  Rendering
 ------------------------------------------------------------

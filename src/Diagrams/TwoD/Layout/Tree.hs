@@ -567,10 +567,12 @@ forceLayoutTree' opts t = reconstruct (forceLayout (opts^.forceLayoutOpts) e) ti
 --   "Interactive, Tree-Based Graph Visualization", p. 18
 --   (<http://www.cs.cmu.edu/~pavlo/static/papers/APavloThesis032006.pdf>)
 radialLayout :: Tree a -> Tree (a, P2 Double)
-radialLayout t
-  = radialLayout' 0 pi 0 (countLeaves t) (weight t) (decorateDepth 0 t)
+radialLayout t@(Node a _)
+  = Node (a, origin) (assignPos 0 pi 0 (nodeLeaves info) (weight t) ts)
+  where
+    Node (_,info) ts = decorate t
 
--- | Implementation of radial layout: @radialLayout' alpha beta theta k w t@
+-- | Implementation of radial layout: @assignPos alpha beta theta k w ts@
 --
 --   * @alpha@, @beta@ define the bounds of an annular wedge around the root
 --   * @k@ is #leaves of root and lambda is #leaves of vertex
@@ -582,10 +584,6 @@ radialLayout t
 --   See
 --   <https://drive.google.com/file/d/0B3el1oMKFsOIVGVRYzJzWGwzWDA/view>
 --   for more examples.
-radialLayout' :: Double -> Double -> Double -> Int -> Double -> Tree (a, NodeInfo) ->  Tree (a, P2 Double)
-radialLayout' alpha beta theta k w (Node (a, _) ts) = Node (a, origin) (assignPos alpha beta theta k w ts)
-
--- | The heart of the radial layout algorithm.
 assignPos :: Double -> Double -> Double -> Int -> Double  -> [Tree (a, NodeInfo)] -> [Tree (a, P2 Double)]
 assignPos _ _ _ _ _ [] = []
 assignPos alpha beta theta k w (t@(Node (a, info) ts1) : ts2)

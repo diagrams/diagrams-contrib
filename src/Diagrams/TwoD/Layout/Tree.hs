@@ -582,30 +582,20 @@ radialLayout t
 --   See
 --   <https://drive.google.com/file/d/0B3el1oMKFsOIVGVRYzJzWGwzWDA/view>
 --   for more examples.
-radialLayout' :: Double -> Double -> Double -> Int -> Double -> Tree (a, Int) ->  Tree (a, P2 Double)
-radialLayout' alpha beta theta k w (Node (a, d) ts) = Node (a, origin) (assignPos alpha beta theta k w ts)
+radialLayout' :: Double -> Double -> Double -> Int -> Double -> Tree (a, NodeInfo) ->  Tree (a, P2 Double)
+radialLayout' alpha beta theta k w (Node (a, _) ts) = Node (a, origin) (assignPos alpha beta theta k w ts)
 
 -- | The heart of the radial layout algorithm.
-assignPos :: Double -> Double -> Double -> Int -> Double  -> [Tree (a, Int)] -> [Tree (a, P2 Double)]
+assignPos :: Double -> Double -> Double -> Int -> Double  -> [Tree (a, NodeInfo)] -> [Tree (a, P2 Double)]
 assignPos _ _ _ _ _ [] = []
-assignPos alpha beta theta k w (t@(Node (a, d) ts1) : ts2)
+assignPos alpha beta theta k w (t@(Node (a, info) ts1) : ts2)
   = Node (a, pt) (assignPos theta u theta lambda w ts1) : assignPos alpha beta u k w ts2
     where
-      lambda  = countLeaves t
+      lambda  = nodeLeaves info
       u       = theta + (beta - alpha) * fromIntegral lambda / fromIntegral k
       pt      = (1 ^& 0)
               # rotate (theta + u @@ rad)
-              # scale (w * fromIntegral d / 2)
-
--- | Decorate the nodes of a tree with their depth from the root.  The
---   @Int@ parameter is the current depth of the root.
-decorateDepth :: Int -> Tree a -> Tree (a, Int)
-decorateDepth d (Node a ts) = Node (a, d) $ map (decorateDepth (d+1)) ts
-
--- | Count the total number of leaves of a tree.
-countLeaves :: Tree x -> Int
-countLeaves (Node _ []) = 1
-countLeaves (Node _ ts) = sum (map countLeaves ts)
+              # scale (w * fromIntegral (nodeDepth info) / 2)
 
 -- | Compute the length of radius determined by the number of children to avoid
 --   node overlapping

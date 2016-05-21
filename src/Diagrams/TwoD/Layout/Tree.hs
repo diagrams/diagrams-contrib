@@ -6,6 +6,7 @@
 {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE ScopedTypeVariables       #-}
 {-# LANGUAGE TemplateHaskell           #-}
+{-# LANGUAGE TypeFamilies              #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -23,14 +24,18 @@
 -- > import Data.Tree
 -- > import Diagrams.TwoD.Layout.Tree
 -- >
--- > t1 = Node 'A' [Node 'B' (map lf "CDE"), Node 'F' [Node 'G' (map lf "HIJ")]]
+-- > t = Node 'A' [Node 'B' (map lf "CDE"), Node 'F' [Node 'G' (map lf "HIJKLM"), Node 'N' (map lf "OPQR")]]
 -- >   where lf x = Node x []
 -- >
--- > exampleSymmTree =
--- >   renderTree ((<> circle 1 # fc white) . text . (:[]))
--- >              (~~)
--- >              (symmLayout' (with & slHSep .~ 4 & slVSep .~ 4) t1)
--- >   # centerXY # pad 1.1
+-- > radialEx =
+-- >    renderTree
+-- >      (\n -> (text [n] # fontSizeL 0.7
+-- >              <> circle 0.7 # fc white
+-- >             )
+-- >      )
+-- >      (~~)
+-- >      (radialLayout t)
+-- >    # centerXY # pad 1.1
 --
 -- <<diagrams/src_Diagrams_TwoD_Layout_Tree_exampleSymmTree.svg#diagram=exampleSymmTree&width=300>>
 --
@@ -90,19 +95,21 @@
 --
 -- <<diagrams/src_Diagrams_TwoD_Layout_Tree_fblEx.svg#diagram=fblEx&width=300>>
 --
+-- Using a radial layout:
+--
 -- > import Diagrams.Prelude
 -- > import Diagrams.TwoD.Layout.Tree
 -- > import Data.Tree
 -- >
 -- > t = Node 'A' [Node 'B' [], Node 'C'[], Node 'D'[], Node 'E'[], Node 'F'[], Node 'G'[], Node 'H'[], Node 'I'[] ]
 -- >
--- > example =
+-- > radialEx =
 -- >    renderTree (\n -> (text (show n) # fontSizeG 0.5
 -- >                             <> circle 0.5 # fc white))
 -- >              (~~) (radialLayout t)
 -- >    # centerXY # pad 1.1
 --
---
+-- <<#diagram=radialEx&width=300>>
 
 module Diagrams.TwoD.Layout.Tree
        ( -- * Binary trees
@@ -117,7 +124,7 @@ module Diagrams.TwoD.Layout.Tree
 
        , uniqueXLayout
 
-         -- ** Radial-Layout
+         -- ** Radial layout
 
        , radialLayout
 
@@ -165,7 +172,7 @@ import           Data.Tree
 import           Control.Lens        (makeLenses, view, (+=), (-=), (^.))
 import           Data.Semigroup
 import           Diagrams
-import           Linear
+import           Linear              ((*^))
 import           Linear.Affine
 
 #if __GLASGOW_HASKELL__ < 710
@@ -556,48 +563,56 @@ forceLayoutTree' :: (Floating n, Ord n) =>
 forceLayoutTree' opts t = reconstruct (forceLayout (opts^.forceLayoutOpts) e) ti
   where (ti, e) = treeToEnsemble opts t
 
---------------------------------------------------------------------
--- Radial Layout Implementation
---
--- alpha beta defines annulus wedge of a vertex
--- d is the depth of any vertex from root
--- k is #leaves of root and lambda is #leaves of vertex
--- weight assigns the length of radius wrt the number of
--- number of children to avoid node overlapping
--- Extension of Algotihm 1, Page 18 http://www.cs.cmu.edu/~pavlo/static/papers/APavloThesis032006.pdf
--- Example: https://drive.google.com/file/d/0B3el1oMKFsOIVGVRYzJzWGwzWDA/view
--------------------------------------------------------------------
-
+-- | Radial layout of rose trees, adapted from Andy Pavlo,
+--   "Interactive, Tree-Based Graph Visualization", p. 18
+--   (<http://www.cs.cmu.edu/~pavlo/static/papers/APavloThesis032006.pdf>)
 radialLayout :: Tree a -> Tree (a, P2 Double)
-radialLayout t = finalTree $
-                    radialLayout' 0 pi 0 (countLeaves $ decorateDepth 0 t) (weight t) (decorateDepth 0 t)
+radialLayout t
+  = radialLayout' 0 pi 0 (countLeaves $ decorateDepth 0 t) (weight t) (decorateDepth 0 t)
 
-radialLayout' :: Double -> Double -> Double -> Int -> Double -> Tree (a, P2 Double, Int) ->  Tree (a, P2 Double, Int)
-radialLayout' alpha beta theta k w (Node (a, pt, d) ts) = Node (a, pt, d) (assignPos alpha beta theta k w ts)
+-- | Implementation of radial layout: @radialLayout' alpha beta theta k w t@
+--
+--   * @alpha@, @beta@ define the bounds of an annular wedge around the root
+--   * @k@ is #leaves of root and lambda is #leaves of vertex
+--   * @theta@ is ?
+--   * @w@ is ?
+--
+--   The algorithm used is an extension of Algorithm 1, Page 18 of
+--   <http://www.cs.cmu.edu/~pavlo/static/papers/APavloThesis032006.pdf>.
+--   See
+--   <https://drive.google.com/file/d/0B3el1oMKFsOIVGVRYzJzWGwzWDA/view>
+--   for more examples.
+radialLayout' :: Double -> Double -> Double -> Int -> Double -> Tree (a, Int) ->  Tree (a, P2 Double)
+radialLayout' alpha beta theta k w (Node (a, d) ts) = Node (a, origin) (assignPos alpha beta theta k w ts)
 
-assignPos :: Double -> Double -> Double -> Int -> Double  -> [Tree (a, P2 Double, Int)] -> [Tree (a, P2 Double, Int)]
+-- | The heart of the radial layout algorithm.
+assignPos :: Double -> Double -> Double -> Int -> Double  -> [Tree (a, Int)] -> [Tree (a, P2 Double)]
 assignPos _ _ _ _ _ [] = []
-assignPos alpha beta theta k w (Node (a, pt, d) ts1:ts2)
-               = Node (a, pt2, d) (assignPos theta u theta lambda w ts1) : assignPos alpha beta u k w ts2
-            where
-                lambda  = countLeaves (Node (a, pt, d) ts1)
-                u       = theta + (beta - alpha) * fromIntegral lambda / fromIntegral k
-                pt2     = mkP2 (w * fromIntegral d * cos (theta + u)/2) (w * fromIntegral d * sin (theta + u)/2)
+assignPos alpha beta theta k w (t@(Node (a, d) ts1) : ts2)
+  = Node (a, pt) (assignPos theta u theta lambda w ts1) : assignPos alpha beta u k w ts2
+    where
+      lambda  = countLeaves t
+      u       = theta + (beta - alpha) * fromIntegral lambda / fromIntegral k
+      pt      = (1 ^& 0)
+              # rotate (theta + u @@ rad)
+              # scale (w * fromIntegral d / 2)
 
-decorateDepth:: Int -> Tree a -> Tree (a, P2 Double, Int)
-decorateDepth d (Node a ts) = Node (a, mkP2 0 0, d) $ map (decorateDepth (d+1)) ts
+-- | Decorate the nodes of a tree with their depth from the root.  The
+--   @Int@ parameter is the current depth of the root.
+decorateDepth :: Int -> Tree a -> Tree (a, Int)
+decorateDepth d (Node a ts) = Node (a, d) $ map (decorateDepth (d+1)) ts
 
-countLeaves :: Tree (a, P2 Double, Int) -> Int
+-- | Count the total number of leaves of a tree.
+countLeaves :: Tree x -> Int
 countLeaves (Node _ []) = 1
 countLeaves (Node _ ts) = sum (map countLeaves ts)
 
+-- | Compute the length of radius determined by the number of children to avoid
+--   node overlapping
 weight :: Tree a -> Double
 weight t = maximum $
                map (((\ x -> fromIntegral x / 2) . length) . map rootLabel)
                     (takeWhile (not . null) $ iterate (concatMap subForest) [t])
-
-finalTree :: Tree (a, P2 Double, Int) -> Tree (a, P2 Double)
-finalTree (Node (a, pt, _) ts) = Node (a, pt) $ map finalTree ts
 
 ------------------------------------------------------------
 --  Rendering

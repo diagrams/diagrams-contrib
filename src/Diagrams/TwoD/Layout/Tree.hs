@@ -101,7 +101,8 @@
 -- > import Diagrams.TwoD.Layout.Tree
 -- > import Data.Tree
 -- >
--- > t = Node 'A' [Node 'B' [], Node 'C'[], Node 'D'[], Node 'E'[], Node 'F'[], Node 'G'[], Node 'H'[], Node 'I'[] ]
+-- > t = Node 'A' [Node 'B' (map lf "CDE"), Node 'F' [Node 'G' (map lf "HIJKLM"), Node 'N' (map lf "OPQRS")], Node 'T' (map lf "UVWXYZ")]
+-- >   where lf x = Node x []
 -- >
 -- > radialEx =
 -- >    renderTree (\n -> (text (show n) # fontSizeG 0.5

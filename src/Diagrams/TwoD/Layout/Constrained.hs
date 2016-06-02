@@ -519,8 +519,7 @@ a ==== b = constrain $ MFS.ignore (a MFS.=== b)
 --   short, you do not need to know anything about @Located Envelope@s
 --   in order to call this function.
 constrainWith
-  :: (Hashable n, RealFrac n, Floating n, Ord n, Monoid' m)
-  => (Show n)
+  :: (Hashable n, RealFrac n, Floating n, Monoid' m)
   => -- (forall a. (...) => [a] -> a)
      ([[Located (Envelope V2 n)]] -> [Located (Envelope V2 n)])
   -> [DiaID s]

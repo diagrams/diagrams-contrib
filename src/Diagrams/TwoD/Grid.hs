@@ -97,7 +97,6 @@ module Diagrams.TwoD.Grid (
   ) where
 
 import           Diagrams.Prelude
-import           Diagrams.TwoD.Text
 
 import           Data.List
 import           Data.List.Split
@@ -149,7 +148,7 @@ tick :: (Floating n, Ord n)
 tick (n, m) = pointDiagram origin # named (n, m)
 
 -- | @gridWithHalves'@ with default opts.
-gridWithHalves :: (Renderable (Text n) b, Renderable (Path V2 n) b, TypeableFloat n)
+gridWithHalves :: (Renderable (Path V2 n) b, TypeableFloat n)
                => Int -> Int -> QDiagram b V2 n Any
 gridWithHalves = gridWithHalves' def
 
@@ -157,7 +156,7 @@ gridWithHalves = gridWithHalves' def
 -- points themselves or on points half way between grid points. The
 -- latter includes points a half grid length outside of the grid
 -- itself.
-gridWithHalves' :: (Renderable (Text n) b, Renderable (Path V2 n) b, TypeableFloat n)
+gridWithHalves' :: (Renderable (Path V2 n) b, TypeableFloat n)
                 => GridOpts n -> Int -> Int -> QDiagram b V2 n Any
 gridWithHalves' opts n m =
   (mconcat lineXs # translate (r2 (llx, lly))) <>
@@ -221,7 +220,7 @@ annotate s txtPt h n m =
     addText s h = txtPt s # fc h
 
 -- | Draw a line between two named points on the grid.
-gridLine :: (IsName a, IsName b, Renderable (Text n) c,
+gridLine :: (IsName a, IsName b,
              Renderable (Path V2 n) c, TypeableFloat n) =>
             a -> b -> QDiagram c V2 n Any -> QDiagram c V2 n Any
 gridLine = gridLine' def
@@ -239,7 +238,7 @@ gridLine' opts u v =
         dashing (opts^.highLightLineDashingOnOff) (opts^.highLightLineDashingOffset))
 
 -- | Draw lines between a list of pairs of named points on the grid.
-gridLines :: (Renderable (Text n) c, Renderable (Path V2 n) c, TypeableFloat n,
+gridLines :: (Renderable (Path V2 n) c, TypeableFloat n,
               IsName a, IsName b) =>
              [(a, b)] -> QDiagram c V2 n Any -> QDiagram c V2 n Any
 gridLines xs = foldr (.) id [ gridLine x y | (x, y) <- xs ]

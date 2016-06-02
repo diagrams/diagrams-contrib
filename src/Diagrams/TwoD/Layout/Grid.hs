@@ -45,7 +45,7 @@ import           Diagrams.Prelude
 -- <<diagrams/src_Diagrams_TwoD_Layout_Grid_gridCatExample.svg#diagram=gridCatExample&width=200>>
 
 gridCat
-  :: (Renderable (Path V2 n) b, TypeableFloat n)
+  :: TypeableFloat n
   => [QDiagram b V2 n Any]
   -> QDiagram b V2 n Any
 gridCat diagrams = gridCat' (intSqrt $ length diagrams) diagrams
@@ -58,7 +58,7 @@ gridCat diagrams = gridCat' (intSqrt $ length diagrams) diagrams
 -- <<diagrams/src_Diagrams_TwoD_Layout_Grid_gridCatExample'.svg#diagram=gridCatExample'&width=200>>
 
 gridCat'
-  :: (Renderable (Path V2 n) b, TypeableFloat n)
+  :: TypeableFloat n
   => Int -> [QDiagram b V2 n Any]
   -> QDiagram b V2 n Any
 gridCat' = gridAnimal id
@@ -73,7 +73,7 @@ gridCat' = gridAnimal id
 -- <<diagrams/src_Diagrams_TwoD_Layout_Grid_gridSnakeExample.svg#diagram=gridSnakeExample&width=200>>
 
 gridSnake
-  :: (Renderable (Path V2 n) b, TypeableFloat n)
+  :: TypeableFloat n
   => [QDiagram b V2 n Any]
   -> QDiagram b V2 n Any
 gridSnake diagrams = gridSnake' (intSqrt $ length diagrams) diagrams
@@ -86,14 +86,14 @@ gridSnake diagrams = gridSnake' (intSqrt $ length diagrams) diagrams
 -- <<diagrams/src_Diagrams_TwoD_Layout_Grid_gridSnakeExample'.svg#diagram=gridSnakeExample'&width=200>>
 
 gridSnake'
-  :: (Renderable (Path V2 n) b, TypeableFloat n)
+  :: TypeableFloat n
   => Int -> [QDiagram b V2 n Any]
   -> QDiagram b V2 n Any
 gridSnake' = gridAnimal (everyOther reverse)
 
 -- | Generalisation of gridCat and gridSnake to not repeat code.
 gridAnimal
-  :: (Renderable (Path V2 n) b, TypeableFloat n)
+  :: TypeableFloat n
   => ([[QDiagram b V2 n Any]] -> [[QDiagram b V2 n Any]]) -> Int -> [QDiagram b V2 n Any]
   -> QDiagram b V2 n Any
 gridAnimal rowFunction cols = vcat . map hcat . rowFunction
@@ -103,7 +103,7 @@ gridAnimal rowFunction cols = vcat . map hcat . rowFunction
 --   zero-indexed integer coordinates, to generate a grid of diagrams
 --   with the specified dimensions.
 gridWith
-  :: (Renderable (Path V2 n) b, TypeableFloat n)
+  :: TypeableFloat n
   => (Int -> Int -> QDiagram b V2 n Any) -> (Int, Int)
   -> QDiagram b V2 n Any
 gridWith f (cols, rows) = gridCat' cols diagrams

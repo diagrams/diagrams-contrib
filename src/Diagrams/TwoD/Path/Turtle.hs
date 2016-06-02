@@ -31,6 +31,7 @@ module Diagrams.TwoD.Path.Turtle
   ) where
 
 import qualified Control.Lens                       as L
+import           Control.Monad                      (liftM)
 import qualified Control.Monad.State                as ST
 
 import           Diagrams.Prelude
@@ -52,9 +53,9 @@ runTurtle = runIdentity . runTurtleT
 
 -- | A more general way to run the turtle.  Returns a computation in
 --   the underlying monad @m@ yielding the final diagram.
-drawTurtleT :: (Monad m, Functor m, Renderable (Path V2 n) b, TypeableFloat n)
+drawTurtleT :: (Monad m, Renderable (Path V2 n) b, TypeableFloat n)
             => TurtleT n m a -> m (QDiagram b V2 n Any)
-drawTurtleT = fmap T.getTurtleDiagram . runTurtleT
+drawTurtleT = liftM T.getTurtleDiagram . runTurtleT
 
 -- | Run the turtle, yielding a diagram.
 drawTurtle :: (Renderable (Path V2 n) b, TypeableFloat n) =>
@@ -64,8 +65,8 @@ drawTurtle = runIdentity . drawTurtleT
 -- | A more general way to run the turtle. Returns a computation in
 --   the underlying monad @m@, ignoring any pen style commands and
 --   yielding a 2D path.
-sketchTurtleT :: (Functor m, Monad m, Floating n, Ord n) => TurtleT n m a -> m (Path V2 n)
-sketchTurtleT = fmap T.getTurtlePath . runTurtleT
+sketchTurtleT :: (Monad m, Floating n, Ord n) => TurtleT n m a -> m (Path V2 n)
+sketchTurtleT = liftM T.getTurtlePath . runTurtleT
 
 -- | Run the turtle, ignoring any pen style commands and yielding a
 --   2D path.
@@ -101,7 +102,7 @@ heading :: (OrderedField n, Monad m) => TurtleT n m n
 heading = ST.gets (L.view deg . T.heading)
 
 -- | Sets the heading towards a given location.
-towards :: (Monad m, RealFloat n, Ord n) => P2 n -> TurtleT n m ()
+towards :: (Monad m, RealFloat n) => P2 n -> TurtleT n m ()
 towards pt = ST.modify $ T.towards pt
 
 -- | Set the current turtle X/Y position.

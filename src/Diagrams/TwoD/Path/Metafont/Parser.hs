@@ -22,7 +22,7 @@ num = read <$> float where
 
 -- points
 
-xy :: (Num n, Read n) => Parser (n, n)
+xy :: Read n => Parser (n, n)
 xy = do
   spaces
   x <- num
@@ -31,7 +31,7 @@ xy = do
   spaces
   return (x,y)
 
-pt :: (Num n, Read n) => Parser (P2 n)
+pt :: Read n => Parser (P2 n)
 pt = char '(' *> (p2 <$> xy) <* char ')'
 
 -- Joins
@@ -51,7 +51,7 @@ plainJoin :: Num n => Parser (BasicJoin n)
 plainJoin = pure (Left $ TJ t1' t1') where
   t1' = TensionAmt 1
 
-tensionJoin :: (Num n, Read n) => Parser (BasicJoin n)
+tensionJoin :: Read n => Parser (BasicJoin n)
 tensionJoin = do
   string "tension"
   spaces
@@ -60,7 +60,7 @@ tensionJoin = do
   string ".."
   return . Left $ TJ (TensionAmt t1') (TensionAmt t2')
 
-controlJoin :: (Num n, Read n) => Parser (BasicJoin n)
+controlJoin :: Read n => Parser (BasicJoin n)
 controlJoin = do
   string "controls" *> spaces
   z1 <- pt
@@ -84,13 +84,13 @@ tenseLine = string "---" *> pure (Left $ TJ t t) where t = TensionAmt 4096
 
 -- Directions
 
-dir :: (Num n, Read n) => Parser (PathDir n)
+dir :: Read n => Parser (PathDir n)
 dir = PathDirDir . direction . r2 <$> xy
 
-curl :: (Num n, Read n) => Parser (PathDir n)
+curl :: Read n => Parser (PathDir n)
 curl = PathDirCurl <$> (string "curl" *> spaces *> num)
 
-pathDir :: (Num n, Read n) => Parser (PathDir n)
+pathDir :: Read n => Parser (PathDir n)
 pathDir = do
   char '{' *> spaces
   d <- curl <|> dir

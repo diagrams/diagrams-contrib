@@ -132,19 +132,22 @@ turnTurtle :: (Angle n -> Angle n)   -- ^ Transformation to apply on current ori
 turnTurtle f t@(TurtleState _ _ h _ _ _) = t { heading = f h  }
 
 -- | Turn the turtle anti-clockwise (left)
-left :: (Floating n, Ord n) => n -- ^ Degree of turn
+left :: Floating n
+     => n              -- ^ Degree of turn
      -> TurtleState n  -- ^ Turtle to turn
      -> TurtleState n  -- ^ Resulting turtle
 left d = turnTurtle (^+^ (d @@ deg))
 
 -- | Turn the turtle clockwise (right)
-right :: (Floating n, Ord n) => n -- ^ Degree of turn
+right :: Floating n
+      => n              -- ^ Degree of turn
       -> TurtleState n  -- ^ Turtle to turn
       -> TurtleState n  -- ^ Resulting turtle
 right d = turnTurtle (^-^ (d @@ deg))
 
 -- | Turn the turtle to the given orientation, in degrees
-setHeading :: (Floating n, Ord n) => n       -- ^ Degree of orientation
+setHeading :: Floating n
+           => n              -- ^ Degree of orientation
            -> TurtleState n  -- ^ Turtle to orient
            -> TurtleState n  -- ^ Resulting turtle
 setHeading d = turnTurtle (const $ d @@ deg)

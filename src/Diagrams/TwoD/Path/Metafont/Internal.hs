@@ -59,7 +59,7 @@ rightCurl (MFS _ (PJ _ _ (Just (PathDirCurl _))) _) = True
 rightCurl _ = False
 
 -- | Normalize a number representing number of turns to ±½
-normalizeTurns :: (Ord n, RealFrac n) => n -> n
+normalizeTurns :: RealFrac n => n -> n
 normalizeTurns t | t >  1/2   = t - realToFrac (ceiling t :: Int)
 normalizeTurns t | t < -1/2   = t - realToFrac (floor t   :: Int)
 normalizeTurns t = t

@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                   #-}
 {-# LANGUAGE ExplicitForAll        #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -176,7 +177,7 @@ iterGenerator g = iterate (\tr -> mconcat . mapMaybe (refineGeneratorSegment tr)
 -- | Seed for the Koch curve (side of the famous Koch 'snowflake').
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_kochD.svg#diagram=kochD&width=400>>
-koch :: (TrailLike t, V t ~ V2, N t ~ n, Floating n) => t
+koch :: (TrailLike t, V t ~ V2, N t ~ n) => t
 koch = fromOffsets [unitX, unitX # rotateBy (1/6), unitX # rotateBy (-1/6), unitX]
 
 -- > kochD = showTrail 4 koch
@@ -252,11 +253,17 @@ data IterTrailConfig n = ITC { seed :: Trail' Line V2 n -- ^ The seed trail
 -- | Generate a random 'IterTrailConfig'.  This features many
 --   hard-coded values.  If you want to play with it just copy the
 --   code and modify it to suit.
-randITC :: (MonadRandom m, Applicative m, Ord n, Floating n, Random n) =>
+randITC ::
+  (MonadRandom m,
+#if MIN_VERSION_base(4,9,0)
+#else
+   Applicative m,
+#endif
+   Ord n, Floating n, Random n) =>
            m (IterTrailConfig n)
 randITC = do
   -- use between two and five segments for the seed pattern
-  nSegs <- getRandomR (2,5)
+  nSegs   <- getRandomR (2,5)
 
   -- should we make the seed pattern a cubic spline?
   spline  <- getRandom

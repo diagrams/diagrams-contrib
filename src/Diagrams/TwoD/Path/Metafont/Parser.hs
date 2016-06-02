@@ -11,7 +11,7 @@ import           Text.Parsec.Text
 import           Diagrams.Prelude                  hiding (option)
 import           Diagrams.TwoD.Path.Metafont.Types
 
-num :: (Num n, Read n) => Parser n
+num :: Read n => Parser n
 num = read <$> float where
   sign = plus <|> minus <|> unsigned
   plus = char '+' *> unsigned
@@ -47,7 +47,7 @@ dotsJoin :: (Num n, Read n) => Parser (BasicJoin n)
 dotsJoin = string ".." *> spaces *>
            (boundedJoin <|>tensionJoin <|> controlJoin <|> plainJoin)
 
-plainJoin :: (Num n, Read n) => Parser (BasicJoin n)
+plainJoin :: Num n => Parser (BasicJoin n)
 plainJoin = pure (Left $ TJ t1' t1') where
   t1' = TensionAmt 1
 
@@ -69,16 +69,16 @@ controlJoin = do
   spaces *> string ".."
   return . Right $ CJ z1 z2
 
-boundedJoin :: (Num n, Read n) => Parser (BasicJoin n)
+boundedJoin :: Num n => Parser (BasicJoin n)
 boundedJoin = char '.' *> pure (Left $ TJ t t) where t = TensionAtLeast 1
 
-straightJoin :: (Num n, Read n) => Parser (PathJoin (Maybe (PathDir n)) (BasicJoin n))
+straightJoin :: Num n => Parser (PathJoin (Maybe (PathDir n)) (BasicJoin n))
 straightJoin = try (string "--" *> notFollowedBy (char '-')) *> pure (PJ c jj c)
   where
     c = Just $ PathDirCurl 1
     jj = Left $ TJ (TensionAmt 1) (TensionAmt 1)
 
-tenseLine :: (Num n, Read n) => Parser (BasicJoin n)
+tenseLine :: Num n => Parser (BasicJoin n)
 -- 4096 is the constant 'infinity' in Plain MetaFont
 tenseLine = string "---" *> pure (Left $ TJ t t) where t = TensionAmt 4096
 

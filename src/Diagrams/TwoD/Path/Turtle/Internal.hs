@@ -131,8 +131,7 @@ backward x = moveTurtle (straight $ r2 (negate x, 0))
 
 -- | Turn the turtle by applying the given function to its current orientation
 -- (in degrees)
-turnTurtle :: (Floating n, Ord n) =>
-              (Angle n -> Angle n)   -- ^ Transformation to apply on current orientation
+turnTurtle :: (Angle n -> Angle n)   -- ^ Transformation to apply on current orientation
            -> TurtleState n    -- ^ Turtle to turn
            -> TurtleState n    -- ^ Resulting turtle
 turnTurtle f t@(TurtleState _ _ h _ _ _) = t { heading = f h  }

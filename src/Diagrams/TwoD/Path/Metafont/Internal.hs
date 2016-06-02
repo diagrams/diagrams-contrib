@@ -135,14 +135,14 @@ copyDirsLoop p = p
 controlPtDirs :: forall n. (Num n, Eq n) => MFS n -> MFS n
 controlPtDirs s@(MFS z0 (PJ _ jj@(Right (CJ u v)) _) z1) = s & pj .~ dirs where
   dirs = PJ (dir z0 u) jj (dir v z1)
-  dir :: Num n => P2 n -> P2 n -> Maybe (PathDir n)
+  dir :: P2 n -> P2 n -> Maybe (PathDir n)
   dir p0 p1 | p0 == p1 = Just $ PathDirCurl 1
   dir p0 p1 | otherwise = Just . PathDirDir . direction $ (p1 .-. p0)
 controlPtDirs s = s
 
 -- | Run all the rules required to fully specify all segment directions,
 -- but do not replace the Joins with ControlJoin.
-solve :: (RealFloat n, Eq n) => MFP n -> MFPath (Dir n) (BasicJoin n) n
+solve :: RealFloat n => MFP n -> MFPath (Dir n) (BasicJoin n) n
 solve = solvePath . fillDirs
 
 -- | each sublist of groupSegments ss satisfies:
@@ -334,7 +334,7 @@ solveOneSeg s = (a, c, r) where
 --   recovered by subtracting the control points from the endpoints
 --   anyway).
 computeControls
-  :: (RealFloat n, Ord n) => MetafontSegment (Dir n) (BasicJoin n) n
+  :: RealFloat n => MetafontSegment (Dir n) (BasicJoin n) n
   -> MetafontSegment () (ControlJoin n) n
 computeControls (MFS z0 (PJ _ (Right cj) _) z1)
   = MFS z0 (PJ () cj ()) z1
@@ -374,7 +374,7 @@ computeControls (MFS z0 (PJ w0 (Left (TJ a b)) w1) z1)
 --   @z0 .. controls u and v .. z1@.
 --
 --   This uses a mysterious, magical formula due to John Hobby.
-ctrlPts :: (RealFloat n, Eq n) => P2 n -> V2 n -> n -> n -> V2 n -> P2 n -> (P2 n, P2 n)
+ctrlPts :: RealFloat n => P2 n -> V2 n -> n -> n -> V2 n -> P2 n -> (P2 n, P2 n)
 ctrlPts z0 w0 va vb w1 z1 = (u,v)
   where
     offs  = z1 .-. z0

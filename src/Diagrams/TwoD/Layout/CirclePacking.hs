@@ -91,5 +91,5 @@ approxRadius n =
 -- fits in the rectangular bounding box of the object, so it may be too small.
 -- It is, however, exact for circles, and there is no function that is safe for
 -- all diagrams and exact for circles.
-circleRadius :: (Monoid' m, Floating (N b), Real (N b), Ord (N b)) => RadiusFunction b m
+circleRadius :: (Monoid' m, Floating (N b), Real (N b)) => RadiusFunction b m
 circleRadius o = toFractional $ maximum [ envelopeS (e (alpha @@ turn)) o | alpha <- [0,0.25,0.5,0.75]]

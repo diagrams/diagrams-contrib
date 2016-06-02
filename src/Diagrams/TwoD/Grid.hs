@@ -144,7 +144,7 @@ makeLenses ''GridOpts
 makeLenses ''HighlightLineOpts
 
 -- | Name a point by grid co-ordinates.
-tick :: (Renderable (Text n) b, Renderable (Path V2 n) b, Floating n, Ord n)
+tick :: (Floating n, Ord n)
      => (Int, Int) -> QDiagram b V2 n Any
 tick (n, m) = pointDiagram origin # named (n, m)
 
@@ -203,12 +203,11 @@ gridWithHalves' opts n m =
 
 -- | Place a diagram on a grid (which is itself a diagram) at all the
 -- co-ordinates specified.
-placeDiagramOnGrid :: (IsName nm, Renderable (Text n) b,
-                       Renderable (Path V2 n) b, Floating n, Ord n) =>
+placeDiagramOnGrid :: (IsName nm, Floating n, Ord n) =>
                       QDiagram b V2 n Any -> [nm] -> QDiagram b V2 n Any -> QDiagram b V2 n Any
 placeDiagramOnGrid d = flip $ foldr (\n -> withName n (atop . place d . location))
 
-annotate :: (Renderable (Text n) b, Renderable (Path V2 n) b, Floating n, Ord n, Typeable n) =>
+annotate :: (Floating n, Ord n, Typeable n) =>
              String ->
              (String -> QDiagram b V2 n Any) ->
              Colour Double ->
@@ -228,7 +227,7 @@ gridLine :: (IsName a, IsName b, Renderable (Text n) c,
 gridLine = gridLine' def
 
 -- | Draw a line between two named points on the grid.
-gridLine' :: (IsName a, IsName b, Renderable (Text n) c,
+gridLine' :: (IsName a, IsName b,
               Renderable (Path V2 n) c, TypeableFloat n) =>
             HighlightLineOpts n -> a -> b -> QDiagram c V2 n Any -> QDiagram c V2 n Any
 gridLine' opts u v =

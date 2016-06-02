@@ -115,7 +115,7 @@ gridWith f (cols, rows) = gridCat' cols diagrams
 -- | Make all diagrams have the same bounding square,
 --   one that bounds them all.
 sameBoundingSquare
-  :: forall b n. (Renderable (Path V2 n) b, TypeableFloat n)
+  :: forall b n. TypeableFloat n
   => [QDiagram b V2 n Any]
   -> [QDiagram b V2 n Any]
 sameBoundingSquare diagrams = map frameOne diagrams
@@ -130,7 +130,7 @@ sameBoundingSquare diagrams = map frameOne diagrams
 -- | Make all diagrams have the same bounding rect,
 --   one that bounds them all.
 sameBoundingRect
-  :: forall n b. (Renderable (Path V2 n) b, TypeableFloat n)
+  :: forall n b. TypeableFloat n
   => [QDiagram b V2 n Any]
   -> [QDiagram b V2 n Any]
 sameBoundingRect diagrams = map frameOne diagrams

@@ -134,14 +134,18 @@ import           Physics.ForceLayout
 import           Control.Arrow       (first, second, (&&&), (***))
 import           Control.Monad.State
 
+import           Control.Lens        (makeLenses, (^.), (+=), (-=), view)
 import           Data.Default
 import qualified Data.Foldable       as F
 import           Data.Function       (on)
 import           Data.List           (mapAccumL)
 import qualified Data.Map            as M
 import           Data.Maybe
+import           Data.Semigroup
 import qualified Data.Traversable    as T
 import           Data.Tree
+import           Linear              ((*^))
+import           Linear.Affine       ((.+^))
 
 import           Diagrams
 

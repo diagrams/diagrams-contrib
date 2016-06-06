@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                       #-}
 {-# LANGUAGE DeriveFoldable            #-}
 {-# LANGUAGE DeriveFunctor             #-}
 {-# LANGUAGE DeriveTraversable         #-}
@@ -130,6 +131,10 @@ module Diagrams.TwoD.Layout.Tree
        ) where
 
 import           Physics.ForceLayout
+
+#if __GLASGOW_HASKELL__ < 710
+import           Control.Applicative
+#endif
 
 import           Control.Arrow       (first, second, (&&&), (***))
 import           Control.Monad.State

@@ -1,3 +1,11 @@
+1.3.0.11 (6 June 2016)
+----------------------
+
+- allow `base-4.9`
+- allow `data-default-0.7`
+- allow `data-default-class-0.1`
+- test with GHC 8.0.1
+
 1.3.0.10 (1 May 2016)
 -----------------------
 

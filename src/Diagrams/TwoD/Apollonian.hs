@@ -7,7 +7,7 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Diagrams.TwoD.Apollonian
--- Copyright   :  (c) 2011 Brent Yorgey
+-- Copyright   :  (c) 2011, 2016 Brent Yorgey
 -- License     :  BSD-style (see LICENSE)
 -- Maintainer  :  byorgey@cis.upenn.edu
 --
@@ -51,6 +51,14 @@ module Diagrams.TwoD.Apollonian
 
        , apollonian
 
+         -- ** Kissing sets
+
+       , KissingSet(..), kissingSets, flipSelected, selectOthers
+
+         -- ** Apollonian trees
+
+       , apollonianTrees, apollonianTree
+
          -- * Diagram generation
 
        , drawCircle
@@ -60,11 +68,13 @@ module Diagrams.TwoD.Apollonian
        ) where
 
 import           Data.Complex
-import qualified Data.Foldable as F
+import qualified Data.Foldable    as F
+import           Data.Maybe       (catMaybes)
+import           Data.Tree
 
 import           Diagrams.Prelude hiding (center, radius)
 
-import           Control.Arrow    (second)
+import           Control.Arrow    (second, (&&&))
 
 ------------------------------------------------------------
 --  Circles
@@ -72,19 +82,20 @@ import           Control.Arrow    (second)
 
 -- | Representation for circles that lets us quickly compute an
 --   Apollonian gasket.
-data Circle n = Circle { bend :: n
-                       -- ^ The bend is the reciprocal of signed
-                       --   radius: a negative radius means the
-                       --   outside and inside of the circle are
-                       --   switched.  The bends of any four mutually
-                       --   tangent circles satisfy Descartes'
-                       --   Theorem.
-                     , cb     :: Complex n
-                       -- ^ /Product/ of bend and center represented
-                       --   as a complex number.  Amazingly, these
-                       --   products also satisfy the equation of
-                       --   Descartes' Theorem.
-                     }
+data Circle n = Circle
+  { bend :: n
+    -- ^ The bend is the reciprocal of signed
+    --   radius: a negative radius means the
+    --   outside and inside of the circle are
+    --   switched.  The bends of any four mutually
+    --   tangent circles satisfy Descartes'
+    --   Theorem.
+  , cb   :: Complex n
+    -- ^ /Product/ of bend and center represented
+    --   as a complex number.  Amazingly, these
+    --   products also satisfy the equation of
+    --   Descartes' Theorem.
+  }
   deriving (Eq, Show)
 
 -- | Create a @Circle@ given a signed radius and a location for its center.
@@ -111,15 +122,15 @@ liftF2 :: RealFloat n => (forall a. Floating a => a -> a -> a) ->
 liftF2 f (Circle b1 cb1) (Circle b2 cb2) = Circle (f b1 b2) (f cb1 cb2)
 
 instance RealFloat n => Num (Circle n) where
-  (+) = liftF2 (+)
-  (-) = liftF2 (-)
-  (*) = liftF2 (*)
-  negate = liftF negate
-  abs = liftF abs
+  (+)           = liftF2 (+)
+  (-)           = liftF2 (-)
+  (*)           = liftF2 (*)
+  negate        = liftF negate
+  abs           = liftF abs
   fromInteger n = Circle (fromInteger n) (fromInteger n)
 
 instance RealFloat n => Fractional (Circle n) where
-  (/) = liftF2 (/)
+  (/)   = liftF2 (/)
   recip = liftF recip
 
 -- | The @Num@, @Fractional@, and @Floating@ instances for @Circle@
@@ -131,6 +142,8 @@ instance RealFloat n => Floating (Circle n) where
 ------------------------------------------------------------
 --  Descartes' Theorem
 ------------------------------------------------------------
+
+-- XXX generalize these for higher dimensions?
 
 -- | Descartes' Theorem states that if @b1@, @b2@, @b3@ and @b4@ are
 --   the bends of four mutually tangent circles, then
@@ -191,26 +204,68 @@ select :: [a] -> [(a, [a])]
 select [] = []
 select (x:xs) = (x,xs) : (map . second) (x:) (select xs)
 
+-- | The basic idea of a kissing set is supposed to represent a set of
+--   four mutually tangent circles with one selected, though in fact
+--   it is more general than that: it represents any set of objects
+--   with one distinguished object selected.
+data KissingSet n = KS { selected :: n, others :: [n] }
+  deriving (Show)
+
+-- | Generate all possible kissing sets from a set of objects by
+--   selecting each object in turn.
+kissingSets :: [n] -> [KissingSet n]
+kissingSets = map (uncurry KS) . select
+
+-- | \"Flip\" the selected circle to the 'other' circle mutually tangent
+--   to the other three.  The new circle remains selected.
+flipSelected :: Num n => KissingSet n -> KissingSet n
+flipSelected (KS c cs) = KS (other cs c) cs
+
+-- | Make the selected circle unselected, and select each of the
+--   others, generating a new kissing set for each.
+selectOthers :: KissingSet n -> [KissingSet n]
+selectOthers (KS c cs) = [ KS c' (c:cs') | (c',cs') <- select cs ]
+
 -- | Given a threshold radius and a list of /four/ mutually tangent
 --   circles, generate the Apollonian gasket containing those circles.
 --   Stop the recursion when encountering a circle with an (unsigned)
 --   radius smaller than the threshold.
 apollonian :: RealFloat n => n -> [Circle n] -> [Circle n]
 apollonian thresh cs
-  =  cs
-  ++ (concat . map (\(c,cs') -> apollonian' thresh (other cs' c) cs') . select $ cs)
+  = (cs++)
+  . concat
+  . map (maybe [] flatten . prune p . fmap selected)
+  . apollonianTrees
+  $ cs
+  where
+    p c = radius c >= thresh
 
-apollonian' :: RealFloat n => n -> Circle n -> [Circle n] -> [Circle n]
-apollonian' thresh cur others
-  | radius cur < thresh = []
-  | otherwise = cur
-              : (concat $
-                   map (\(c, cs') -> apollonian' thresh
-                                       (other (cur:cs') c)
-                                       (cur:cs')
-                       )
-                       (select others)
-                )
+-- | Given a set of /four/ mutually tangent circles, generate the
+--   infinite Apollonian tree rooted at the given set, represented as
+--   a list of four subtrees.  Each node in the tree is a kissing set
+--   with one circle selected which has just been flipped.  The three
+--   children of a node represent the kissing sets obtained by
+--   selecting each of the other three circles and flipping them.  The
+--   initial roots of the four trees are chosen by selecting and
+--   flipping each of the circles in the starting set. This
+--   representation has the property that each circle in the
+--   Apollonian gasket is the selected circle in exactly one node
+--   (except that the initial four circles never appear as the
+--   selected circle in any node).
+apollonianTrees :: RealFloat n => [Circle n] -> [Tree (KissingSet (Circle n))]
+apollonianTrees = map (apollonianTree . flipSelected) . kissingSets
+
+-- | Generate a single Apollonian tree from a root kissing set.  See
+--   the documentation for 'apollonianTrees' for an explanation.
+apollonianTree :: RealFloat n => KissingSet (Circle n) -> Tree (KissingSet (Circle n))
+apollonianTree = unfoldTree (id &&& (map flipSelected . selectOthers))
+
+-- | Prune a tree at the shallowest points where the predicate is not
+--   satisfied.
+prune :: (a -> Bool) -> Tree a -> Maybe (Tree a)
+prune p (Node a ts)
+  | not (p a) = Nothing
+  | otherwise = Just $ Node a (catMaybes (map (prune p) ts))
 
 ------------------------------------------------------------
 --  Diagram generation
@@ -218,16 +273,15 @@ apollonian' thresh cur others
 
 -- | Draw a circle.
 drawCircle :: (Renderable (Path V2 n) b, TypeableFloat n) =>
-              n -> Circle n -> QDiagram b V2 n Any
-drawCircle w c = circle (radius c) # moveTo (center c)
-                                   # lwG w # fcA transparent
+              Circle n -> QDiagram b V2 n Any
+drawCircle c = circle (radius c) # moveTo (center c)
+                                 # fcA transparent
 
 -- | Draw a generated gasket, using a line width 0.003 times the
 --   radius of the largest circle.
 drawGasket :: (Renderable (Path V2 n) b, TypeableFloat n) =>
               [Circle n] -> QDiagram b V2 n Any
-drawGasket cs = F.foldMap (drawCircle w) cs
-  where w = (*0.003) . maximum . map radius $ cs
+drawGasket cs = F.foldMap drawCircle cs
 
 -- | Draw an Apollonian gasket: the first argument is the threshold;
 --   the recursion will stop upon reaching circles with radii less than

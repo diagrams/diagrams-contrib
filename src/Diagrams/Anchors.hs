@@ -8,9 +8,9 @@
 -----------------------------------------------------------------------------
 -- |
 -- Module      :  Diagrams.Anchors
--- Copyright   :  (c) 2016-2016 diagrams-lib team (see LICENSE)
+-- Copyright   :  (c) 2016 Bradley Hardy
 -- License     :  BSD-style (see LICENSE)
--- Maintainer  :  diagrams-discuss@googlegroups.com
+-- Maintainer  :  bradleyhardy@live.com
 --
 -- An /anchor/ is a point on an object which can be used for alignment
 -- by naming it, offering easier control over alignment compared to the

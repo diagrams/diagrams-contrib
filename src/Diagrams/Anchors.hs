@@ -96,7 +96,7 @@ instance (HasOrigin t, Additive (V t), Num (N t)) => HasOrigin (Anchored t) wher
     (anchoredObj %~ moveOriginTo p) .
     (anchors . traverse %~ (^-^ v))
 
-instance (Additive (V t), Num (N t), Transformable t) => Transformable (Anchored t) where
+instance (Transformable t) => Transformable (Anchored t) where
   transform t =
     (anchors . traverse %~ apply t) .
     (anchoredObj %~ transform t)
@@ -119,7 +119,7 @@ instance (Additive (V t), Num (N t), HasOrigin t, Monoid' t) => Monoid (Anchored
   mempty = Anchored Nothing mempty mempty
   mappend = (<>)
 
-instance (Show (N t), Show (V t (N t)), Show t) => Show (Anchored t) where
+instance (Show (V t (N t)), Show t) => Show (Anchored t) where
   showsPrec p anch =
     showsPrec p (anch^.anchors) . (", " ++) . showsPrec p (anch^.anchoredObj)
 

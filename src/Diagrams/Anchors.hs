@@ -4,6 +4,7 @@
 {-# LANGUAGE UndecidableInstances      #-}
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE DeriveDataTypeable        #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -21,8 +22,7 @@
 module Diagrams.Anchors
        (
          -- * Anchors
-         IsAnchor(..)
-       , Anchor
+         Anchor
          -- * Anchored objects
        , Anchored
        , withAnchors
@@ -37,9 +37,6 @@ module Diagrams.Anchors
        , PositionalAnchor (..)
        , rotateAnchors
        , rotatePosAnchors
-         -- * Qualifying anchors and anchored objects
-       , (\>/)
-       , (\>>/)
          -- * Easily concatenate many anchored objects
        , anchorMany
        , anchorMany_
@@ -71,31 +68,7 @@ import           Linear.Affine
 --  Anchors
 --------------------------------------------------------------------------------
 
--- | A concrete anchor type.
-newtype Anchor = Anchor { getAnchorName :: Name }
-               deriving (Eq, Ord, Show)
-
--- | Class for an object which can be used as an anchor. Can be derived
--- automatically for anything which is an instance of 'IsName'.
-class IsAnchor anchor where
-  -- | Convert the object into a concrete 'Anchor'.
-  toAnchor :: anchor -> Anchor
-
-  default toAnchor :: IsName anchor => anchor -> Anchor
-  toAnchor = Anchor . toName
-
-instance IsAnchor Anchor where
-  toAnchor = id
-
-instance IsAnchor Int where
-instance IsAnchor Integer where
-instance IsAnchor Float where
-instance IsAnchor Double where
-instance IsAnchor Char where
-instance IsAnchor Bool where
-instance IsAnchor Name where
-instance IsAnchor a => IsAnchor [a] where
-  toAnchor = Anchor . toName . map (getAnchorName . toAnchor)
+type Anchor = Name
 
 --------------------------------------------------------------------------------
 --  Anchored objects
@@ -151,12 +124,12 @@ instance (Show (N t), Show (V t (N t)), Show t) => Show (Anchored t) where
     showsPrec p (anch^.anchors) . (", " ++) . showsPrec p (anch^.anchoredObj)
 
 -- | Add another anchor to an already 'Anchored' object.
-addAnchor :: IsAnchor anchor => anchor -> V t (N t) -> Anchored t -> Anchored t
-addAnchor anchor val = anchors . Lens.at (toAnchor anchor) .~ Just val
+addAnchor :: IsName anchor => anchor -> V t (N t) -> Anchored t -> Anchored t
+addAnchor anchor val = anchors . Lens.at (toName anchor) .~ Just val
 
 -- | Attach a list of anchors to an object, making it 'Anchored'.
-withAnchors :: IsAnchor anchor => [(anchor, V t (N t))] -> t -> Anchored t
-withAnchors = Anchored Nothing . Map.fromList . over (each . _1) toAnchor
+withAnchors :: IsName anchor => [(anchor, V t (N t))] -> t -> Anchored t
+withAnchors = Anchored Nothing . Map.fromList . over (each . _1) toName
 
 -- | Turn an object into a trivial 'Anchored' object with no anchors.
 noAnchors :: t -> Anchored t
@@ -164,22 +137,22 @@ noAnchors = Anchored Nothing mempty
 
 -- | Delete an anchor from an anchored object. Does nothing if the object does
 -- not have the specified anchor.
-deleteAnchor :: IsAnchor anchor => anchor -> Anchored t -> Anchored t
-deleteAnchor anchor = anchors . Lens.at (toAnchor anchor) .~ Nothing
+deleteAnchor :: IsName anchor => anchor -> Anchored t -> Anchored t
+deleteAnchor anchor = anchors . Lens.at (toName anchor) .~ Nothing
 
 -- | Get the offset from the origin of a particular anchor, or 'zero' if the object
 -- does not have the specified anchor.
-getAnchorOffset :: (Num (N t), Additive (V t), IsAnchor a) => a -> Anchored t -> V t (N t)
-getAnchorOffset anchor = view $ anchors . Lens.at (toAnchor anchor) . to (fromMaybe zero)
+getAnchorOffset :: (Num (N t), Additive (V t), IsName a) => a -> Anchored t -> V t (N t)
+getAnchorOffset anchor = view $ anchors . Lens.at (toName anchor) . to (fromMaybe zero)
 
 -- | Align an anchored object to an anchor. Subsequently concatening with '(<>)'
 -- will take this into account.
-alignAnchor :: (IsAnchor a) => a -> Anchored t -> Anchored t
-alignAnchor anch = currentAnchor .~ Just (toAnchor anch)
+alignAnchor :: (IsName a) => a -> Anchored t -> Anchored t
+alignAnchor anch = currentAnchor .~ Just (toName anch)
 
 -- | Does the given anchored object have the given anchor?
-hasAnchor :: (IsAnchor a) => a -> Anchored t -> Bool
-hasAnchor anchor = view $ anchors . to (Map.member (toAnchor anchor))
+hasAnchor :: (IsName a) => a -> Anchored t -> Bool
+hasAnchor anchor = view $ anchors . to (Map.member (toName anchor))
 
 -- | Throw away anchors and get the underlying object.
 unanchor
@@ -203,7 +176,6 @@ data PositionalAnchor
   deriving (Eq, Ord, Show, Typeable, Enum)
 
 instance IsName PositionalAnchor where
-instance IsAnchor PositionalAnchor where
 
 {-|
 Given an 'Anchored' object containing the given list of anchors, rotate the
@@ -235,17 +207,17 @@ number produces an anticlockwise rotation.
 
 If any of the anchors do not exist, this function skips them.
 -}
-rotateAnchors :: (IsAnchor anchor) => [anchor] -> Int -> Anchored t -> Anchored t
+rotateAnchors :: (IsName anchor) => [anchor] -> Int -> Anchored t -> Anchored t
 rotateAnchors allAnchorsList n t =
-  let allAnchorsSet = Set.fromList . map toAnchor $ allAnchorsList
+  let allAnchorsSet = Set.fromList . map toName $ allAnchorsList
       allObjAnchors = t ^. anchors
       presentAnchorsSet = Map.keysSet allObjAnchors `Set.intersection` allAnchorsSet
-      presentAnchorsList = filter ((`Set.member` presentAnchorsSet) . toAnchor) allAnchorsList
+      presentAnchorsList = filter ((`Set.member` presentAnchorsSet) . toName) allAnchorsList
       rotateList k xs = drop k xs ++ take k xs
       rotatedList = rotateList ((-n) `mod` length presentAnchorsList) presentAnchorsList
-      findOriginalPairing posAnch = fromJust $ Map.lookup (toAnchor posAnch) allObjAnchors
+      findOriginalPairing posAnch = fromJust $ Map.lookup (toName posAnch) allObjAnchors
       originalOffsets = map findOriginalPairing presentAnchorsList
-      rotatedOffsets = zip (map toAnchor rotatedList) originalOffsets
+      rotatedOffsets = zip (map toName rotatedList) originalOffsets
       newObjAnchors = Map.fromList rotatedOffsets `Map.union` allObjAnchors
   in t & anchors .~ newObjAnchors
 
@@ -257,21 +229,11 @@ rotatePosAnchors = rotateAnchors (enumFrom AnchorL)
 --  Qualifying Anchors
 --------------------------------------------------------------------------------
 
-infixr 5 \>/
-infixr 5 \>>/
-
--- | Qualify an anchor with another anchor.
-(\>/)
-  :: (IsAnchor anchor1, IsAnchor anchor2) =>
-     anchor1 -> anchor2 -> Anchor
-a1 \>/ a2
-  | Anchor n1 <- toAnchor a1, Anchor n2 <- toAnchor a2 = Anchor (n1 .> n2)
-
--- | Qualify all anchors within an 'Anchored' object.
-(\>>/) :: IsAnchor anchor => anchor -> Anchored t -> Anchored t
-(\>>/) anch =
-  (currentAnchor._Just %~ (anch \>/)) .
-  (anchors %~ Map.mapKeys (anch \>/))
+instance Qualifiable t => Qualifiable (Anchored t) where
+  (.>>) name =
+    (currentAnchor . _Just %~ (name .>)) .
+    (anchors %~ Map.mapKeys (name .>)) .
+    (anchoredObj %~ (name .>>))
 
 --------------------------------------------------------------------------------
 --  Easily concatenate many anchored objects
@@ -288,7 +250,7 @@ the anchor point in the new object being added.
 -}
 anchorMany
   :: (Num (N t), Semigroup t, Additive (V t), HasOrigin t,
-      IsAnchor anchor) =>
+      IsName anchor) =>
      Anchored t -> [(anchor, anchor, Anchored t)] -> Anchored t
 anchorMany = foldl' go
   where
@@ -299,7 +261,7 @@ anchorMany = foldl' go
 -- not going to be doing any more alignment using anchors with the result.
 anchorMany_
   :: (Num (N c), Semigroup c, Additive (V c), HasOrigin c,
-      IsAnchor anchor) =>
+      IsName anchor) =>
      Anchored c -> [(anchor, anchor, Anchored c)] -> c
 anchorMany_ base = unanchor . anchorMany base
 
@@ -310,7 +272,7 @@ anchorMany_ base = unanchor . anchorMany base
 -- | Show a particular anchor in the 'Anchored' object.
 showAnchor
   :: (RealFloat n, Typeable n, Monoid m, Semigroup m,
-      Renderable (Path V2 n) b, IsAnchor a) =>
+      Renderable (Path V2 n) b, IsName a) =>
      a -> Anchored (QDiagram b V2 n m) -> Anchored (QDiagram b V2 n m)
 showAnchor anch = moveFromAnchor . over anchoredObj showOrigin . moveToAnchor
   where
@@ -320,6 +282,6 @@ showAnchor anch = moveFromAnchor . over anchoredObj showOrigin . moveToAnchor
 -- | Show a particular anchor in the 'Anchored' object, then 'unanchor'.
 showAnchor_
   :: (RealFloat n, Typeable n, Monoid m, Semigroup m,
-      Renderable (Path V2 n) b, IsAnchor a) =>
+      Renderable (Path V2 n) b, IsName a) =>
      a -> Anchored (QDiagram b V2 n m) -> QDiagram b V2 n m
 showAnchor_ anch = unanchor . showAnchor anch

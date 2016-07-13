@@ -22,7 +22,8 @@ Source-repository head
 
 library
   ghc-options:         -Wall
-  exposed-modules:     Diagrams.Color.HSV,
+  exposed-modules:     Diagrams.Anchors,
+                       Diagrams.Color.HSV,
                        Diagrams.Color.XKCD,
                        Diagrams.Example.Logo,
                        Diagrams.Layout.Wrap,

@@ -1,3 +1,40 @@
+1.4 (XXX)
+---------
+
+* **New features**
+
+    - New modules:
+
+        - `Diagrams.TwoD.Path.LSystem`: module for generating L-system
+          fractals
+
+        - `Diagrams.TwoD.Path.Boolean`: boolean operations on paths
+
+        - `Diagrams.Color.XKCD`: Common names for the 949 most common
+          RGB monitor colors, as determined by the xkcd color name
+          survey.
+
+        - `Diagrams.TwoD.Layout.Constrained`: 2D layout via relative
+          constraint specifications
+
+        - `Diagrams.Anchors`: layout via specified anchor points
+
+        - `Diagrams.TwoD.Path.Follow`: monoid for trails which matches
+          tangent vectors at endpoints
+
+    - `Diagrams.TwoD.Path.IteratedSubset` is greatly expanded, with
+      more tools, examples, and documentation
+
+    - New radial layout algorithm for rose trees, `radialLayout`
+      function in `Diagrams.TwoD.Layout.Tree`
+
+    - Code in `Diagrams.TwoD.Apollonian` cleaned up and generalized
+
+* **API changes**
+
+    - `Diagrams.TwoD.Path.Turtle`: pen width is now a `Measure n`
+      instead of `n`
+
 1.3.0.11 (6 June 2016)
 ----------------------
 

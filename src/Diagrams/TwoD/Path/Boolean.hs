@@ -1,5 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE TypeFamilies     #-}
 
 -- | Set operations on paths.  As a side effect it removes overlapping
 -- regions.  Since `Path` is `TrailLike`, you can use these operations
@@ -19,17 +19,17 @@ module Diagrams.TwoD.Path.Boolean
          loopUnion, loopDifference,
          loopIntersection, loopExclusion,)
        where
-import Diagrams.Located
-import Diagrams.Trail
-import Diagrams.TrailLike
-import Control.Lens hiding (at)
-import Linear
-import Diagrams.Points
-import Diagrams.Segment
-import Diagrams.TwoD.Path
-import Diagrams.Path
-import Data.Maybe
+import           Control.Lens       hiding (at)
+import           Data.Maybe
+import           Diagrams.Located
+import           Diagrams.Path
+import           Diagrams.Points
+import           Diagrams.Segment
+import           Diagrams.Trail
+import           Diagrams.TrailLike
+import           Diagrams.TwoD.Path
 import qualified Geom2D.CubicBezier as C
+import           Linear
 
 fillrule :: FillRule -> C.FillRule
 fillrule Winding = C.NonZero
@@ -84,7 +84,7 @@ segmentMax (Cubic (V2 a b) (V2 c d) o) =
 loopMax :: Trail' Loop V2 Double -> Double
 loopMax l = maximum (segmentMax lastSeg: map segmentMax segs)
   where (segs, lastSeg) = loopSegments l
-  
+
 defaultTol :: Double
 defaultTol = 1e-7
 
@@ -98,13 +98,13 @@ loop2trail = over located wrapLoop
 --
 -- > import Diagrams.TwoD.Path.Boolean
 -- > import Diagrams.Prelude hiding (union)
--- > 
+-- >
 -- > unionEx = strokePath $ union Winding $
 -- >           (square 1) <> circle 0.5 # translate (V2 0.5 (-0.5))
 
 union :: FillRule -> Path V2 Double -> Path V2 Double
 union fill p =
-  Path $ map loop2trail $ 
+  Path $ map loop2trail $
   loopUnion tol fill loops
   where loops = mapMaybe trail2loop $
                 pathTrails p
@@ -113,7 +113,7 @@ union fill p =
 
 -- | Intersection of two paths.  First overlap is removed in the two
 -- input arguments, then the intersection is calculated.
--- 
+--
 -- <<diagrams/src_Diagrams_TwoD_Path_Boolean_isectEx.svg#diagram=isectEx&width=200>>
 --
 -- > import Diagrams.TwoD.Path.Boolean
@@ -137,7 +137,7 @@ intersection fill path1 path2 =
 -- input arguments, then the difference is calculated.
 --
 -- <<diagrams/src_Diagrams_TwoD_Path_Boolean_diffEx.svg#diagram=diffEx&width=200>>
--- 
+--
 -- > import Diagrams.TwoD.Path.Boolean
 -- > import Diagrams.Prelude hiding (difference)
 -- >
@@ -181,7 +181,7 @@ exclusion fill path1 path2 =
 -- | Like `union`, but takes a tolerance parameter.
 union' :: Double -> FillRule -> Path V2 Double -> Path V2 Double
 union' tol fill p =
-  Path $ map loop2trail $ 
+  Path $ map loop2trail $
   loopUnion tol fill $
   mapMaybe trail2loop $
   pathTrails p
@@ -244,4 +244,3 @@ loopExclusion :: Double -> FillRule
 loopExclusion tol fill path1 path2 =
   map path2loop $ C.exclusion (map loop2path path1)
   (map loop2path path2) (fillrule fill) tol
-

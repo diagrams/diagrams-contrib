@@ -35,6 +35,11 @@
     - `Diagrams.TwoD.Path.Turtle`: pen width is now a `Measure n`
       instead of `n`
 
+1.3.0.12 (31 August 2016)
+-------------------------
+
+- allow QuickCheck-2.9
+
 1.3.0.11 (6 June 2016)
 ----------------------
 

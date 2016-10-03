@@ -289,3 +289,128 @@ drawGasket cs = F.foldMap drawCircle cs
 apollonianGasket :: (Renderable (Path V2 n) b, TypeableFloat n)
                  => n -> n -> n -> n -> QDiagram b V2 n Any
 apollonianGasket thresh b1 b2 b3 = drawGasket . apollonian thresh $ (initialConfig b1 b2 b3)
+
+------------------------------------------------------------
+-- Some notes on floating-point error
+-- (only for the intrepid)
+------------------------------------------------------------
+{-
+
+-- code from Gerald Gutierrez, personal communication
+
+module Main where
+
+import           Data.Complex
+import           Diagrams.Backend.SVG.CmdLine
+import           Diagrams.Prelude
+
+-- ------^---------^---------^---------^---------^---------^---------^--------
+
+data Circle = Circle Double (Complex Double) deriving (Show)
+
+descartes a b c
+  = (s + r, s - r)
+  where
+    s = a + b + c
+    r = 2 * sqrt ((a * b) + (b * c) + (c * a))
+
+descartesDual a b c d
+  = 2 * (a + b + c) - d
+
+soddies (Circle k1 b1) (Circle k2 b2) (Circle k3 b3)
+  = ( Circle k4 b4
+    , Circle k5 b5 )
+  where
+    (k4, k5) = descartes k1 k2 k3
+    (b4, b5) = descartes b1 b2 b3
+
+soddiesDual (Circle k1 b1) (Circle k2 b2) (Circle k3 b3) (Circle k4 b4)
+  = Circle (descartesDual k1 k2 k3 k4) (descartesDual b1 b2 b3 b4)
+
+mutuallyTangentCirclesFromTriangle z1 z2 z3
+  = ( Circle k1 (z1 * (k1 :+ 0))
+    , Circle k2 (z2 * (k2 :+ 0))
+    , Circle k3 (z3 * (k3 :+ 0)) )
+  where
+    a = magnitude (z2 - z3)
+    b = magnitude (z3 - z1)
+    c = magnitude (z1 - z2)
+    s = (a + b + c) / 2
+    k1 = 1 / (s - a)
+    k2 = 1 / (s - b)
+    k3 = 1 / (s - c)
+
+main :: IO ()
+main = mainWith picture
+
+pic = mainWith picture
+
+mkCircle :: Circle -> Diagram B
+mkCircle (Circle k b)
+  = circle (1 / k) # moveTo (p2 (realPart z, imagPart z))
+  where
+    z = b / (k :+ 0)
+
+picture :: Diagram B
+picture
+  = mkCircle c1 <> mkCircle c2 <> mkCircle c3 <> mkCircle c4 <> mkCircle c5
+  where
+    (c1, c2, c3) = mutuallyTangentCirclesFromTriangle z1 z2 z3
+    (c4, c5) = soddies c1 c2 c3
+
+    -- z1 = 0 :+ 0
+    -- z2 = 3 :+ 0
+    -- z3 = 0 :+ 4
+
+    -- z1 = (-0.546) :+ (-0.755)
+    -- z2 = ( 0.341) :+ (-0.755)
+    -- z3 = (-0.250) :+ ( 0.428)
+
+ofsBad = 0.15397 -- doesn't work
+ofsGood = 0.15398 -- works
+
+ofs = ofsGood
+
+z1 = ofs + ((-0.546) :+ (-0.755))
+z2 = ofs + (( 0.341) :+ (-0.755))
+z3 = ofs + ((-0.250) :+ ( 0.428))
+
+
+------------------------------------------------------------
+
+Email to Gerald Gutierrez, 30 Sep 2016:
+
+I got a chance to sit down and think hard about your code today, and
+I think I have figured out what the problem is.
+
+If you look at the outputs of 'soddies c1 c2 c3' using the two
+different values for 'ofs', you will see that they are *almost* the
+same, except that the complex numbers have been switched (though in
+fact their real components are almost the same so you only notice the
+difference in the imaginary components).  This clearly causes
+incorrect results since the y-coordinates represented by the imaginary
+components are now getting scaled by different bend values.  So the
+resulting circles are of the right size and have (close to) the
+correct x-coordinates, but their y-coordinates are wrong.
+
+The problem is that in the 'soddies' function, you make independent
+calls to 'descartes k1 k2 k3' (to solve for the bends) and 'descartes
+b1 b2 b3' (to solve for the bend-center products), and then *assume*
+that they return their solutions *in the same order*, so that you can
+match up the first values to make one circle and the second values to
+make another circle.  I would guess that this is *usually* true but
+apparently not when certain values are hovering right around a branch
+cut of sqrt, or something like that.
+
+I think my code in Diagrams.TwoD.Apollonian suffers from the same
+problem.  Ultimately I think it is due to the inherent inaccuracy of
+floating-point numbers; there is nothing wrong with the formula
+itself.  It would be nice to figure out how to correct for this, but I
+am not sure how off the top of my head.  The interesting thing is that
+switching the bend-center products does not seem to violate the
+generalized Descartes' Theorem at all --- so it would seem that it
+does not actually completely characterize mutually tangent circles,
+that is, there exist sets of circles satisfying the theorem which are
+not in fact mutually tangent.
+
+-}

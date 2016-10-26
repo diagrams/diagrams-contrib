@@ -38,9 +38,10 @@ import           Data.Monoid.SemiDirectProduct.Strict
 --
 --   This is illustrated in the example below.
 --
---   <<#dia=followExample&width=400>>
+--   <<diagrams/src_Diagrams_TwoD_Path_Follow_followExample.svg#diagram=followExample&width=400>>
 --
 --   > import Control.Lens (ala)
+--   > import Diagrams.TwoD.Path.Follow
 --   >
 --   > wibble :: Trail' Line V2 Double
 --   > wibble = hrule 1 <> hrule 0.5 # rotateBy (1/6) <> hrule 0.5 # rotateBy (-1/6) <> a

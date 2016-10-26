@@ -181,7 +181,7 @@ rule c cs = (symbol c, symbols cs)
 -- Examples
 
 -- > import Diagrams.TwoD.Path.LSystem
--- > sierpinskiEx = lwO 4 . stroke . getTurtlePath $ sierpinski 6 :: Diagram B
+-- > sierpinskiEx = pad 1.1 . centerXY . lwO 4 . stroke . getTurtlePath $ sierpinski 6 :: Diagram B
 
 -- | Sierpinski triangle.
 --
@@ -194,7 +194,7 @@ sierpinski n = lSystem n (60 @@ deg) (symbols "FX") rules
                      , rule 'Y' "-FX+FY+FX-" ]
 
 -- > import Diagrams.TwoD.Path.LSystem
--- > cantorEx = cantor 4 :: Diagram B
+-- > cantorEx = pad 1.1 . centerXY $ cantor 4 :: Diagram B
 
 -- | Cantor dust
 --
@@ -207,7 +207,8 @@ cantor n = vsep 0.05 $ map dust [0..n]
                      , rule 'f' "fff" ]
 
 -- > import Diagrams.TwoD.Path.LSystem
--- > dragonEx = rotateBy (1/4) . getTurtleDiagram $ dragon 10 :: Diagram B
+-- > dragonEx =
+-- >   pad 1.1 . centerXY . rotateBy (1/4) . getTurtleDiagram $ dragon 10 :: Diagram B
 
 -- | Dragon curve
 --
@@ -245,7 +246,8 @@ kochIsland n = lSystem n (90 @@ deg) axiom koch
   axiom = symbols "F-F-F-F"
 
 -- > import Diagrams.TwoD.Path.LSystem
--- > kochLakeEx = rotateBy (1/4) . getTurtleDiagram $ kochLake 2 :: Diagram B
+-- > kochLakeEx =
+-- >   pad 1.1 . centerXY . rotateBy (1/4) . getTurtleDiagram $ kochLake 2 :: Diagram B
 
 -- | Koch lake
 --
@@ -281,7 +283,7 @@ koch2 n = lSystem n (1/4 @@ turn) axiom koch
   axiom = symbols "F-F-F-F"
 
 -- > import Diagrams.TwoD.Path.LSystem
--- > koch3Ex =  getTurtleDiagram $ koch3 3 :: Diagram B
+-- > koch3Ex = pad 1.1 . centerXY . getTurtleDiagram $ koch3 3 :: Diagram B
 
 -- | Koch curve 3
 --
@@ -293,7 +295,7 @@ koch3 n = lSystem n (1/4 @@ turn) axiom koch
   axiom = symbols "F-F-F-F"
 
 -- > import Diagrams.TwoD.Path.LSystem
--- > koch4Ex =  getTurtleDiagram $ koch4 4 :: Diagram B
+-- > koch4Ex = pad 1.1 . centerXY . getTurtleDiagram $ koch4 4 :: Diagram B
 
 -- | Koch curve 4
 --

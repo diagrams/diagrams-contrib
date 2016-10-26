@@ -24,18 +24,14 @@
 -- > import Data.Tree
 -- > import Diagrams.TwoD.Layout.Tree
 -- >
--- > t = Node 'A' [Node 'B' (map lf "CDE"), Node 'F' [Node 'G' (map lf "HIJKLM"), Node 'N' (map lf "OPQR")]]
+-- > t1 = Node 'A' [Node 'B' (map lf "CDE"), Node 'F' [Node 'G' (map lf "HIJKLM"), Node 'N' (map lf "OPQR")]]
 -- >   where lf x = Node x []
 -- >
--- > radialEx =
--- >    renderTree
--- >      (\n -> (text [n] # fontSizeL 0.7
--- >              <> circle 0.7 # fc white
--- >             )
--- >      )
--- >      (~~)
--- >      (radialLayout t)
--- >    # centerXY # pad 1.1
+-- > exampleSymmTree =
+-- >   renderTree ((<> circle 1 # fc white) . text . (:[]))
+-- >              (~~)
+-- >              (symmLayout' (with & slHSep .~ 4 & slVSep .~ 4) t1)
+-- >   # centerXY # pad 1.1
 --
 -- <<diagrams/src_Diagrams_TwoD_Layout_Tree_exampleSymmTree.svg#diagram=exampleSymmTree&width=300>>
 --
@@ -110,7 +106,7 @@
 -- >              (~~) (radialLayout t)
 -- >    # centerXY # pad 1.1
 --
--- <<#diagram=radialEx&width=300>>
+-- <<diagrams/src_Diagrams_TwoD_Layout_Tree_radialEx.svg#diagram=radialEx&width=300>>
 
 module Diagrams.TwoD.Layout.Tree
        ( -- * Binary trees

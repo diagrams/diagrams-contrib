@@ -11,11 +11,11 @@
 -- is calculated for the input.
 
 module Diagrams.TwoD.Path.Boolean
-       (-- * operations on Paths
+       ( -- * Operations on Paths
          union, difference, intersection, exclusion,
-         -- * operations on Paths with tolerance
+         -- * Operations on Paths with tolerance
          union', difference', intersection', exclusion',
-         -- * operations on Loops
+         -- * Operations on Loops
          loopUnion, loopDifference,
          loopIntersection, loopExclusion,)
        where
@@ -99,7 +99,7 @@ loop2trail = over located wrapLoop
 -- > import Diagrams.TwoD.Path.Boolean
 -- > import Diagrams.Prelude hiding (union)
 -- >
--- > unionEx = strokePath $ union Winding $
+-- > unionEx = frame 0.1 . strokePath $ union Winding $
 -- >           (square 1) <> circle 0.5 # translate (V2 0.5 (-0.5))
 
 union :: FillRule -> Path V2 Double -> Path V2 Double
@@ -119,7 +119,7 @@ union fill p =
 -- > import Diagrams.TwoD.Path.Boolean
 -- > import Diagrams.Prelude hiding (intersection)
 -- >
--- > isectEx = strokePath $
+-- > isectEx = frame 0.1 . strokePath $
 -- >           intersection Winding (square 1) $
 -- >           circle 0.5 # translate (V2 0.5 (-0.5))
 intersection :: FillRule -> Path V2 Double -> Path V2 Double -> Path V2 Double
@@ -141,7 +141,7 @@ intersection fill path1 path2 =
 -- > import Diagrams.TwoD.Path.Boolean
 -- > import Diagrams.Prelude hiding (difference)
 -- >
--- > diffEx = strokePath $
+-- > diffEx = frame 0.1 . strokePath $
 -- >          difference Winding (square 1) $
 -- >          circle 0.5 # translate (V2 0.5 (-0.5))
 difference :: FillRule -> Path V2 Double -> Path V2 Double -> Path V2 Double
@@ -163,7 +163,7 @@ difference fill path1 path2 =
 --
 -- > import Diagrams.TwoD.Path.Boolean
 -- >
--- > exclEx = fc grey $ strokePath $
+-- > exclEx = fc grey . frame 0.1 . strokePath $
 -- >          exclusion Winding (square 1) $
 -- >          circle 0.5 # translate (V2 0.5 (-0.5))
 exclusion :: FillRule -> Path V2 Double -> Path V2 Double -> Path V2 Double

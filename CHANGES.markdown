@@ -2,6 +2,7 @@
 --------------------------
 
 - allow `cubicbezier-0.5`
+- allow `HUnit-1.6` (Hackage revision 2, 21 March 2017)
 
 1.4 (2016-10-26)
 ----------------

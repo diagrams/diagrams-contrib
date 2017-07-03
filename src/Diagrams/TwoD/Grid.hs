@@ -92,8 +92,18 @@ module Diagrams.TwoD.Grid (
   , gridWithHalves'
   , annotate
   , gridLine
+  , gridLine'
   , gridLines
   , placeDiagramOnGrid
+
+  -- * Options
+
+  , GridOpts(..)
+  , gridLineWidth, gridYColour, gridXColour, gridLL, gridLR, gridUL
+
+  , HighlightLineOpts(..)
+  , highLightLineColour, highLightLineWidth
+  , highLightLineDashingOnOff, highLightLineDashingOffset
   ) where
 
 import           Diagrams.Prelude

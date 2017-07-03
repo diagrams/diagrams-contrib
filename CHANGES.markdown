@@ -1,3 +1,10 @@
+1.4.0.2 (3 July 2017)
+---------------------
+
+- allow QuickCheck-2.10
+- allow base-4.10 (for GHC-8.2)
+- allow MonadRandom-0.5
+
 1.4.0.1 (13 November 2016)
 --------------------------
 

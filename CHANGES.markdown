@@ -6,6 +6,10 @@
 - allow MonadRandom-0.5
 - export some things inadvertently unexported from Diagrams.TwoD.Grid (#68)
 
+Hackage revisions:
+- r1:
+    - allow `QuickCheck-2.11`
+
 1.4.0.1 (13 November 2016)
 --------------------------
 

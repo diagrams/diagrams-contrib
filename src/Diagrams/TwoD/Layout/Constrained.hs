@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE Rank2Types       #-}
 {-# LANGUAGE TemplateHaskell  #-}
+{-# LANGUAGE TupleSections    #-}
 {-# LANGUAGE ViewPatterns     #-}
 
 -----------------------------------------------------------------------------
@@ -109,6 +110,7 @@ module Diagrams.TwoD.Layout.Constrained
 
          -- * Layout
        , layout
+       , runLayout
 
          -- * Creating constrainable things
 
@@ -620,12 +622,20 @@ layout
   :: (Monoid' m, Hashable n, Floating n, RealFrac n, Show n)
   => (forall s. Constrained s b n m a)
   -> QDiagram b V2 n m
-layout constr =
+layout constr = snd $ runLayout constr
+
+-- | Like 'layout', but also allows the caller to retrieve the monadic value
+--   inside of the 'Constrained' monad.
+runLayout
+  :: (Monoid' m, Hashable n, Floating n, RealFrac n, Show n)
+  => (forall s. Constrained s b n m a)
+  -> (a, QDiagram b V2 n m)
+runLayout constr =
   case MFS.execSolver (MFS.ignore $ s ^. equations) MFS.noDeps of
     Left _depError -> error "overconstrained"
     Right deps    ->
       let deps' = resolve (map fst dias) deps
-      in  mconcat . flip map dias $ \(d, dia) ->
+      in  (a, ) . mconcat . flip map dias $ \(d, dia) ->
         let vars = getDiaVars deps' d
             expectedRes ty = vars ^?! L.at ty . _Just . resolution . _Just
         in
@@ -641,7 +651,7 @@ layout constr =
                  -- a diagram if they aren't already constrained, so getDiaVars
                  -- should return three resolved variables
   where
-    s = execState constr initConstrainedState
+    (a, s) = runState constr initConstrainedState
     dias = M.assocs (s ^. diagrams)
 
 resolve

@@ -1,3 +1,9 @@
+1.4.2 (4 Feb 2018)
+------------------
+
+- New function `Diagrams.TwoD.Layout.Constrained.runLayout` (thanks to
+  Sandy Maguire)
+
 1.4.1 (3 July 2017)
 ---------------------
 

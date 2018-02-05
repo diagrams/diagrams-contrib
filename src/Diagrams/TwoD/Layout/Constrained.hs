@@ -624,8 +624,8 @@ layout
   -> QDiagram b V2 n m
 layout constr = snd $ runLayout constr
 
--- | Like 'layout', but also allows the caller to retrieve the monadic value
---   inside of the 'Constrained' monad.
+-- | Like 'layout', but also allows the caller to retrieve the result of the
+--   'Constrained' computation.
 runLayout
   :: (Monoid' m, Hashable n, Floating n, RealFrac n, Show n)
   => (forall s. Constrained s b n m a)

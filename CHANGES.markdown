@@ -1,3 +1,9 @@
+1.4.2.1 (9 February 2018)
+-------------------------
+
+- Bug fix: remove `Semigroup` instance on `Following` for now, until
+  a corresponding instance is added for `Trail'` in `diagrams-lib`.
+
 1.4.2 (4 Feb 2018)
 ------------------
 

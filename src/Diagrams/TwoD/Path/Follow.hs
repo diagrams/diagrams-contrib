@@ -61,7 +61,7 @@ import           Data.Monoid.SemiDirectProduct.Strict
 --
 newtype Following n
   = Following { unFollowing :: Semi (Trail' Line V2 n) (Angle n) }
-  deriving (Monoid, Semigroup)
+  deriving (Monoid)
 
 -- | Note this is only an iso when considering trails equivalent up to
 --   rotation.

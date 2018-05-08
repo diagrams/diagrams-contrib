@@ -50,7 +50,7 @@ library
                        Diagrams.TwoD.Path.Metafont.Internal
                        Diagrams.TwoD.Path.Metafont.Combinators
                        Diagrams.TwoD.Path.Metafont.Parser
-  build-depends:       base >= 4.2 && < 4.11,
+  build-depends:       base >= 4.2 && < 4.12,
                        mtl >= 2.0 && < 2.3,
                        mtl-compat >= 0.2.1 && < 0.3,
                        containers > 0.4 && < 0.6,

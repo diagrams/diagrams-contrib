@@ -1,3 +1,10 @@
+1.4.3 (14 May 2018)
+-------------------
+
+- New `Semigroup` instance for `Following`
+- Allow `base-4.11` and `lens-4.16`
+- Drop GHC-7.8 support
+
 1.4.2.1 (9 February 2018)
 -------------------------
 

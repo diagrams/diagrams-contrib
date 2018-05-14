@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP                        #-}
+{-# LANGUAGE CPP               #-}
 {-# LANGUAGE DeriveFunctor     #-}
 {-# LANGUAGE EmptyDataDecls    #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -11,7 +11,10 @@ import Control.Lens hiding (( # ))
 #if __GLASGOW_HASKELL__ < 710
 import Data.Monoid
 #endif
-import Data.Semigroup
+
+#if !MIN_VERSION_base(4,11,0)
+import           Data.Semigroup
+#endif
 
 import Diagrams.Direction
 import Diagrams.TwoD.Types

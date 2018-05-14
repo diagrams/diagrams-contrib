@@ -167,10 +167,13 @@ import qualified Data.Traversable    as T
 import           Data.Tree
 
 import           Control.Lens        (makeLenses, view, (+=), (-=), (^.))
-import           Data.Semigroup
 import           Diagrams
 import           Linear              ((*^))
 import           Linear.Affine
+
+#if !MIN_VERSION_base(4,11,0)
+import           Data.Semigroup
+#endif
 
 #if __GLASGOW_HASKELL__ < 710
 import           Control.Applicative

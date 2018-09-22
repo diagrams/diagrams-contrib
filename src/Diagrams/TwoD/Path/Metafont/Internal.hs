@@ -27,7 +27,7 @@ module Diagrams.TwoD.Path.Metafont.Internal
 import           Control.Lens                      hiding (at, ( # ))
 import           Data.Maybe
 
-import           Diagrams.Prelude                  hiding (view)
+import           Diagrams.Prelude                  hiding (view, _loop)
 import           Diagrams.Solve.Tridiagonal
 
 import           Diagrams.TwoD.Path.Metafont.Types
@@ -86,7 +86,7 @@ fromLeft (Right _) = error "got Right in fromLeft"
 --        z), or {curl 1} if u = z
 --
 --        Similarly  controls u and v ... z ... ->  z {z - v} (or curl 1)
-fillDirs :: (Num n, Eq n) => MFP n -> MFP n
+fillDirs :: (Floating n, Eq n) => MFP n -> MFP n
 fillDirs p  = (copyDirsLoop . curlEnds) p & segs %~
               (copyDirsR . copyDirsL . map controlPtDirs)
 
@@ -132,12 +132,12 @@ copyDirsLoop p = p
 -- rule 5
 -- apply rule 5 before rules 3 & 4, then depend on those rules to copy the directions
 -- into adjacent segments
-controlPtDirs :: forall n. (Num n, Eq n) => MFS n -> MFS n
+controlPtDirs :: forall n. (Floating n, Eq n) => MFS n -> MFS n
 controlPtDirs s@(MFS z0 (PJ _ jj@(Right (CJ u v)) _) z1) = s & pj .~ dirs where
-  dirs = PJ (dir z0 u) jj (dir v z1)
-  dir :: P2 n -> P2 n -> Maybe (PathDir n)
-  dir p0 p1 | p0 == p1 = Just $ PathDirCurl 1
-  dir p0 p1 | otherwise = Just . PathDirDir . direction $ (p1 .-. p0)
+  dirs = PJ (pdir z0 u) jj (pdir v z1)
+  pdir :: P2 n -> P2 n -> Maybe (PathDir n)
+  pdir p0 p1 | p0 == p1 = Just $ PathDirCurl 1
+  pdir p0 p1 | otherwise = Just . PathDirDir . direction $ (p1 .-. p0)
 controlPtDirs s = s
 
 -- | Run all the rules required to fully specify all segment directions,
@@ -396,7 +396,7 @@ hobbyF theta' phi' = let
      (3 * (1 + (sqrt 5 - 1)/2 * cos theta + (3 - sqrt 5)/2 * cos phi))
 
 -- | Convert a fully specified MetafontSegment to a Diagrams Segment
-importSegment :: Num n => MetafontSegment () (ControlJoin n) n -> Segment Closed V2 n
+importSegment :: Num n => MetafontSegment () (ControlJoin n) n -> Segment V2 n
 importSegment (MFS z0 (PJ () (CJ u v) ()) z1) = bezier3 (u .-. z0) (v .-. z0) (z1 .-. z0)
 
 -- | Convert a MetaFont path to a Diagrams Trail, using a Loop or Line as needed

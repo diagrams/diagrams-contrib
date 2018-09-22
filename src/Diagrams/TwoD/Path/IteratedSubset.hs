@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP                   #-}
+-- {-# LANGUAGE CPP                   #-}
 {-# LANGUAGE ExplicitForAll        #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -31,7 +31,7 @@ module Diagrams.TwoD.Path.IteratedSubset
        , averageLine
        , bevelLine
 
-       , showGenerator
+       -- , showGenerator
 
          -- * Examples
 
@@ -68,7 +68,7 @@ module Diagrams.TwoD.Path.IteratedSubset
        ) where
 
 -- Diagrams.Core.Points needed for V (Point a) instance on GHC < 7.6
-import           Diagrams.Core.Points       ()
+-- import           Diagrams.Core.Points       ()
 import           Diagrams.Prelude
 
 import           Control.Monad              (replicateM)
@@ -76,7 +76,7 @@ import           Control.Monad.Random       (evalRandIO, getRandom, getRandomR)
 import           Control.Monad.Random.Class (MonadRandom)
 import           Data.Bits                  (xor)
 import           Data.Maybe                 (mapMaybe)
-import           Data.Typeable
+-- import           Data.Typeable
 import           System.Random              (Random)
 
 import qualified Diagrams.TwoD.Layout.Grid  as LG
@@ -84,6 +84,9 @@ import qualified Diagrams.TwoD.Layout.Grid  as LG
 ------------------------------------------------------------
 -- Iterated subset algorithm (simplified version)
 ------------------------------------------------------------
+
+lineSegments :: Line v n -> [Segment v n]
+lineSegments = toListOf segments
 
 -- | Given a \"seed pattern\", produce a list of successive
 --   refinements: the zeroth trail in the output list is a horizontal
@@ -101,22 +104,22 @@ import qualified Diagrams.TwoD.Layout.Grid  as LG
 --   >             $ iterTrail koch
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_iterTrailEx.svg#diagram=iterTrailEx&width=200>>
-iterTrail :: RealFloat n => Trail' Line V2 n -> [Trail' Line V2 n]
+iterTrail :: RealFloat n => Line V2 n -> [Line V2 n]
 iterTrail seed' = iterate (\tr -> mconcat . mapMaybe (refineSegment tr) $ offs)
                          (fromOffsets [unitX])
-  where offs = map segOffset . lineSegments $ seed'
+  where offs = map offset . lineSegments $ seed'
 
 -- | Use a trail to \"refine\" a linear segment (represented by a
 --   vector), returning a scaled and/or rotated copy of the trail with
 --   the same endpoint as the segment.
 refineSegment :: RealFloat n =>
-                 Trail' Line V2 n -> V2 n ->
-                 Maybe (Trail' Line V2 n)
+                 Line V2 n -> V2 n ->
+                 Maybe (Line V2 n)
 refineSegment t sOff
   | tOff == zero || sOff == zero = Nothing
   | otherwise                    = Just $ t # scale k # rotate r
   where
-    tOff = lineOffset t
+    tOff = offset t
     k    = norm sOff / norm tOff
     r    = (sOff^._theta) ^-^ (tOff^._theta)
 
@@ -151,25 +154,23 @@ data GeneratorSegment n = GS (V2 n) Bool Bool
 -- | A generator is a sequence of consecutive generator segments.
 type Generator n = [GeneratorSegment n]
 
-generatorSegmentOffset :: GeneratorSegment n -> V2 n
-generatorSegmentOffset (GS v _ _) = v
+-- generatorSegmentOffset :: GeneratorSegment n -> V2 n
+-- generatorSegmentOffset (GS v _ _) = v
 
-generatorToLine :: (Floating n, Ord n) => Generator n -> Trail' Line V2 n
-generatorToLine = fromOffsets . map generatorSegmentOffset
+-- generatorToLine :: (Floating n, Ord n) => Generator n -> Line V2 n
+-- generatorToLine = fromOffsets . map generatorSegmentOffset
 
 -- | Create a graphical representation of a generator, using half
 --   arrowheads to show the orientation of each segment.
-showGenerator
-  :: (Renderable (Path V2 n) b, TypeableFloat n)
-  => Generator n -> QDiagram b V2 n Any
-showGenerator g = mconcat $ zipWith showGenSeg (explodeTrail (Trail (generatorToLine g) `at` origin)) g
-  where
-    showGenSeg
-      :: (Renderable (Path V2 n) b, TypeableFloat n)
-      => Located (Trail V2 n) -> GeneratorSegment n -> QDiagram b V2 n Any
-    showGenSeg locTr (GS _ flip1 _) =
-      let locTr' = if flip1 then reverseLocTrail locTr else locTr
-      in  arrowAt' (with & arrowHead .~ halfDart) (loc locTr') (trailOffset (unLoc locTr'))
+-- showGenerator
+--   :: Generator Double -> Diagram V2
+-- showGenerator g = mconcat $ zipWith showGenSeg (explodeTrail (OpenTrail (generatorToLine g) `at` origin)) g
+--   where
+--     showGenSeg
+--       :: Located (Trail V2 Double) -> GeneratorSegment Double -> Diagram V2
+--     showGenSeg locTr (GS _ flip1 _) =
+--       let locTr' = if flip1 then reversing locTr else locTr
+--       in  arrowAt' (with & arrowHead .~ halfDart) (loc locTr') (trailOffset (unLoc locTr'))
 
 
 -- | Make a generator segment by specifying an x component, a y
@@ -220,15 +221,15 @@ mkGSv v flip1 flip2 = GS v (flip1 < 0) (flip2 < 0)
 --   segment, and with appropriate reflections applied depending on
 --   the orientation of the segment.
 refineGeneratorSegment :: RealFloat n =>
-                          Trail' Line V2 n -> GeneratorSegment n ->
-                          Maybe (Trail' Line V2 n)
+                          Line V2 n -> GeneratorSegment n ->
+                          Maybe (Line V2 n)
 refineGeneratorSegment t (GS sOff flipX flipY)
   = refineSegment (t # doFlips flipX flipY) sOff
 
-doFlips :: (Ord n, Floating n) => Bool -> Bool -> Trail' Line V2 n -> Trail' Line V2 n
+doFlips :: (Ord n, Floating n) => Bool -> Bool -> Line V2 n -> Line V2 n
 doFlips flipX flipY
   = (if flipX `xor` flipY then reflectY else id)
-  . (if flipX then reverseLine else id)
+  . (if flipX then reversing else id)
 
 {-
 doFlips flipX flipY
@@ -252,7 +253,7 @@ doFlips flipX flipY
 --   >           $ iterGenerator dragonGen
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_iterGenEx.svg#diagram=iterGenEx&width=400>>
-iterGenerator :: RealFloat n => Generator n -> [Trail' Line V2 n]
+iterGenerator :: RealFloat n => Generator n -> [Line V2 n]
 iterGenerator g = iterate (\tr -> mconcat . mapMaybe (refineGeneratorSegment tr) $ g)
                           (fromOffsets [unitX])
 
@@ -281,7 +282,7 @@ iterGenerator g = iterate (\tr -> mconcat . mapMaybe (refineGeneratorSegment tr)
 -- | Seed for the Koch curve (side of the famous Koch 'snowflake').
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_kochD.svg#diagram=kochD&width=400>>
-koch :: (TrailLike t, V t ~ V2, N t ~ n) => t
+koch :: (InSpace V2 n t, Floating n, FromTrail t) => t
 koch = fromOffsets [unitX, unitX # rotateBy (1/6), unitX # rotateBy (-1/6), unitX]
 
 -- > kochD = showTrail 4 koch
@@ -289,7 +290,7 @@ koch = fromOffsets [unitX, unitX # rotateBy (1/6), unitX # rotateBy (-1/6), unit
 -- | Seed for the Lévy dragon curve.
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_levyD.svg#diagram=levyD&width=400>>
-levy :: (TrailLike t, V t ~ V2, N t ~ n) => t
+levy :: (InSpace V2 n t, FromTrail t) => t
 levy = fromOffsets [unitY, unitX]
 
 -- > levyD = showTrail 9 levy
@@ -298,8 +299,8 @@ levy = fromOffsets [unitY, unitX]
 --   of triangles.
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_zagD.svg#diagram=zagD&width=400>>
-zag :: (TrailLike t, V t ~ V2, N t ~ n) => t
-zag = fromOffsets [unitX, (-0.5) ^& 1, unitX]
+zag :: (InSpace V2 n t, FromTrail t, Fractional n) => t
+zag = fromOffsets [unitX, V2 (-0.5) 1, unitX]
 
 -- > zagD = showTrail 5 zag
 
@@ -307,7 +308,7 @@ zag = fromOffsets [unitX, (-0.5) ^& 1, unitX]
 --   curve.
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_sqUpD.svg#diagram=sqUpD&width=400>>
-sqUp :: (TrailLike t, V t ~ V2, N t ~ n) => t
+sqUp :: (InSpace V2 n t, FromTrail t) => t
 sqUp = fromOffsets [unitX, unitY, unitX, unit_Y, unitX]
 
 -- > sqUpD = showTrail 3 sqUp
@@ -316,7 +317,7 @@ sqUp = fromOffsets [unitX, unitY, unitX, unit_Y, unitX]
 --   rectilinear spiral patterns.
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_sqUpDownD.svg#diagram=sqUpDownD&width=400>>
-sqUpDown :: (TrailLike t, V t ~ V2, N t ~ n) => t
+sqUpDown :: (InSpace V2 n t, FromTrail t) => t
 sqUpDown = fromOffsets [unitX, unitY, unitX, 2 *^ unit_Y, unitX, unitY, unitX]
 
 -- > sqUpDownD = showTrail 3 sqUpDown
@@ -486,15 +487,15 @@ mandelbrotSnowflakeGen
 --   the segments between their midpoints.  Can be a useful technique
 --   for visualizing degenerate space-filling curves, /e.g./ which
 --   touch at corners or even share entire edges.
-averageLine :: (Metric v, Floating n, Ord n) => Trail' Line v n -> Trail' Line v n
-averageLine = fromOffsets . (zipWith (lerp 0.5) <*> tail) . map segOffset . lineSegments
+averageLine :: (Metric v, Floating n, Ord n) => Line v n -> Line v n
+averageLine = fromOffsets . (zipWith (lerp 0.5) <*> tail) . map offset . lineSegments
 
 -- | Bevel a line by \"chopping off each corner\", connecting points 1/3
 --   and 2/3 of the way along each segment.  Can be a useful technique
 --   for visualizing degenerate space-filling curves, /e.g./ which touch
 --   at corners or even share entire edges.
-bevelLine :: (Metric v, Floating n, Ord n) => Trail' Line v n -> Trail' Line v n
-bevelLine = fromOffsets . concat . (zipWith (\v1 v2 -> [v1 ^/ 3, (v1 ^+^ v2) ^/ 3]) <*> tail) . map segOffset . lineSegments
+bevelLine :: (Metric v, Floating n, Ord n) => Line v n -> Line v n
+bevelLine = fromOffsets . concat . (zipWith (\v1 v2 -> [v1 ^/ 3, (v1 ^+^ v2) ^/ 3]) <*> tail) . map offset . lineSegments
 
 --------------------------------------------------
 -- Miscellaneous examples
@@ -514,7 +515,8 @@ snowflake :: RealFloat n => Int -> Trail V2 n
 snowflake n = iterateN 3 (rotateBy (-1/3)) edge
             # mconcat
             # glueLine
-            # wrapTrail
+            # ClosedTrail
+
   where edge = iterTrail koch !! n
 
 -- > import Diagrams.TwoD.Path.IteratedSubset
@@ -524,7 +526,7 @@ snowflake n = iterateN 3 (rotateBy (-1/3)) edge
 -- Generating random iterated subset fractals
 
 -- | Parameters to generate an iterated subset fractal.
-data IterTrailConfig n = ITC { seed :: Trail' Line V2 n -- ^ The seed trail
+data IterTrailConfig n = ITC { seed :: Line V2 n -- ^ The seed trail
                            , color  :: Colour Double  -- ^ The line color to use
                            , iters  :: Int            -- ^ Number of iterations
                            }
@@ -534,10 +536,6 @@ data IterTrailConfig n = ITC { seed :: Trail' Line V2 n -- ^ The seed trail
 --   code and modify it to suit.
 randITC ::
   (MonadRandom m,
-#if MIN_VERSION_base(4,9,0)
-#else
-   Applicative m,
-#endif
    Ord n, Floating n, Random n) =>
            m (IterTrailConfig n)
 randITC = do
@@ -549,7 +547,7 @@ randITC = do
 
   -- generate a random list of linear segments drawn from (-1,1)^2.
   s       <- fromOffsets <$>
-                replicateM nSegs ((^&) <$> getRandomR (-1,1) <*> getRandomR (-1,1))
+                replicateM nSegs (V2 <$> getRandomR (-1,1) <*> getRandomR (-1,1))
 
   -- generate a random color.
   c       <- sRGB <$> getRandom <*> getRandom <*> getRandom
@@ -565,15 +563,13 @@ randITC = do
   return $ ITC s' c i
 
 -- | Generate an iterated subset fractal based on the given parameters.
-drawITC :: (Renderable (Path V2 n) b, TypeableFloat n) =>
-           IterTrailConfig n -> QDiagram b V2 n Any
-drawITC (ITC s c i) = (iterTrail s !! i) # strokeLine # lc c
+drawITC :: IterTrailConfig Double -> Diagram V2
+drawITC (ITC s c i) = (iterTrail s !! i) # stroke # lc c
 
 -- | Like 'drawITC', but also scales, centers, and pads the result so
 -- that it fits nicely inside a 4x4 box.
 drawITCScaled
-  :: (Renderable (Path V2 n) b, RealFloat n, Typeable n)
-  => IterTrailConfig n -> QDiagram b V2 n Any
+  :: IterTrailConfig Double -> Diagram V2
 drawITCScaled itc
   = drawITC itc
   # sized (dims2D 4 4)
@@ -584,8 +580,7 @@ drawITCScaled itc
 --   your friends!
 --
 -- <<diagrams/src_Diagrams_TwoD_Path_IteratedSubset_randIterGridEx.svg#diagram=randIterGridEx&width=500>>
-randIterGrid :: (Renderable (Path V2 n) b, Random n, TypeableFloat n) =>
-                IO (QDiagram b V2 n Any)
+randIterGrid :: IO (Diagram V2)
 randIterGrid = do
   itcs <- evalRandIO (replicateM 25 randITC)
   return (LG.gridCat . map drawITCScaled $ itcs)

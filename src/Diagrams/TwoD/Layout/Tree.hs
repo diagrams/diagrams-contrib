@@ -165,20 +165,24 @@ import           Data.Default
 import qualified Data.Foldable       as F
 import           Data.Function       (on)
 import           Data.List           (mapAccumL)
-import qualified Data.Map            as M
+-- import qualified Data.Map            as M
 import           Data.Maybe
 import qualified Data.Traversable    as T
 import           Data.Tree
 
 import           Control.Lens        (makeLenses, view, (+=), (-=), (^.))
 import           Data.Semigroup
-import           Diagrams
+import           Diagrams            hiding (extent, down)
 import           Linear              ((*^))
-import           Linear.Affine
+-- import           Linear.Affine (Point)
 
-#if __GLASGOW_HASKELL__ < 710
-import           Control.Applicative
-#endif
+-- import           Data.Vector (Vector)
+import qualified Data.Vector as V
+import qualified Data.Vector.Unboxed as U
+
+-- #if __GLASGOW_HASKELL__ < 710
+-- import           Control.Applicative
+-- #endif
 
 ------------------------------------------------------------
 --  Binary trees
@@ -509,17 +513,18 @@ treeToEnsemble opts t =
   where lt :: Tree ((a,P2 n), PID)
         lt = label t
 
-        particleMap :: M.Map PID (Particle V2 n)
-        particleMap = M.fromList
-                    . map (second initParticle)
-                    . F.toList
-                    . fmap (swap . first snd)
-                    $ lt
-        swap (x,y) = (y,x)
+        particleMap :: V.Vector (Particle V2 n)
+        particleMap = V.map (initParticle . snd) $ V.fromList $ F.toList t
+        -- particleMap = M.fromList
+        --             . map (second initParticle)
+        --             . F.toList
+        --             . fmap (swap . first snd)
+        --             $ lt
+        -- swap (x,y) = (y,x)
 
-        edges, sibs :: [Edge]
-        edges       = extractEdges (fmap snd lt)
-        sibs        = extractSibs [fmap snd lt]
+        edges, sibs :: U.Vector Edge
+        edges       = U.fromList $ extractEdges (fmap snd lt)
+        sibs        = U.fromList $ extractSibs [fmap snd lt]
 
         extractEdges :: Tree PID -> [Edge]
         extractEdges (Node i cs) = map (((,) i) . rootLabel) cs
@@ -541,8 +546,9 @@ label = flip evalState 0 . T.mapM (\a -> get >>= \i -> modify (+1) >> return (a,
 --   'Ensemble', given unique identifier annotations matching the
 --   identifiers used in the 'Ensemble'.
 reconstruct :: (Functor t, Num n) => Ensemble V2 n -> t (a, PID) -> t (a, P2 n)
-reconstruct e = (fmap . second)
-                  (fromMaybe origin . fmap (view pos) . flip M.lookup (e^.particles))
+reconstruct e = (fmap . second) (view pos . ((e^.particles) V.!))
+-- reconstruct e = (fmap . second)
+--                   (fromMaybe origin . fmap (view pos) . flip M.lookup (e^.particles))
 
 -- | Force-directed layout of rose trees, with default parameters (for
 --   more options, see 'forceLayoutTree'').  In particular,
@@ -592,7 +598,7 @@ assignPos alpha beta theta k w (Node (a, info) ts1 : ts2)
     where
       lambda  = nodeLeaves info
       u       = theta + (beta - alpha) * fromIntegral lambda / fromIntegral k
-      pt      = (1 ^& 0)
+      pt      = P2 1 0
               # rotate (theta + u @@ rad)
               # scale (w * fromIntegral (nodeDepth info) / 2)
 
@@ -628,18 +634,18 @@ decorate' d (Node a ts) = Node (a, info) ts'
 
 -- | Draw a tree annotated with node positions, given functions
 --   specifying how to draw nodes and edges.
-renderTree :: (Monoid' m, Floating n, Ord n)
-           => (a -> QDiagram b V2 n m) -> (P2 n -> P2 n -> QDiagram b V2 n m)
-           -> Tree (a, P2 n) -> QDiagram b V2 n m
+renderTree :: Monoid m
+           => (a -> QDiagram V2 Double m) -> (P2 Double -> P2 Double -> QDiagram V2 Double m)
+           -> Tree (a, P2 Double) -> QDiagram V2 Double m
 renderTree n e = renderTree' n (e `on` snd)
 
 -- | Draw a tree annotated with node positions, given functions
 --   specifying how to draw nodes and edges.  Unlike 'renderTree',
 --   this version gives the edge-drawing function access to the actual
 --   values stored at the nodes rather than just their positions.
-renderTree' :: (Monoid' m, Floating n, Ord n)
-           => (a -> QDiagram b V2 n m) -> ((a,P2 n) -> (a,P2 n) -> QDiagram b V2 n m)
-           -> Tree (a, P2 n) -> QDiagram b V2 n m
+renderTree' :: Monoid m
+           => (a -> QDiagram V2 Double m) -> ((a,P2 Double) -> (a,P2 Double) -> QDiagram V2 Double m)
+           -> Tree (a, P2 Double) -> QDiagram V2 Double m
 renderTree' renderNode renderEdge = alignT . centerX . renderTreeR
   where
     renderTreeR (Node (a,p) cs) =

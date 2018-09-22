@@ -1,4 +1,5 @@
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE LambdaCase       #-}
 {-# LANGUAGE TypeFamilies     #-}
 
 -- | Set operations on paths.  As a side effect it removes overlapping
@@ -21,35 +22,41 @@ module Diagrams.TwoD.Path.Boolean
        where
 import           Control.Lens       hiding (at)
 import           Data.Maybe
-import           Diagrams.Located
-import           Diagrams.Path
-import           Diagrams.Points
-import           Diagrams.Segment
-import           Diagrams.Trail
-import           Diagrams.TrailLike
-import           Diagrams.TwoD.Path
+import           Geometry.Located
+import           Geometry.Path
+import           Geometry.Points
+import           Geometry.Segment
+import           Geometry.Trail
+-- import           Geometry.TrailLike
+-- import           Geometry.TwoD.Path
 import qualified Geom2D.CubicBezier as C
 import           Linear
+
+import qualified Data.Foldable as F
+
+import qualified Data.Sequence as Seq
+
+import Diagrams.TwoD.Path (FillRule(..))
 
 fillrule :: FillRule -> C.FillRule
 fillrule Winding = C.NonZero
 fillrule EvenOdd = C.EvenOdd
 
-loop2path :: Located (Trail' Loop V2 Double) -> C.ClosedPath Double
+loop2path :: Located (Loop V2 Double) -> C.ClosedPath Double
 loop2path t =
-  C.ClosedPath $ go x0 y0 (lineSegments $ cutLoop $ unLoc t)
+  C.ClosedPath $ go x0 y0 (toListOf segments $ cutLoop $ unLoc t)
   where
     (P (V2 x0 y0)) = loc t
-    go :: Double -> Double -> [Segment Closed V2 Double] -> [(C.DPoint, C.PathJoin Double)]
+    go :: Double -> Double -> [Segment V2 Double] -> [(C.DPoint, C.PathJoin Double)]
     go _ _ [] = []
-    go x y (Linear (OffsetClosed (V2 x3 y3)):r) =
+    go x y (Linear (V2 x3 y3):r) =
       (C.Point x y, C.JoinLine) :
       go (x+x3) (y+y3) r
-    go x y (Cubic (V2 x1 y1) (V2 x2 y2) (OffsetClosed (V2 x3 y3)):r) =
+    go x y (Cubic (V2 x1 y1) (V2 x2 y2) (V2 x3 y3):r) =
       (C.Point x y, C.JoinCurve (C.Point (x+x1) (y+y1)) (C.Point (x+x2) (y+y2))) :
       go (x+x3) (y+y3) r
 
-path2loop :: C.ClosedPath Double -> Located (Trail' Loop V2 Double)
+path2loop :: C.ClosedPath Double -> Located (Loop V2 Double)
 path2loop (C.ClosedPath []) = fromSegments [] `at` origin
 path2loop (C.ClosedPath ((C.Point x0 y0, join):r)) =
   fromSegments (go x0 y0 join r) `at` P (V2 x0 y0)
@@ -67,29 +74,38 @@ path2loop (C.ClosedPath ((C.Point x0 y0, join):r)) =
              (V2 (x3-x) (y3-y)) :
              go x3 y3 join' r''
 
-trail2loop :: Located (Trail V2 Double) -> Maybe (Located (Trail' Loop V2 Double))
+trail2loop :: Located (Trail V2 Double) -> Maybe (Located (Loop V2 Double))
 trail2loop = located (withTrail (const Nothing) Just)
 
-offsetMax :: Offset c V2 Double -> Double
-offsetMax (OffsetClosed (V2 m n)) = max (abs m) (abs n)
-offsetMax OffsetOpen = 0
+-- offsetMax :: Offset c V2 Double -> Double
+-- offsetMax (OffsetClosed (V2 m n)) = max (abs m) (abs n)
+-- offsetMax OffsetOpen = 0
 
-segmentMax :: Segment c V2 Double -> Double
-segmentMax (Linear o) =
-  offsetMax o
-segmentMax (Cubic (V2 a b) (V2 c d) o) =
-  maximum [offsetMax o, abs a, abs b,
-           abs c, abs d]
+segmentMax :: Segment V2 Double -> Double
+segmentMax (Linear (V2 a b)) = max (abs a) (abs b)
+segmentMax (Cubic (V2 a b) (V2 c d) (V2 e f)) =
+  maximum [abs a, abs b, abs c, abs d, abs e, abs f]
 
-loopMax :: Trail' Loop V2 Double -> Double
-loopMax l = maximum (segmentMax lastSeg: map segmentMax segs)
+loopSegments :: Loop V2 Double -> ([Segment V2 Double], ClosingSegment V2 Double)
+loopSegments (Loop line c) = (toListOf segments line, c)
+
+maxClosing :: ClosingSegment V2 Double -> Double
+maxClosing = \case
+  LinearClosing -> 0
+  CubicClosing (V2 a b) (V2 c d) -> maximum $ abs <$> [a,b,c,d]
+
+loopMax :: Loop V2 Double -> Double
+loopMax l = maximum (maxClosing lastSeg : map segmentMax segs)
   where (segs, lastSeg) = loopSegments l
 
 defaultTol :: Double
 defaultTol = 1e-7
 
-loop2trail :: Located (Trail' Loop V2 Double) -> Located (Trail V2 Double)
+loop2trail :: Located (Loop V2 Double) -> Located (Trail V2 Double)
 loop2trail = over located wrapLoop
+
+pathTrails :: Path V2 Double -> [Located (Trail V2 Double)]
+pathTrails (Path t) = F.toList t
 
 -- | Remove overlapping regions in the path.  If you have several
 -- paths, combine them using `<>` first.
@@ -104,7 +120,7 @@ loop2trail = over located wrapLoop
 
 union :: FillRule -> Path V2 Double -> Path V2 Double
 union fill p =
-  Path $ map loop2trail $
+  Path $ Seq.fromList . fmap loop2trail $
   loopUnion tol fill loops
   where loops = mapMaybe trail2loop $
                 pathTrails p
@@ -124,7 +140,7 @@ union fill p =
 -- >           circle 0.5 # translate (V2 0.5 (-0.5))
 intersection :: FillRule -> Path V2 Double -> Path V2 Double -> Path V2 Double
 intersection fill path1 path2 =
-  Path $ map loop2trail $
+  Path $ Seq.fromList . map loop2trail $
   loopIntersection tol fill loops1 loops2
   where loops1 = mapMaybe trail2loop $
                 pathTrails path1
@@ -146,7 +162,7 @@ intersection fill path1 path2 =
 -- >          circle 0.5 # translate (V2 0.5 (-0.5))
 difference :: FillRule -> Path V2 Double -> Path V2 Double -> Path V2 Double
 difference fill path1 path2 =
-  Path $ map loop2trail $
+  Path $ Seq.fromList . map loop2trail $
   loopDifference tol fill loops1 loops2
   where loops1 = mapMaybe trail2loop $
                 pathTrails path1
@@ -168,7 +184,7 @@ difference fill path1 path2 =
 -- >          circle 0.5 # translate (V2 0.5 (-0.5))
 exclusion :: FillRule -> Path V2 Double -> Path V2 Double -> Path V2 Double
 exclusion fill path1 path2 =
-  Path $ map loop2trail $
+  Path $ Seq.fromList . map loop2trail $
   loopExclusion tol fill loops1 loops2
   where loops1 = mapMaybe trail2loop $
                 pathTrails path1
@@ -181,7 +197,7 @@ exclusion fill path1 path2 =
 -- | Like `union`, but takes a tolerance parameter.
 union' :: Double -> FillRule -> Path V2 Double -> Path V2 Double
 union' tol fill p =
-  Path $ map loop2trail $
+  Path $ Seq.fromList . map loop2trail $
   loopUnion tol fill $
   mapMaybe trail2loop $
   pathTrails p
@@ -189,7 +205,7 @@ union' tol fill p =
 -- | Like `intersection`, but takes a tolerance parameter.
 intersection' :: Double -> FillRule -> Path V2 Double -> Path V2 Double -> Path V2 Double
 intersection' tol fill path1 path2 =
-  Path $ map loop2trail $
+  Path $ Seq.fromList . map loop2trail $
   loopIntersection tol fill
   (mapMaybe trail2loop $ pathTrails path1)
   (mapMaybe trail2loop $ pathTrails path2)
@@ -198,7 +214,7 @@ intersection' tol fill path1 path2 =
 -- | Like `difference`, but takes a tolerance parameter.
 difference' :: Double -> FillRule -> Path V2 Double -> Path V2 Double -> Path V2 Double
 difference' tol fill path1 path2 =
-  Path $ map loop2trail $
+  Path $ Seq.fromList . map loop2trail $
   loopDifference tol fill
   (mapMaybe trail2loop $ pathTrails path1)
   (mapMaybe trail2loop $ pathTrails path2)
@@ -206,41 +222,41 @@ difference' tol fill path1 path2 =
 -- | Like `exclusion`, but takes a tolerance parameter.
 exclusion' :: Double -> FillRule -> Path V2 Double -> Path V2 Double -> Path V2 Double
 exclusion' tol fill path1 path2 =
-  Path $ map loop2trail $
+  Path $ Seq.fromList . map loop2trail $
   loopExclusion tol fill
   (mapMaybe trail2loop $ pathTrails path1)
   (mapMaybe trail2loop $ pathTrails path2)
 
 -- | Union of a list of loops.
 loopUnion :: Double -> FillRule
-          -> [Located (Trail' Loop V2 Double)]
-          -> [Located (Trail' Loop V2 Double)]
+          -> [Located (Loop V2 Double)]
+          -> [Located (Loop V2 Double)]
 loopUnion tol fill p  =
   map path2loop $ C.union (map loop2path p) (fillrule fill) tol
 
 -- | Difference between loops.  The loops in both lists are first merged using `union`.
 loopDifference :: Double -> FillRule
-               -> [Located (Trail' Loop V2 Double)]
-               -> [Located (Trail' Loop V2 Double)]
-               -> [Located (Trail' Loop V2 Double)]
+               -> [Located (Loop V2 Double)]
+               -> [Located (Loop V2 Double)]
+               -> [Located (Loop V2 Double)]
 loopDifference tol fill path1 path2  =
   map path2loop $ C.difference (map loop2path path1)
   (map loop2path path2) (fillrule fill) tol
 
 -- | Intersection of loops.  The loops in both lists are first merged using `union`.
 loopIntersection :: Double -> FillRule
-                 -> [Located (Trail' Loop V2 Double)]
-                 -> [Located (Trail' Loop V2 Double)]
-                 -> [Located (Trail' Loop V2 Double)]
+                 -> [Located (Loop V2 Double)]
+                 -> [Located (Loop V2 Double)]
+                 -> [Located (Loop V2 Double)]
 loopIntersection tol fill path1 path2 =
   map path2loop $ C.intersection (map loop2path path1)
   (map loop2path path2) (fillrule fill) tol
 
 -- | Exclusion (xor) of loops. The loops in both lists are first merged using `union`.
 loopExclusion :: Double -> FillRule
-              -> [Located (Trail' Loop V2 Double)]
-              -> [Located (Trail' Loop V2 Double)]
-              -> [Located (Trail' Loop V2 Double)]
+              -> [Located (Loop V2 Double)]
+              -> [Located (Loop V2 Double)]
+              -> [Located (Loop V2 Double)]
 loopExclusion tol fill path1 path2 =
   map path2loop $ C.exclusion (map loop2path path1)
   (map loop2path path2) (fillrule fill) tol

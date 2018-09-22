@@ -74,7 +74,7 @@ data TurtleState n = TurtleState
   , heading      :: Angle n
      -- | Path traversed by the turtle so far, without any style or pen
      -- attributes changing
-  , currTrail    :: Located (Trail' Line V2 n)
+  , currTrail    :: Located (Line V2 n)
      -- | Current style of the pen
   , currPenStyle :: PenStyle n
      -- | List of paths along with style information, traversed by the turtle
@@ -94,7 +94,7 @@ startTurtle = TurtleState True origin zero (mempty `at` origin) defaultPenStyle 
 
 -- | Draw a segment along the turtle’s path and update its position. If the pen
 -- is up, only the position is updated.
-moveTurtle :: (Floating n, Ord n) => Segment Closed V2 n -- ^ Segment representing the path to travel
+moveTurtle :: (Floating n, Ord n) => Segment V2 n -- ^ Segment representing the path to travel
            -> TurtleState n       -- ^ Turtle to move
            -> TurtleState n       -- ^ Resulting turtle
 moveTurtle s t@(TurtleState pd pos h tr _ _) =
@@ -110,7 +110,7 @@ moveTurtle s t@(TurtleState pd pos h tr _ _) =
    rotatedSeg  =  rotate h s
    newTrail    =  mapLoc (<> fromSegments [rotatedSeg]) tr
    -- Calculate the new position along the segment
-   newPenPos   =  pos .+^ segOffset rotatedSeg
+   newPenPos   =  pos .+^ offset rotatedSeg
 
 -- | Move the turtle forward by @x@ units
 forward :: (Floating n, Ord n) => n -- ^ Distance to move
@@ -196,7 +196,7 @@ closeCurrent t
        closeTTrail t'  = t' { penPos    = startPos
                             , currTrail = mempty `at` startPos
                             , paths     = addTrailToPath t'
-                                            (mapLoc (wrapTrail . closeLine) $ currTrail t)
+                                            (mapLoc (wrapLoop . closeLine) $ currTrail t)
                             }
 
 -- | Set the turtle X/Y position.
@@ -235,9 +235,7 @@ setPenColor = setPenColour
 --
 -- Applies the styles to each trails in @paths@ separately and combines them
 -- into a single diagram
-getTurtleDiagram :: (Renderable (Path V2 n) b, TypeableFloat n)
-                 => TurtleState n
-                 -> QDiagram b V2 n Any
+getTurtleDiagram :: TurtleState Double -> Diagram V2
 getTurtleDiagram t =
   mconcat .
   map turtlePathToStroke .
@@ -260,14 +258,14 @@ addTrailToPath :: (Ord n, Floating n) => TurtleState n
                -> Located (Trail V2 n)
                -> [TurtlePath n]
 addTrailToPath t tr
-  | isTrailEmpty (unLoc tr) = paths t
-  | otherwise               = makeTurtlePath t tr : paths t
+  | has _Empty (unLoc tr) = paths t
+  | otherwise            = makeTurtlePath t tr : paths t
 
 -- Starts a new trail and adds current trail to path
 makeNewTrail :: (Ord n, Floating n) => TurtleState n
              -> TurtleState n
 makeNewTrail t = t { currTrail = mempty `at` penPos t
-                   , paths = addTrailToPath t (mapLoc wrapTrail (currTrail t))
+                   , paths = addTrailToPath t (mapLoc wrapLine (currTrail t))
                    }
 
 -- Modifies the current style after starting a new trail
@@ -278,14 +276,12 @@ modifyCurrStyle :: (Floating n, Ord n) =>
 modifyCurrStyle f t =  t # makeNewTrail # \t' -> t' { currPenStyle = (f . currPenStyle) t' }
 
 -- Creates any TrailLike from a TurtlePath.
-turtlePathToTrailLike :: (V t ~ V2, N t ~ n, TrailLike t) => TurtlePath n -> t
-turtlePathToTrailLike (TurtlePath _ t) = trailLike t
+turtlePathToTrailLike :: (V t ~ V2, N t ~ n, FromTrail t) => TurtlePath n -> t
+turtlePathToTrailLike (TurtlePath _ t) = fromLocTrail t
 
 -- Creates a diagram from a TurtlePath using the provided styles
-turtlePathToStroke :: (Renderable (Path V2 n) b, TypeableFloat n) =>
-                      TurtlePath n
-                   -> QDiagram b V2 n Any
-turtlePathToStroke t@(TurtlePath (PenStyle lineWidth_  lineColor_) _) = d
- where d = lc lineColor_ .
-           lw lineWidth_ .
-           strokeLocTrail $ turtlePathToTrailLike t
+turtlePathToStroke :: TurtlePath Double -> Diagram V2
+turtlePathToStroke t@(TurtlePath (PenStyle lineW lineC) _) = d
+ where d = lc lineC .
+           lw lineW
+           $ turtlePathToTrailLike t

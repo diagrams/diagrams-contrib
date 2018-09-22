@@ -38,7 +38,7 @@ module Diagrams.TwoD.Sunburst
 import           Data.Default.Class
 import qualified Data.Foldable as F
 import           Data.Tree
-import           Diagrams.Prelude   hiding (radius)
+import           Diagrams.Prelude
 
 data SunburstOpts n = SunburstOpts
   { _radius       :: n -- ^ Relative size of the root circle, usually 1.
@@ -65,8 +65,7 @@ data SData n = SData
   (Colour Double) -- color
 
 -- Make n sections (annular wedges) starting in direction d and sweeping a
-sections :: (Renderable (Path V2 n) b, TypeableFloat n) =>
-            SData n -> QDiagram b V2 n Any
+sections :: SData Double -> Diagram V2
 sections (SData r s d a n c) = mconcat $ iterateN n (rotate theta) w
   where
     theta = a ^/ fromIntegral n
@@ -92,8 +91,7 @@ toTree (SunburstOpts r s (c:cs)) (Node _ ts) d a = Node (SData r s d a n c) ts'
 --   The root is the center of the sunburst and its circumference is divided
 --   evenly according to the number of child nodes it has. Then each of those
 --   sections is treated the same way.
-sunburst' :: (Renderable (Path V2 n) b, TypeableFloat n) =>
-             SunburstOpts n -> Tree a -> QDiagram b V2 n Any
+sunburst' :: SunburstOpts Double -> Tree a -> Diagram V2
 sunburst' opts t = sunB $ toTree opts t xDir fullTurn
   where sunB (Node sd ts') = sections sd <> F.foldMap sunB ts'
 
@@ -105,5 +103,5 @@ sunburst' opts t = sunB $ toTree opts t xDir fullTurn
 --   > sunburstEx = sunburst aTree # pad 1.1
 --
 --   <<diagrams/src_Diagrams_TwoD_Sunburst_sunburstEx.svg#diagram=sunburstEx&width=500>>
-sunburst :: (Renderable (Path V2 n) b, TypeableFloat n) => Tree a -> QDiagram b V2 n Any
+sunburst :: Tree a -> Diagram V2
 sunburst = sunburst' def

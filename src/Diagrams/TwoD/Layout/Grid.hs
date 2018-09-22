@@ -45,9 +45,7 @@ import           Diagrams.Prelude
 -- <<diagrams/src_Diagrams_TwoD_Layout_Grid_gridCatExample.svg#diagram=gridCatExample&width=200>>
 
 gridCat
-  :: TypeableFloat n
-  => [QDiagram b V2 n Any]
-  -> QDiagram b V2 n Any
+  :: [Diagram V2] -> Diagram V2
 gridCat diagrams = gridCat' (intSqrt $ length diagrams) diagrams
 
 -- | Same as 'gridCat', but with a specified number of columns.
@@ -57,10 +55,7 @@ gridCat diagrams = gridCat' (intSqrt $ length diagrams) diagrams
 --
 -- <<diagrams/src_Diagrams_TwoD_Layout_Grid_gridCatExample'.svg#diagram=gridCatExample'&width=200>>
 
-gridCat'
-  :: TypeableFloat n
-  => Int -> [QDiagram b V2 n Any]
-  -> QDiagram b V2 n Any
+gridCat' :: Int -> [Diagram V2] -> Diagram V2
 gridCat' = gridAnimal id
 
 -- | Puts a list of diagrams in a grid, alternating left-to-right
@@ -72,10 +67,7 @@ gridCat' = gridAnimal id
 --
 -- <<diagrams/src_Diagrams_TwoD_Layout_Grid_gridSnakeExample.svg#diagram=gridSnakeExample&width=200>>
 
-gridSnake
-  :: TypeableFloat n
-  => [QDiagram b V2 n Any]
-  -> QDiagram b V2 n Any
+gridSnake :: [Diagram V2] -> Diagram V2
 gridSnake diagrams = gridSnake' (intSqrt $ length diagrams) diagrams
 
 -- | Same as 'gridSnake', but with a specified number of columns.
@@ -85,27 +77,20 @@ gridSnake diagrams = gridSnake' (intSqrt $ length diagrams) diagrams
 --
 -- <<diagrams/src_Diagrams_TwoD_Layout_Grid_gridSnakeExample'.svg#diagram=gridSnakeExample'&width=200>>
 
-gridSnake'
-  :: TypeableFloat n
-  => Int -> [QDiagram b V2 n Any]
-  -> QDiagram b V2 n Any
+gridSnake' :: Int -> [Diagram V2] -> Diagram V2
 gridSnake' = gridAnimal (everyOther reverse)
 
 -- | Generalisation of gridCat and gridSnake to not repeat code.
 gridAnimal
-  :: TypeableFloat n
-  => ([[QDiagram b V2 n Any]] -> [[QDiagram b V2 n Any]]) -> Int -> [QDiagram b V2 n Any]
-  -> QDiagram b V2 n Any
+  :: ([[Diagram V2]] -> [[Diagram V2]]) -> Int -> [Diagram V2]
+  -> Diagram V2
 gridAnimal rowFunction cols = vcat . map hcat . rowFunction
     . chunksOf cols . sameBoundingRect . padList cols mempty
 
 -- | `gridWith f (cols, rows)` uses `f`, a function of two
 --   zero-indexed integer coordinates, to generate a grid of diagrams
 --   with the specified dimensions.
-gridWith
-  :: TypeableFloat n
-  => (Int -> Int -> QDiagram b V2 n Any) -> (Int, Int)
-  -> QDiagram b V2 n Any
+gridWith :: (Int -> Int -> Diagram V2) -> (Int, Int) -> Diagram V2
 gridWith f (cols, rows) = gridCat' cols diagrams
   where
     diagrams = [ f x y | y <- [0..rows - 1] , x <- [0..cols - 1] ]
@@ -114,33 +99,30 @@ gridWith f (cols, rows) = gridCat' cols diagrams
 
 -- | Make all diagrams have the same bounding square,
 --   one that bounds them all.
-sameBoundingSquare
-  :: forall b n. TypeableFloat n
-  => [QDiagram b V2 n Any]
-  -> [QDiagram b V2 n Any]
+sameBoundingSquare :: [Diagram V2] -> [Diagram V2]
 sameBoundingSquare diagrams = map frameOne diagrams
   where
     biggest        = maximumBy (comparing maxDim) diagrams
     maxDim diagram = max (width diagram) (height diagram)
     centerP        = centerPoint biggest
-    padSquare      = (square (maxDim biggest) :: D V2 n) # phantom
-    frameOne       = atop padSquare . moveOriginTo centerP
+    padSquare      = (square (maxDim biggest) :: Path V2 Double) # phantom
+    frameOne       = (<>) padSquare . moveOriginTo centerP
+    -- ATOP!!
 
 
 -- | Make all diagrams have the same bounding rect,
 --   one that bounds them all.
 sameBoundingRect
-  :: forall n b. TypeableFloat n
-  => [QDiagram b V2 n Any]
-  -> [QDiagram b V2 n Any]
+  :: [Diagram V2] -> [Diagram V2]
 sameBoundingRect diagrams = map frameOne diagrams
   where
     widest = maximumBy (comparing width) diagrams
     tallest = maximumBy (comparing height) diagrams
-    (xCenter :& _) = coords (centerPoint widest)
-    (_ :& yCenter) = coords (centerPoint tallest)
-    padRect = (rect (width widest) (height tallest) :: D V2 n) # phantom
-    frameOne = atop padRect . moveOriginTo (xCenter ^& yCenter)
+    P2 xCenter _ = centerPoint widest
+    P2 _ yCenter = centerPoint tallest
+    padRect = (rect (width widest) (height tallest) :: Path V2 Double) # phantom
+    frameOne = (<>) padRect . moveOriginTo (P2 xCenter yCenter)
+    -- ATOP!!
 
 -- * Helper functions.
 

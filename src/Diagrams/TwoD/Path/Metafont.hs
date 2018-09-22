@@ -1,5 +1,6 @@
-{-# LANGUAGE GADTs           #-}
-{-# LANGUAGE TypeFamilies    #-}
+{-# LANGUAGE GADTs            #-}
+{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeFamilies     #-}
 
 -----------------------------------------------------------------------------
 -- |
@@ -38,7 +39,7 @@ import           Diagrams.TwoD.Path.Metafont.Types
 -- | MF.fromString parses a Text value in MetaFont syntax, and
 -- attempts to return a TrailLike.  Only a subset of Metafont is
 -- supported; see the tutorial for details.
-fromString :: (TrailLike t, V t ~ V2, N t ~ n, Read n, RealFloat n) => Text -> Either ParseError t
+fromString :: (InSpace V2 n t, FromTrail t, Read n, RealFloat n) => Text -> Either ParseError t
 fromString s = case parse metafontParser "" s of
   (Left err) -> Left err -- with different type
   (Right p)  -> Right . fromPath  $ p
@@ -48,21 +49,21 @@ fromString s = case parse metafontParser "" s of
 --  each string.  fromStrings is provided as a convenience because the
 --  MetaFont &-join is not supported.  'mconcat' ('<>') on the TrailLike is
 --  equivalent, with clearer semantics.
-fromStrings :: (TrailLike t, V t ~ V2, N t ~ n, Read n, RealFloat n) => [Text] -> Either [ParseError] [t]
+fromStrings :: (InSpace V2 n t, FromTrail t, Read n, RealFloat n) => [Text] -> Either [ParseError] [t]
 fromStrings ss = case partitionEithers . map fromString $ ss of
   ([],ts) -> Right ts
   (es,_)  -> Left es
 
 -- | Should you wish to construct the MFPath in some other fashion,
 --   fromPath makes a TrailLike directly from the MFPath
-fromPath :: (TrailLike t, V t ~ V2, N t ~ n, RealFloat n) => MFP n -> t
-fromPath = trailLike . locatedTrail . over (segs.mapped) computeControls . solve
+fromPath :: (InSpace V2 n t, FromTrail t, RealFloat n) => MFP n -> t
+fromPath = fromLocTrail . locatedTrail . over (segs.mapped) computeControls . solve
 
 -- | flex ps draws a Trail through the points ps, such that at every
 -- point p ∊ ps except the endpoints, the Trail is parallel to the
 -- line from the first to the last point.  This is the same as the
 -- flex command defined in plain MetaFont.
-flex :: (TrailLike t, V t ~ V2, N t ~ n, RealFloat n) => [P2 n] -> t
+flex :: (InSpace V2 n t, FromTrail t, RealFloat n) => [P2 n] -> t
 flex ps = fromPath . MFP False $ (s0:rest) where
   tj = Left (TJ (TensionAmt 1) (TensionAmt 1))
   jj = PJ Nothing tj Nothing
@@ -73,5 +74,5 @@ flex ps = fromPath . MFP False $ (s0:rest) where
 
 -- | metafont converts a path defined in the Metafont combinator synax into a
 -- native Diagrams TrailLike.
-metafont :: (TrailLike t, V t ~ V2, N t ~ n, RealFloat n) => MFPathData P n -> t
+metafont :: (InSpace V2 n t, FromTrail t, RealFloat n) => MFPathData P n -> t
 metafont = fromPath . mfPathToSegments

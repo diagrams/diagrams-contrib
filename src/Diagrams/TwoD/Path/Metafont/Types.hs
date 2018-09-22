@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP                        #-}
+-- {-# LANGUAGE CPP                        #-}
 {-# LANGUAGE DeriveFunctor     #-}
 {-# LANGUAGE EmptyDataDecls    #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -8,13 +8,13 @@
 module Diagrams.TwoD.Path.Metafont.Types where
 
 import Control.Lens hiding (( # ))
-#if __GLASGOW_HASKELL__ < 710
-import Data.Monoid
-#endif
+-- #if __GLASGOW_HASKELL__ < 710
+-- import Data.Monoid
+-- #endif
 import Data.Semigroup
 
-import Diagrams.Direction
-import Diagrams.TwoD.Types
+import Geometry.Direction hiding (dir)
+import Diagrams.Prelude hiding (dir)
 
 -- | A @PathJoin@ specifies the directions at both ends of a segment,
 -- and a join which describes the control points explicitly or implicitly.

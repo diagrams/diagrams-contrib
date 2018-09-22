@@ -145,8 +145,7 @@ lSystemPath n delta axiom rules = getTurtlePath $ lSystem n delta axiom rules
 -- | Create a diagram using n iterations of the rules with given axiom symbols
 --   and the angle increment, delta. The first segment is in the unitX direction.
 --   The styles in the 'TurtleState' are applied to the trails in the diagram.
-lSystemDiagram :: (TypeableFloat n, Renderable (Path V2 n) b)
-                => Int -> Angle n -> [Symbol n] -> Rules n -> QDiagram b V2 n Any
+lSystemDiagram :: Int -> Angle Double -> [Symbol Double] -> Rules Double -> Diagram V2
 lSystemDiagram n delta axiom rules = getTurtleDiagram $ lSystem n delta axiom rules
 
 symbol :: Fractional n => Char -> Symbol n
@@ -199,7 +198,7 @@ sierpinski n = lSystem n (60 @@ deg) (symbols "FX") rules
 -- | Cantor dust
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_cantorEx.svg#diagram=cantorEx&width=400>>
-cantor :: (Renderable (Path V2 n) b, TypeableFloat n) => Int -> QDiagram b V2 n Any
+cantor :: Int -> Diagram V2
 cantor n = vsep 0.05 $ map dust [0..n]
   where
   dust i =  scaleToX 1 . lw ultraThick $ lSystemDiagram i (0 @@ turn) (symbols "F") rules

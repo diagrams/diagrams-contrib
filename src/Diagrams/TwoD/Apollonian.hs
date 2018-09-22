@@ -72,7 +72,7 @@ import qualified Data.Foldable    as F
 import           Data.Maybe       (catMaybes)
 import           Data.Tree
 
-import           Diagrams.Prelude hiding (center, radius)
+import           Diagrams.Prelude hiding (center)
 
 import           Control.Arrow    (second, (&&&))
 
@@ -272,22 +272,19 @@ prune p (Node a ts)
 ------------------------------------------------------------
 
 -- | Draw a circle.
-drawCircle :: (Renderable (Path V2 n) b, TypeableFloat n) =>
-              Circle n -> QDiagram b V2 n Any
+drawCircle :: Circle Double -> Diagram V2
 drawCircle c = circle (radius c) # moveTo (center c)
                                  # fcA transparent
 
 -- | Draw a generated gasket, using a line width 0.003 times the
 --   radius of the largest circle.
-drawGasket :: (Renderable (Path V2 n) b, TypeableFloat n) =>
-              [Circle n] -> QDiagram b V2 n Any
+drawGasket :: [Circle Double] -> Diagram V2
 drawGasket cs = F.foldMap drawCircle cs
 
 -- | Draw an Apollonian gasket: the first argument is the threshold;
 --   the recursion will stop upon reaching circles with radii less than
 --   it. The next three arguments are bends of three circles.
-apollonianGasket :: (Renderable (Path V2 n) b, TypeableFloat n)
-                 => n -> n -> n -> n -> QDiagram b V2 n Any
+apollonianGasket :: Double -> Double -> Double -> Double -> Diagram V2
 apollonianGasket thresh b1 b2 b3 = drawGasket . apollonian thresh $ (initialConfig b1 b2 b3)
 
 ------------------------------------------------------------

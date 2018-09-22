@@ -8,7 +8,7 @@ module Diagrams.TwoD.Path.Metafont.Parser
 import           Text.Parsec
 import           Text.Parsec.Text
 
-import           Diagrams.Prelude                  hiding (option)
+import           Diagrams.Prelude                  hiding (option, dir)
 import           Diagrams.TwoD.Path.Metafont.Types
 
 num :: Read n => Parser n
@@ -36,7 +36,7 @@ pt = char '(' *> (p2 <$> xy) <* char ')'
 
 -- Joins
 
-anyJoin :: (Num n, Read n) => Parser (PathJoin (Maybe (PathDir n)) (BasicJoin n))
+anyJoin :: (Floating n, Read n) => Parser (PathJoin (Maybe (PathDir n)) (BasicJoin n))
 anyJoin = straightJoin <|> do
   d1' <- optionMaybe pathDir
   j' <- tenseLine <|> dotsJoin
@@ -84,13 +84,13 @@ tenseLine = string "---" *> pure (Left $ TJ t t) where t = TensionAmt 4096
 
 -- Directions
 
-dir :: Read n => Parser (PathDir n)
+dir :: (Read n, Floating n) => Parser (PathDir n)
 dir = PathDirDir . direction . r2 <$> xy
 
 curl :: Read n => Parser (PathDir n)
 curl = PathDirCurl <$> (string "curl" *> spaces *> num)
 
-pathDir :: Read n => Parser (PathDir n)
+pathDir :: (Read n, Floating n) => Parser (PathDir n)
 pathDir = do
   char '{' *> spaces
   d <- curl <|> dir
@@ -99,7 +99,7 @@ pathDir = do
 
 -- Segments & Paths
 
-mfs :: (Num n, Read n) => Parser (MetafontSegment (Maybe (PathDir n)) (BasicJoin n) n)
+mfs :: (Floating n, Read n) => Parser (MetafontSegment (Maybe (PathDir n)) (BasicJoin n) n)
 mfs = MFS <$> pt <*> anyJoin <*> lookAhead pt
 
 matches :: Stream s m t => ParsecT s u m a -> ParsecT s u m Bool
@@ -107,7 +107,7 @@ matches p = option False (p *> return True)
 
 -- | Parse a 'Text' value in Metafont syntax, as destribed in /The
 -- METAFONTbook/.
-metafontParser :: (Num n, Read n) => Parser (MFPath (Maybe (PathDir n)) (BasicJoin n) n)
+metafontParser :: (Floating n, Read n) => Parser (MFPath (Maybe (PathDir n)) (BasicJoin n) n)
 metafontParser = do
   ss <- many1 (try mfs)
   lastP <- pt

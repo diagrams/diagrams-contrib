@@ -1,4 +1,4 @@
-{-# LANGUAGE CPP                   #-}
+-- {-# LANGUAGE CPP                   #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
@@ -70,11 +70,11 @@ module Diagrams.TwoD.Tilings (
   ) where
 
 import           Control.Monad.State
-#if __GLASGOW_HASKELL__ >= 704
+-- #if __GLASGOW_HASKELL__ >= 704
 import           Control.Monad.Writer hiding ((<>))
-#else
-import           Control.Monad.Writer
-#endif
+-- #else
+-- import           Control.Monad.Writer
+-- #endif
 
 import           Data.Function        (on)
 import           Data.List            (mapAccumL, sort)
@@ -335,14 +335,12 @@ genPolyVs p v d = Polygon
 ------------------------------------------------------------
 
 -- | Draw an edge with the given style.
-drawEdge :: (Renderable (Path V2 n) b, TypeableFloat n) =>
-            Style V2 n -> Edge -> QDiagram b V2 n Any
+drawEdge :: Style V2 Double-> Edge -> Diagram V2
 drawEdge s (Edge v1 v2) = (toP2 v1 ~~ toP2 v2) # applyStyle s
 
 -- | Draw a polygon with the given style.
-drawPoly :: (Renderable (Path V2 n) b, TypeableFloat n) =>
-            (Polygon -> Style V2 n) -> Polygon -> QDiagram b V2 n Any
-drawPoly s p = applyStyle (s p) . strokeLocLoop . mapLoc closeLine . fromVertices . map toP2 . polygonVertices $ p
+drawPoly :: (Polygon -> Style V2 Double) -> Polygon -> Diagram V2
+drawPoly s p = applyStyle (s p) . stroke . mapLoc closeLine . fromVertices . map toP2 . polygonVertices $ p
 
 -- Simple per-polygon color scheme
 polyColor :: (Floating a, Ord a) => TilingPoly -> Colour a
@@ -354,8 +352,7 @@ polyColor Dodecagon = cornflowerblue
 
 -- | Draw a tiling, with a given width and height and default colors
 --   for the polygons.
-drawTiling :: (Renderable (Path V2 n) b, TypeableFloat n)
-           => Tiling -> n -> n -> QDiagram b V2 n Any
+drawTiling :: Tiling -> Double -> Double -> Diagram V2
 drawTiling =
   drawTilingStyled
     mempty
@@ -372,9 +369,8 @@ drawTiling =
 -- | Draw a tiling with customizable styles for the polygons.  This is
 --   just an example, which you can use as the basis of your own
 --   tiling-drawing routine.
-drawTilingStyled :: forall b n. (Renderable (Path V2 n) b, TypeableFloat n)
-                 => Style V2 n -> (Polygon -> Style V2 n)
-                 -> Tiling -> n -> n -> QDiagram b V2 n Any
+drawTilingStyled :: Style V2 Double -> (Polygon -> Style V2 Double)
+                 -> Tiling -> Double -> Double -> Diagram V2
 drawTilingStyled eStyle pStyle t w h =
   mkDia $ generateTiling t (V2 0 0) (V2 1 0) inRect
 
@@ -386,7 +382,7 @@ drawTilingStyled eStyle pStyle t w h =
   where
     inRect (toV2 -> V2 x y) = -w/2 <= x && x <= w/2 && -h/2 <= y && y <= h/2
     mkDia (es, ps) = viewRect (es <> ps)
-    viewRect = withEnvelope (rect w h :: D V2 n)
+    viewRect = withEnvelope (rect w h :: Path V2 Double)
 
 ------------------------------------------------------------
 -- Some pre-defined tilings

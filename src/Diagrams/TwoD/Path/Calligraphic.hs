@@ -14,7 +14,11 @@ module Diagrams.TwoD.Path.Calligraphic
     ( calligraphic
     ) where
 
-import           Diagrams.Prelude
+import Diagrams.Prelude
+-- import           Geometry
+-- import Data.Semigroup
+-- import Control.Lens
+-- import Linear.Vector
 
 -- | @calligraphic pen t@ creates a \"calligraphic\" variant of @t@ by
 --   filling between two copies of @t@ offset by the @pen@ vector.
@@ -35,7 +39,7 @@ import           Diagrams.Prelude
 --   >   # fc black
 --   >   # hcat' (with & sep .~ 10)
 
-calligraphic :: (Floating n, Ord n) => V2 n -> Trail' Line V2 n -> Trail' Loop V2 n
+calligraphic :: (Floating n, Ord n) => V2 n -> Line V2 n -> Loop V2 n
 calligraphic pen p
-  = (p <> fromOffsets [pen] <> reverseLine p <> fromOffsets [negated pen])
+  = (p <> fromOffsets [pen] <> reversing p <> fromOffsets [negated pen])
   # closeLine

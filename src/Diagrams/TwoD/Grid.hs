@@ -3,7 +3,7 @@
 
 {-# LANGUAGE FlexibleContexts          #-}
 {-# LANGUAGE MultiParamTypeClasses     #-}
-{-# LANGUAGE NoMonomorphismRestriction #-}
+-- {-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE TemplateHaskell           #-}
 
 -----------------------------------------------------------------------------
@@ -87,158 +87,154 @@
 --
 -----------------------------------------------------------------------------
 
-module Diagrams.TwoD.Grid (
-    gridWithHalves
-  , gridWithHalves'
-  , annotate
-  , gridLine
-  , gridLines
-  , placeDiagramOnGrid
-  ) where
+module Diagrams.TwoD.Grid where
+-- module Diagrams.TwoD.Grid (
+--     gridWithHalves
+--   , gridWithHalves'
+--   , annotate
+--   , gridLine
+--   , gridLines
+--   , placeDiagramOnGrid
+--   ) where
 
-import           Diagrams.Prelude
+-- import           Diagrams.Prelude
 
-import           Data.List
-import           Data.List.Split
-import           Data.Typeable
+-- import           Data.List
+-- import           Data.List.Split
+-- import           Data.Typeable
 
 
-data GridOpts n
-  = GridOpts
-    { _gridLineWidth :: Measure n
-    , _gridYColour   :: Colour Double
-    , _gridXColour   :: Colour Double
-    , _gridLL        :: V2 n
-    , _gridLR        :: V2 n
-    , _gridUL        :: V2 n
-    }
+-- data GridOpts n
+--   = GridOpts
+--     { _gridLineWidth :: Measure n
+--     , _gridYColour   :: Colour Double
+--     , _gridXColour   :: Colour Double
+--     , _gridLL        :: V2 n
+--     , _gridLR        :: V2 n
+--     , _gridUL        :: V2 n
+--     }
 
-instance (Floating n, Ord n) => Default (GridOpts n) where
-  def = GridOpts
-        { _gridLineWidth = thin
-        , _gridXColour   = red
-        , _gridYColour   = blue
-        , _gridLL        = r2 (1.0, 1.0)
-        , _gridLR        = r2 (2.0, 1.0)
-        , _gridUL        = r2 (1.0, 2.0)
-        }
+-- instance (Floating n, Ord n) => Default (GridOpts n) where
+--   def = GridOpts
+--         { _gridLineWidth = thin
+--         , _gridXColour   = red
+--         , _gridYColour   = blue
+--         , _gridLL        = r2 (1.0, 1.0)
+--         , _gridLR        = r2 (2.0, 1.0)
+--         , _gridUL        = r2 (1.0, 2.0)
+--         }
 
-data HighlightLineOpts n
-  = HighlightLineOpts
-    { _highLightLineColour        :: Colour Double
-    , _highLightLineWidth         :: Measure n
-    , _highLightLineDashingOnOff  :: [Measure n]
-    , _highLightLineDashingOffset :: Measure n
-    }
+-- data HighlightLineOpts n
+--   = HighlightLineOpts
+--     { _highLightLineColour        :: Colour Double
+--     , _highLightLineWidth         :: Measure n
+--     , _highLightLineDashingOnOff  :: [Measure n]
+--     , _highLightLineDashingOffset :: Measure n
+--     }
 
-instance (Floating n, Ord n) => Default (HighlightLineOpts n) where
-  def = HighlightLineOpts
-        { _highLightLineColour = black
-        , _highLightLineWidth = medium
-        , _highLightLineDashingOnOff = [normalized 0.03, normalized 0.03]
-        , _highLightLineDashingOffset = output 0
-        }
+-- instance (Floating n, Ord n) => Default (HighlightLineOpts n) where
+--   def = HighlightLineOpts
+--         { _highLightLineColour = black
+--         , _highLightLineWidth = medium
+--         , _highLightLineDashingOnOff = [normalized 0.03, normalized 0.03]
+--         , _highLightLineDashingOffset = output 0
+--         }
 
-makeLenses ''GridOpts
-makeLenses ''HighlightLineOpts
+-- makeLenses ''GridOpts
+-- makeLenses ''HighlightLineOpts
 
--- | Name a point by grid co-ordinates.
-tick :: (Floating n, Ord n)
-     => (Int, Int) -> QDiagram b V2 n Any
-tick (n, m) = pointDiagram origin # named (n, m)
+-- -- | Name a point by grid co-ordinates.
+-- tick :: (Int, Int) -> Diagram V2
+-- tick (n, m) = pointDiagram origin .> (n, m)
 
--- | @gridWithHalves'@ with default opts.
-gridWithHalves :: (Renderable (Path V2 n) b, TypeableFloat n)
-               => Int -> Int -> QDiagram b V2 n Any
-gridWithHalves = gridWithHalves' def
+-- -- | @gridWithHalves'@ with default opts.
+-- gridWithHalves :: Int -> Int -> Diagram V2
+-- gridWithHalves = gridWithHalves' def
 
--- | Create a n by m grid. Diagrams can be placed on either the grid
--- points themselves or on points half way between grid points. The
--- latter includes points a half grid length outside of the grid
--- itself.
-gridWithHalves' :: (Renderable (Path V2 n) b, TypeableFloat n)
-                => GridOpts n -> Int -> Int -> QDiagram b V2 n Any
-gridWithHalves' opts n m =
-  (mconcat lineXs # translate (r2 (llx, lly))) <>
-  (mconcat lineYs # translate (r2 (llx, lly))) <>
-  (intersections # translate (r2 (llx - delta2X, luy + delta2Y)))
+-- -- | Create a n by m grid. Diagrams can be placed on either the grid
+-- -- points themselves or on points half way between grid points. The
+-- -- latter includes points a half grid length outside of the grid
+-- -- itself.
+-- gridWithHalves' :: GridOpts Double -> Int -> Int -> Diagram V2
+-- gridWithHalves' opts n m =
+--   (mconcat lineXs # translate (r2 (llx, lly))) <>
+--   (mconcat lineYs # translate (r2 (llx, lly))) <>
+--   (intersections # translate (r2 (llx - delta2X, luy + delta2Y)))
 
-  where
-    llx :& lly  = coords (opts^.gridLL)
-    lrx :& _    = coords (opts^.gridLR)
-    _   :& luy  = coords (opts^.gridUL)
+--   where
+--     V2 llx lly  = opts^.gridLL
+--     V2 lrx _    = opts^.gridLR
+--     V2 _   luy  = opts^.gridUL
 
-    deltaX   = (lrx - llx) / fromIntegral n
-    deltaY   = (luy - lly) / fromIntegral m
-    delta2X  = (lrx - llx) / fromIntegral (2 * n)
-    delta2Y  = (luy - lly) / fromIntegral (2 * m)
+--     deltaX   = (lrx - llx) / fromIntegral n
+--     deltaY   = (luy - lly) / fromIntegral m
+--     delta2X  = (lrx - llx) / fromIntegral (2 * n)
+--     delta2Y  = (luy - lly) / fromIntegral (2 * m)
 
-    ns  = [0..n]
-    ms  = [0..m]
-    n2s = [0..2 * n + 2]
-    m2s = [0..2 * m + 2]
+--     ns  = [0..n]
+--     ms  = [0..m]
+--     n2s = [0..2 * n + 2]
+--     m2s = [0..2 * m + 2]
 
-    xs = map ((* deltaX)  . fromIntegral) ns
-    ys = map ((* deltaY)  . fromIntegral) ms
+--     xs = map ((* deltaX)  . fromIntegral) ns
+--     ys = map ((* deltaY)  . fromIntegral) ms
 
-    lineXs = Prelude.map lineX ys
-    lineYs = Prelude.map lineY xs
+--     lineXs = Prelude.map lineX ys
+--     lineYs = Prelude.map lineY xs
 
-    lineX y = fromOffsets [(opts^.gridLR) ^-^ (opts^.gridLL)] #
-              translate (r2 (0.0, y)) #
-              lc (opts^.gridXColour) #
-              lw (opts^.gridLineWidth)
+--     lineX :: Double -> Diagram V2
+--     lineX y = fromOffsets [(opts^.gridLR) ^-^ (opts^.gridLL)] #
+--               translate (r2 (0.0, y)) #
+--               lc (opts^.gridXColour) #
+--               lw (opts^.gridLineWidth)
 
-    lineY x = fromOffsets [(opts^.gridUL) ^-^ (opts^.gridLL)] #
-              translate (r2 (x, 0.0)) #
-              lc (opts^.gridYColour) #
-              lw (opts^.gridLineWidth)
+--     lineY :: Double -> Diagram V2
+--     lineY x = fromOffsets [(opts^.gridUL) ^-^ (opts^.gridLL)] #
+--               translate (r2 (x, 0.0)) #
+--               lc (opts^.gridYColour) #
+--               lw (opts^.gridLineWidth)
 
-    intersections = hcat $
-                    intersperse (strutX delta2X) $
-                    map vcat $
-                    map (intersperse (strutY delta2Y)) $
-                    chunksOf (2 * m + 1 + 2) [ tick (n, m) | n <- n2s, m <- m2s ]
+--     intersections = hcat $
+--                     intersperse (strutX delta2X) $
+--                     map vcat $
+--                     map (intersperse (strutY delta2Y)) $
+--                     chunksOf (2 * m + 1 + 2) [ tick (n, m) | n <- n2s, m <- m2s ]
 
--- | Place a diagram on a grid (which is itself a diagram) at all the
--- co-ordinates specified.
-placeDiagramOnGrid :: (IsName nm, Floating n, Ord n) =>
-                      QDiagram b V2 n Any -> [nm] -> QDiagram b V2 n Any -> QDiagram b V2 n Any
-placeDiagramOnGrid d = flip $ foldr (\n -> withName n (atop . place d . location))
+-- -- | Place a diagram on a grid (which is itself a diagram) at all the
+-- -- co-ordinates specified.
+-- placeDiagramOnGrid :: IsName nm =>
+--                       Diagram V2 -> [nm] -> Diagram V2 -> Diagram V2
+-- placeDiagramOnGrid d = flip $ foldr (\n -> withName n (atop . place d . location))
 
-annotate :: (Floating n, Ord n, Typeable n) =>
-             String ->
-             (String -> QDiagram b V2 n Any) ->
-             Colour Double ->
-             Int ->
-             Int ->
-             QDiagram b V2 n Any ->
-             QDiagram b V2 n Any
-annotate s txtPt h n m =
-  withName (n, m) (atop . place (addText s h) . location)
-  where
-    addText s h = txtPt s # fc h
+-- annotate :: String ->
+--              (String -> Diagram V2) ->
+--              Colour Double ->
+--              Int ->
+--              Int ->
+--              Diagram V2 ->
+--              Diagram V2
+-- annotate s txtPt h n m =
+--   withName (n, m) (atop . place (addText s h) . location)
+--   where
+--     addText s h = txtPt s # fc h
 
--- | Draw a line between two named points on the grid.
-gridLine :: (IsName a, IsName b,
-             Renderable (Path V2 n) c, TypeableFloat n) =>
-            a -> b -> QDiagram c V2 n Any -> QDiagram c V2 n Any
-gridLine = gridLine' def
+-- -- | Draw a line between two named points on the grid.
+-- gridLine :: (IsName a, IsName b)
+--         => a -> b -> Diagram V2 -> Diagram V2
+-- gridLine = gridLine' def
 
--- | Draw a line between two named points on the grid.
-gridLine' :: (IsName a, IsName b,
-              Renderable (Path V2 n) c, TypeableFloat n) =>
-            HighlightLineOpts n -> a -> b -> QDiagram c V2 n Any -> QDiagram c V2 n Any
-gridLine' opts u v =
-  withName u $ \x ->
-  withName v $ \y ->
-  atop ((location x ~~ location y) #
-        lc (opts^.highLightLineColour) #
-        lw (opts^.highLightLineWidth) #
-        dashing (opts^.highLightLineDashingOnOff) (opts^.highLightLineDashingOffset))
+-- -- | Draw a line between two named points on the grid.
+-- gridLine' :: (IsName a, IsName b) =>
+--             HighlightLineOpts Double -> a -> b -> Diagram V2 -> Diagram V2
+-- gridLine' opts u v =
+--   withName u $ \x ->
+--   withName v $ \y ->
+--   atop ((location x ~~ location y) #
+--         lc (opts^.highLightLineColour) #
+--         lw (opts^.highLightLineWidth) #
+--         dashing (opts^.highLightLineDashingOnOff) (opts^.highLightLineDashingOffset))
 
--- | Draw lines between a list of pairs of named points on the grid.
-gridLines :: (Renderable (Path V2 n) c, TypeableFloat n,
-              IsName a, IsName b) =>
-             [(a, b)] -> QDiagram c V2 n Any -> QDiagram c V2 n Any
-gridLines xs = foldr (.) id [ gridLine x y | (x, y) <- xs ]
+-- -- | Draw lines between a list of pairs of named points on the grid.
+-- gridLines :: (IsName a, IsName b) =>
+--              [(a, b)] -> Diagram V2 -> Diagram V2
+-- gridLines xs = foldr (.) id [ gridLine x y | (x, y) <- xs ]

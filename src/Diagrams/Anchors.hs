@@ -1,4 +1,6 @@
 {-# LANGUAGE DefaultSignatures         #-}
+{-# LANGUAGE DeriveGeneric             #-}
+{-# LANGUAGE DeriveAnyClass            #-}
 {-# LANGUAGE TemplateHaskell           #-}
 {-# LANGUAGE TypeFamilies              #-}
 {-# LANGUAGE UndecidableInstances      #-}
@@ -45,24 +47,27 @@ module Diagrams.Anchors
        , showAnchor_)
        where
 
-import           Diagrams.Names
-import           Diagrams.Core
-import           Diagrams.Path
+import           Diagrams.Types.Names
+import           Diagrams.Types
+import           Geometry
 import           Diagrams.TwoD.Model
 
 import qualified Control.Lens     as Lens
 import           Control.Lens     hiding (transform, (.>))
 import           Data.List        (foldl')
-import           Data.Map         (Map)
-import qualified Data.Map         as Map
+-- import           Data.Map         (Map)
+-- import qualified Data.Map         as Map
 import           Data.Maybe       (fromJust, fromMaybe)
-import qualified Data.Set         as Set
+import qualified Data.HashSet     as HS
 import           Data.Typeable    (Typeable)
 import           Data.Semigroup
 
+import GHC.Generics (Generic)
+import Data.HashMap.Lazy (HashMap)
+import qualified Data.HashMap.Lazy as HM
+import Data.Hashable
+
 import           Linear.Vector
-import           Linear.V2
-import           Linear.Affine
 
 --------------------------------------------------------------------------------
 --  Anchors
@@ -82,7 +87,7 @@ type Anchor = Name
 data Anchored t =
   Anchored
   { _currentAnchor :: Maybe Anchor
-  , _anchors :: Map Anchor (V t (N t))
+  , _anchors :: HashMap Anchor (V t (N t))
   , _anchoredObj :: t
   }
 
@@ -96,7 +101,7 @@ instance (HasOrigin t, Additive (V t), Num (N t)) => HasOrigin (Anchored t) wher
     (anchoredObj %~ moveOriginTo p) .
     (anchors . traverse %~ (^-^ v))
 
-instance (Transformable t) => Transformable (Anchored t) where
+instance (InSpace v n t, Foldable v, Transformable t) => Transformable (Anchored t) where
   transform t =
     (anchors . traverse %~ apply t) .
     (anchoredObj %~ transform t)
@@ -115,7 +120,7 @@ instance (Additive (V t), Num (N t), HasOrigin t, Semigroup t) => Semigroup (Anc
                              ((a1 ^. anchoredObj) <> (a2 ^. anchoredObj))
     in updateObj o1 <+> updateObj o2
 
-instance (Additive (V t), Num (N t), HasOrigin t, Monoid' t) => Monoid (Anchored t) where
+instance (Additive (V t), Num (N t), Semigroup t, HasOrigin t, Monoid t) => Monoid (Anchored t) where
   mempty = Anchored Nothing mempty mempty
   mappend = (<>)
 
@@ -129,7 +134,7 @@ addAnchor anchor val = anchors . Lens.at (toName anchor) .~ Just val
 
 -- | Attach a list of anchors to an object, making it 'Anchored'.
 withAnchors :: IsName anchor => [(anchor, V t (N t))] -> t -> Anchored t
-withAnchors = Anchored Nothing . Map.fromList . over (each . _1) toName
+withAnchors = Anchored Nothing . HM.fromList . over (each . _1) toName
 
 -- | Turn an object into a trivial 'Anchored' object with no anchors.
 noAnchors :: t -> Anchored t
@@ -152,7 +157,7 @@ alignAnchor anch = currentAnchor .~ Just (toName anch)
 
 -- | Does the given anchored object have the given anchor?
 hasAnchor :: (IsName a) => a -> Anchored t -> Bool
-hasAnchor anchor = view $ anchors . to (Map.member (toName anchor))
+hasAnchor anchor = view $ anchors . to (HM.member (toName anchor))
 
 -- | Throw away anchors and get the underlying object.
 unanchor
@@ -173,7 +178,7 @@ data PositionalAnchor
   | AnchorBR
   | AnchorB
   | AnchorBL
-  deriving (Eq, Ord, Show, Typeable, Enum)
+  deriving (Eq, Ord, Show, Typeable, Enum, Generic, Hashable)
 
 instance IsName PositionalAnchor where
 
@@ -209,16 +214,16 @@ If any of the anchors do not exist, this function skips them.
 -}
 rotateAnchors :: (IsName anchor) => [anchor] -> Int -> Anchored t -> Anchored t
 rotateAnchors allAnchorsList n t =
-  let allAnchorsSet = Set.fromList . map toName $ allAnchorsList
+  let allAnchorsSet = HS.fromList . map toName $ allAnchorsList
       allObjAnchors = t ^. anchors
-      presentAnchorsSet = Map.keysSet allObjAnchors `Set.intersection` allAnchorsSet
-      presentAnchorsList = filter ((`Set.member` presentAnchorsSet) . toName) allAnchorsList
+      presentAnchorsSet = (HS.fromMap . (() <$)) allObjAnchors `HS.intersection` allAnchorsSet
+      presentAnchorsList = filter ((`HS.member` presentAnchorsSet) . toName) allAnchorsList
       rotateList k xs = drop k xs ++ take k xs
       rotatedList = rotateList ((-n) `mod` length presentAnchorsList) presentAnchorsList
-      findOriginalPairing posAnch = fromJust $ Map.lookup (toName posAnch) allObjAnchors
+      findOriginalPairing posAnch = fromJust $ HM.lookup (toName posAnch) allObjAnchors
       originalOffsets = map findOriginalPairing presentAnchorsList
       rotatedOffsets = zip (map toName rotatedList) originalOffsets
-      newObjAnchors = Map.fromList rotatedOffsets `Map.union` allObjAnchors
+      newObjAnchors = HM.fromList rotatedOffsets `HM.union` allObjAnchors
   in t & anchors .~ newObjAnchors
 
 -- | As 'rotateAnchors', but specialised to the list of all 'PositionalAnchor's.
@@ -230,10 +235,10 @@ rotatePosAnchors = rotateAnchors (enumFrom AnchorL)
 --------------------------------------------------------------------------------
 
 instance Qualifiable t => Qualifiable (Anchored t) where
-  (.>>) name =
-    (currentAnchor . _Just %~ (name .>)) .
-    (anchors %~ Map.mapKeys (name .>)) .
-    (anchoredObj %~ (name .>>))
+  (.>>) nm =
+    (currentAnchor . _Just %~ (nm .>)) .
+    (anchors %~ HM.fromList . over (mapped . _1) (nm .>) . HM.toList) .
+    (anchoredObj %~ (nm .>>))
 
 --------------------------------------------------------------------------------
 --  Easily concatenate many anchored objects
@@ -271,9 +276,8 @@ anchorMany_ base = unanchor . anchorMany base
 
 -- | Show a particular anchor in the 'Anchored' object.
 showAnchor
-  :: (RealFloat n, Typeable n, Monoid m, Semigroup m,
-      Renderable (Path V2 n) b, IsName a) =>
-     a -> Anchored (QDiagram b V2 n m) -> Anchored (QDiagram b V2 n m)
+  :: (Monoid m, Semigroup m, IsName a) =>
+     a -> Anchored (QDiagram V2 Double m) -> Anchored (QDiagram V2 Double m)
 showAnchor anch = moveFromAnchor . over anchoredObj showOrigin . moveToAnchor
   where
     moveToAnchor   t = t & anchoredObj %~ moveOriginBy ( getAnchorOffset anch t)
@@ -281,7 +285,6 @@ showAnchor anch = moveFromAnchor . over anchoredObj showOrigin . moveToAnchor
 
 -- | Show a particular anchor in the 'Anchored' object, then 'unanchor'.
 showAnchor_
-  :: (RealFloat n, Typeable n, Monoid m, Semigroup m,
-      Renderable (Path V2 n) b, IsName a) =>
-     a -> Anchored (QDiagram b V2 n m) -> QDiagram b V2 n m
+  :: (Monoid m, Semigroup m, IsName a) =>
+     a -> Anchored (QDiagram V2 Double m) -> QDiagram V2 Double m
 showAnchor_ anch = unanchor . showAnchor anch

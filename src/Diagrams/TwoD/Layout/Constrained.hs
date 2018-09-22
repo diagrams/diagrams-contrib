@@ -150,7 +150,7 @@ import           GHC.Generics
 
 import qualified Math.MFSolve         as MFS
 
-import           Diagrams.Coordinates
+-- import           Diagrams.Coordinates
 import           Diagrams.Prelude
 
 ------------------------------------------------------------
@@ -236,12 +236,12 @@ mkVar s ty = MFS.makeVariable (newVar s ty)
 -- | Make a variable tracking the local origin of a given diagram.
 --   Not intended to be called by end users.
 mkDPVar :: Num n => DiaID s -> String -> P2 (Expr s n)
-mkDPVar d s = mkDVar d s X ^& mkDVar d s Y
+mkDPVar d s = P2 (mkDVar d s X) (mkDVar d s Y)
 
 -- | Make a variable corresponding to a 2D point.  Not intended to be
 --   called by end users.
 mkPVar :: Num n => String -> P2 (Expr s n)
-mkPVar s = mkVar s X ^& mkVar s Y
+mkPVar s = P2 (mkVar s X) (mkVar s Y)
 
 ------------------------------------------------------------
 -- Constraints
@@ -258,19 +258,19 @@ mkPVar s = mkVar s X ^& mkVar s Y
 --   Constrained systems, both using a monadic interface.  In the
 --   user-facing API, we just immediately turn each Constraints value
 --   into a Constrained computation, which can then be combined.
-type Constraints s n = MFS.MFSolver (Var s) n ()
+type Constraints s = MFS.MFSolver (Var s) Double ()
 
 -- | The state maintained by the Constrained monad.  Note that @s@
 --   is a phantom parameter, used in a similar fashion to the @ST@
 --   monad, to ensure that generated diagram IDs do not leak.
-data ConstrainedState s b n m = ConstrainedState
-  { _equations  :: Constraints s n
+data ConstrainedState s m = ConstrainedState
+  { _equations  :: Constraints s
                    -- ^ Current set of constraints
   , _diaCounter :: Int
                    -- ^ Global counter for unique diagram IDs
   , _varCounter :: Int
                    -- ^ Global counter for unique variable IDs
-  , _diagrams   :: M.Map (DiaID s) (QDiagram b V2 n m)
+  , _diagrams   :: M.Map (DiaID s) (QDiagram V2 Double m)
                    -- ^ Map from diagram IDs to diagrams
   }
 
@@ -278,7 +278,7 @@ makeLenses ''ConstrainedState
 
 -- | The initial ConstrainedState: no equations, no diagrams, and
 --   counters at 0.
-initConstrainedState :: ConstrainedState s b n m
+initConstrainedState :: ConstrainedState s m
 initConstrainedState = ConstrainedState
   { _equations  = return ()
   , _diaCounter = 0
@@ -295,7 +295,7 @@ initConstrainedState = ConstrainedState
 --   Note that @s@ is a phantom parameter, used in a similar fashion
 --   to the 'ST' monad, to ensure that generated diagram IDs cannot be
 --   mixed between different 'layout' blocks.
-type Constrained s b n m a = State (ConstrainedState s b n m) a
+type Constrained s m a = State (ConstrainedState s m) a
 
 ------------------------------------------------------------
 -- Constraint DSL
@@ -312,8 +312,7 @@ type Constrained s b n m a = State (ConstrainedState s b n m) a
 --   whose scaling factor may also be constrained, see
 --   'newScalableDia'.
 newDia
-  :: (Hashable n, Floating n, RealFrac n)
-  => QDiagram b V2 n m -> Constrained s b n m (DiaID s)
+  :: QDiagram V2 Double m -> Constrained s m (DiaID s)
 newDia dia = do
   d <- newScalableDia dia
   scaleOf d ==== 1
@@ -325,7 +324,7 @@ newDia dia = do
 --   Both the position of the diagram's origin and its scaling factor
 --   may be constrained.  If unconstrained, the origin will default to
 --   (0,0), and the scaling factor to 1, respectively.
-newScalableDia :: QDiagram b V2 n m -> Constrained s b n m (DiaID s)
+newScalableDia :: QDiagram V2 Double m -> Constrained s m (DiaID s)
 newScalableDia dia = do
   d <- DiaID <$> (diaCounter <+= 1)
   diagrams . L.at d ?= dia
@@ -335,8 +334,7 @@ newScalableDia dia = do
 --   Returns a corresponding list of unique IDs for use in referring
 --   to the diagrams later.
 newDias
-  :: (Hashable n, Floating n, RealFrac n)
-  => [QDiagram b V2 n m] -> Constrained s b n m [DiaID s]
+  :: [QDiagram V2 Double m] -> Constrained s m [DiaID s]
 newDias = mapM newDia
 
 --------------------------------------------------
@@ -429,10 +427,9 @@ scaleOf d = mkDVar d "scale" S
 --   <<diagrams/src_Diagrams_TwoD_Layout_Constrained_circleWithCircle.svg#diagram=circleWithCircle&width=300>>
 
 newPointOn
-  :: (Hashable n, Floating n, RealFrac n)
-  => DiaID s
-  -> (QDiagram b V2 n m -> P2 n)
-  -> Constrained s b n m (P2 (Expr s n))
+  :: DiaID s
+  -> (QDiagram V2 Double m -> P2 Double)
+  -> Constrained s m (P2 (Expr s Double))
 newPointOn d getP = do
   -- the fromJust is justified, because the type discipline on DiaIDs ensures
   -- they will always represent a valid index in the Map.
@@ -451,14 +448,14 @@ newPointOn d getP = do
 -- | Introduce a new constrainable point, unattached to any particular
 --   diagram.  If either of the coordinates are still unconstrained at
 --   the end, they will default to zero.
-newPoint :: Num n => Constrained s b n m (P2 (Expr s n))
+newPoint :: Num n => Constrained s m (P2 (Expr s n))
 newPoint = do
   v <- varCounter <+= 1
   return $ mkPVar ("a" ++ show v)
 
 -- | Introduce a new scalar value which can be constrained.  If still
 --   unconstrained at the end, it will default to 1.
-newScalar :: Num n => Constrained s b n m (Expr s n)
+newScalar :: Num n => Constrained s m (Expr s n)
 newScalar = do
   v <- varCounter <+= 1
   return $ mkVar ("s" ++ show v) S
@@ -467,7 +464,7 @@ newScalar = do
 -- Specifying constraints
 
 -- | Apply some constraints.
-constrain :: Constraints s n -> Constrained s b n m ()
+constrain :: Constraints s -> Constrained s m ()
 constrain newConstraints = equations %= (>> newConstraints)
   -- XXX should this be right-nested instead?  Does it matter?
 
@@ -477,23 +474,20 @@ infix 1 =.=, =^=, ====
 --   Note that you need not worry about introducing redundant
 --   constraints; they are ignored.
 (====)
-  :: (Floating n, RealFrac n, Hashable n)
-  => Expr s n -> Expr s n -> Constrained s b n m ()
+  :: Expr s Double -> Expr s Double -> Constrained s m ()
 a ==== b = constrain $ MFS.ignore (a MFS.=== b)
 
 -- | Constrain two points to be equal.
 (=.=)
-  :: (Hashable n, Floating n, RealFrac n)
-  => P2 (Expr s n) -> P2 (Expr s n) -> Constrained s b n m ()
-(coords -> px :& py) =.= (coords -> qx :& qy) = do
+  :: P2 (Expr s Double) -> P2 (Expr s Double) -> Constrained s m ()
+P2 px py =.= P2 qx qy = do
   px ==== qx
   py ==== qy
 
 -- | Constrain two vectors to be equal.
 (=^=)
-  :: (Hashable n, Floating n, RealFrac n)
-  => V2 (Expr s n) -> V2 (Expr s n) -> Constrained s b n m ()
-(coords -> px :& py) =^= (coords -> qx :& qy) = do
+  :: V2 (Expr s Double) -> V2 (Expr s Double) -> Constrained s m ()
+V2 px py =^= V2 qx qy = do
   px ==== qx
   py ==== qy
 
@@ -519,13 +513,14 @@ a ==== b = constrain $ MFS.ignore (a MFS.=== b)
 --   short, you do not need to know anything about @Located Envelope@s
 --   in order to call this function.
 constrainWith
-  :: (Hashable n, RealFrac n, Floating n, Monoid' m)
+  :: Monoid m
   => -- (forall a. (...) => [a] -> a)
-     ([[Located (Envelope V2 n)]] -> [Located (Envelope V2 n)])
+     ([[Located (Envelope V2 Double)]] -> [Located (Envelope V2 Double)])
   -> [DiaID s]
-  -> Constrained s b n m ()
+  -> Constrained s m ()
 constrainWith _ [] = return ()
 constrainWith f hs = do
+  let envelopeP = undefined
   diaMap <- use diagrams
   let dias  = map (fromJust . flip M.lookup diaMap) hs
       envs  = map ((:[]) . (`at` origin) . getEnvelope) dias
@@ -534,10 +529,10 @@ constrainWith f hs = do
       offs  = zipWith (.-.) (tail eCtrs) eCtrs
       rtps  = zipWith envelopeP             offs (init envs')
       ltps  = zipWith (envelopeP . negated) offs (tail envs')
-      gaps'  = (map . fmap) mkExpr $ zipWith (.-.) ltps rtps
+      gaps'  = (map . fmap) mkExpr $ zipWith (^-^) ltps rtps
   rts <- zipWithM newPointOn (init hs) (map envelopeP offs)
   lts <- zipWithM newPointOn (tail hs) (map (envelopeP . negated) offs)
-  zipWithM3_ (\r g l -> r .+^ g =.= l) rts gaps' lts
+  zipWithM3_ (\r g l -> r ^+^ g =.= l) rts gaps' lts
 
 zipWithM3_ :: Monad m => (a -> b -> c -> m d) -> [a] -> [b] -> [c] -> m ()
 zipWithM3_ f as bs cs = sequence_ $ zipWith3 f as bs cs
@@ -545,35 +540,36 @@ zipWithM3_ f as bs cs = sequence_ $ zipWith3 f as bs cs
 -- | Constrain the origins of two diagrams to have the same
 --   x-coordinate.
 sameX
-  :: (Hashable n, Floating n, RealFrac n)
-  => DiaID s -> DiaID s -> Constrained s b n m ()
+  :: DiaID s -> DiaID s -> Constrained s m ()
 sameX h1 h2 = xOf h1 ==== xOf h2
 
 -- | Constrain the origins of two diagrams to have the same
 --   y-coordinate.
 sameY
-  :: (Hashable n, Floating n, RealFrac n)
-  => DiaID s -> DiaID s -> Constrained s b n m ()
+  :: DiaID s -> DiaID s -> Constrained s m ()
 sameY h1 h2 = yOf h1 ==== yOf h2
 
 -- | Constrain a list of scalar expressions to be all equal.
 allSame
-  :: (Hashable n, Floating n, RealFrac n)
-  => [Expr s n] -> Constrained s b n m ()
+  :: [Expr s Double] -> Constrained s m ()
 allSame as = zipWithM_ (====) as (tail as)
 
 -- | @constrainDir d p q@ constrains the direction from @p@ to @q@ to
 --   be @d@.  That is, the direction of the vector @q .-. p@ must be
 --   @d@.
-constrainDir :: (Hashable n, Floating n, RealFrac n) => Direction V2 (Expr s n) -> P2 (Expr s n) -> P2 (Expr s n) -> Constrained s b n m ()
-constrainDir dir p q = do
+constrainDir
+  :: Direction V2 (Expr s Double)
+  -> P2 (Expr s Double)
+  -> P2 (Expr s Double)
+  -> Constrained s m ()
+constrainDir d p q = do
   s <- newScalar
-  p .+^ (s *^ fromDirection dir) =.= q
+  p .+^ (s *^ fromDirection d) =.= q
 
 -- | @along d ps@ constrains the points @ps@ to all lie along a ray
 --   parallel to the direction @d@.
-along :: (Hashable n, Floating n, RealFrac n) => Direction V2 (Expr s n) -> [P2 (Expr s n)] -> Constrained s b n m ()
-along dir ps = zipWithM_ (constrainDir dir) ps (tail ps)
+along :: Direction V2 (Expr s Double) -> [P2 (Expr s Double)] -> Constrained s m ()
+along d ps = zipWithM_ (constrainDir d) ps (tail ps)
 
 ------------------------------------------------------------
 -- Constraint resolution
@@ -617,9 +613,9 @@ getDiaVars deps d = M.fromList $
 --   This is obviously not ideal.  A future version may do something
 --   more reasonable.
 layout
-  :: (Monoid' m, Hashable n, Floating n, RealFrac n, Show n)
-  => (forall s. Constrained s b n m a)
-  -> QDiagram b V2 n m
+  :: Monoid m
+  => (forall s. Constrained s m a)
+  -> QDiagram V2 Double m
 layout constr =
   case MFS.execSolver (MFS.ignore $ s ^. equations) MFS.noDeps of
     Left _depError -> error "overconstrained"
@@ -631,7 +627,7 @@ layout constr =
         in
           case F.all (isResolved) vars of
             True -> dia # scale (expectedRes S)
-                        # translate (expectedRes X ^& expectedRes Y)
+                        # translate (V2 (expectedRes X) (expectedRes Y))
             _ -> error . unlines $
                  [ "Diagrams.TwoD.Layout.Constrained.layout: impossible!"
                  , "Diagram variables not resolved. Please report this as a bug:"
@@ -645,8 +641,7 @@ layout constr =
     dias = M.assocs (s ^. diagrams)
 
 resolve
-  :: (Hashable n, RealFrac n, Floating n, Show n)
-  => [DiaID s] -> MFS.Dependencies (Var s) n -> MFS.Dependencies (Var s) n
+  :: [DiaID s] -> MFS.Dependencies (Var s) Double -> MFS.Dependencies (Var s) Double
 resolve diaIDs deps =
   case unresolved of
     [] -> deps

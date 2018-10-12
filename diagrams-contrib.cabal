@@ -15,7 +15,7 @@ build-type:          Simple
 cabal-version:       1.18
 extra-source-files:  README.markdown, CHANGES.markdown, diagrams/*.svg, CONTRIBUTORS
 extra-doc-files:     diagrams/*.svg
-tested-with:         GHC == 7.10.3, GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.2
+tested-with:         GHC == 7.10.3, GHC == 8.0.2, GHC == 8.2.2, GHC == 8.4.3, GHC == 8.6.1
 Source-repository head
   type:     git
   location: http://github.com/diagrams/diagrams-contrib.git

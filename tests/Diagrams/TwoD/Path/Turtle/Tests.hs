@@ -32,6 +32,8 @@ tests =
   , testProperty "closeCurrent only produces a single new path" closeCurrentSingle
   ]
 
+lineSegments :: Line V2 Double -> [Segment V2 Double]
+lineSegments = toListOf segments
 
 -- | The turtle moves forward by the right distance
 movesForward :: TurtleState Double -> Property
@@ -199,13 +201,13 @@ instance Arbitrary (PenStyle Double) where
 -- | Arbitrary instance of Segment
 --
 -- Currently this only generates linear segments only
-instance Arbitrary (Segment Closed V2 Double)  where
+instance Arbitrary (Segment V2 Double)  where
   arbitrary = do
     h <- (@@deg) <$> arbitrary
     x <- r2 <$> arbitrary
     return $ rotate h (straight x)
 
-instance Arbitrary (Trail' Line V2 Double) where
+instance Arbitrary (Line V2 Double) where
   arbitrary = lineFromSegments <$> arbitrary
 
 instance (Arbitrary a, Arbitrary (Point (V a) (N a))) => Arbitrary (Located a) where

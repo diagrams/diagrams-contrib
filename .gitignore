@@ -8,6 +8,7 @@ cabal-dev
 *~
 .hsenv_*
 dist_*
+dist-*
 history
 TAGS
 .diagrams-cache
@@ -15,3 +16,4 @@ TAGS
 cabal.sandbox.config
 
 .stack-work
+.ghc.environment.*

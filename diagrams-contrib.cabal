@@ -40,6 +40,7 @@ library
                        Diagrams.TwoD.Path.Boolean,
                        Diagrams.TwoD.Path.Calligraphic,
                        Diagrams.TwoD.Path.Follow,
+                       Diagrams.TwoD.Path.IntersectionExtras
                        Diagrams.TwoD.Path.IteratedSubset,
                        Diagrams.TwoD.Path.LSystem,
                        Diagrams.TwoD.Path.Turtle,

@@ -25,7 +25,7 @@ module Diagrams.TwoD.Path.IntersectionExtras
   , explodeIntersections, explodeIntersections'
     -- * Consuming Exploded Paths
   , onExplodedPath
-  , onExplodedIntersections
+  , onExplodedIntersections, onExplodedIntersections'
   )where
 import Data.List
 
@@ -57,7 +57,7 @@ intersectParams' eps as bs = intersectParamsP' eps (toPath as) (toPath bs)
 intersectParamsP :: OrderedField n => Path V2 n -> Path V2 n -> [(n, n)]
 intersectParamsP = intersectParamsP' defEps
 
--- | Compute the intersect parameters between two paths within given tolerance.
+-- | Compute the intersect parameters between two paths within the given tolerance.
 intersectParamsP' :: OrderedField n => n -> Path V2 n -> Path V2 n -> [(n, n)]
 intersectParamsP' eps as bs = do
   a <- pathTrails as
@@ -147,7 +147,11 @@ explodeIntersections' eps path = map (map $ map toTrailLike . cut) explodedPath
 --   >   , cycle [lc blue, lc purple] ]
 onExplodedPath :: (TypeableFloat n, Renderable (Path V2 n) b)
   => Path V2 n -> [[QDiagram b V2 n Any -> QDiagram b V2 n Any]] -> QDiagram b V2 n Any
-onExplodedPath p fs = mconcat . mconcat . zipWith (zipWith ($)) fs . map (map strokeP) $ explodePath p
+onExplodedPath p fs
+  = mconcat . mconcat
+  . zipWith (zipWith ($)) fs
+  . map (map strokeP)
+  $ explodePath p
 
 -- | \"Explode\" a path at its intersections and zip it with a set of
 --   transformations before recombining it.
@@ -163,4 +167,14 @@ onExplodedPath p fs = mconcat . mconcat . zipWith (zipWith ($)) fs . map (map st
 --   >     in  cycle [cs, reverse cs] ]
 onExplodedIntersections :: (TypeableFloat n, Renderable (Path V2 n) b)
   => Path V2 n -> [[[QDiagram b V2 n Any -> QDiagram b V2 n Any]]] -> QDiagram b V2 n Any
-onExplodedIntersections p fs = mconcat . mconcat . mconcat . zipWith (zipWith (zipWith ($))) fs . map (map (map strokeP)) $ explodeIntersections p
+onExplodedIntersections = onExplodedIntersections' defEps
+
+-- | `onExplodedIntersections` with intersections calculated within the given
+--   tolerance.
+onExplodedIntersections' :: (TypeableFloat n, Renderable (Path V2 n) b)
+  => n -> Path V2 n -> [[[QDiagram b V2 n Any -> QDiagram b V2 n Any]]] -> QDiagram b V2 n Any
+onExplodedIntersections' eps p fs
+  = mconcat . mconcat . mconcat
+  . zipWith (zipWith (zipWith ($))) fs
+  . map (map (map strokeP))
+  $ explodeIntersections' eps p

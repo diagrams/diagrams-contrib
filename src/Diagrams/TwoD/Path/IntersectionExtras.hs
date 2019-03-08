@@ -18,9 +18,6 @@ module Diagrams.TwoD.Path.IntersectionExtras
     intersectParams, intersectParams'
   , intersectParamsP, intersectParamsP'
   , intersectParamsT, intersectParamsT'
-    -- * Splitting Segments
-  , splitSeg
-  , sliceSeg
     -- * Rad Explosions
   , explodeIntersections, explodeIntersections'
     -- * Consuming Exploded Paths
@@ -77,53 +74,22 @@ intersectParamsT' eps as bs = do
   map (\(p, q, _) -> (p, q)) $ segmentSegment eps a b
 
 -----------------------------------------------------------------------------
--- Splitting Segments -------------------------------------------------------
------------------------------------------------------------------------------
-
--- | Spit a segment at a given parameter,
-splitSeg :: (Additive v, Num n) => FixedSegment v n -> n -> (FixedSegment v n, FixedSegment v n)
-splitSeg (FLinear p0 p1) t = (FLinear p0 sp, FLinear sp p1)
-  where
-    interp = flip $ lerp t
-    sp = interp p0 p1
--- Based on Geom2D.CubicBezier.Basic.splitBezierCubic
-splitSeg (FCubic p0 p1 p2 p3) t = (FCubic p0 p01 p0112 sp, FCubic sp p1223 p23 p3)
-  where
-    interp = flip $ lerp t
-    p12   = interp p1    p2
-    p01   = interp p0    p1
-    p0112 = interp p01   p12
-    sp    = interp p0112 p1223
-    p1223 = interp p12   p23
-    p23   = interp p2    p3
-
--- | Get the slice of a segment between two parameters.
-sliceSeg :: (Additive v, OrderedField n) => FixedSegment v n -> n -> n -> FixedSegment v n
--- Based on Geom2D.CubicBezier.Basic.bezierSubsegment
-sliceSeg s t1 t2
-  | t1 > t2   = sliceSeg s t2 t1
-  | t2 == 0   = fst $ splitSeg s t1
-  | otherwise = snd $ flip splitSeg (t1/t2) $ fst $ splitSeg s t2
-
------------------------------------------------------------------------------
 -- Rad Explosions -----------------------------------------------------------
 -----------------------------------------------------------------------------
 
 -- | Turn a path into separate trails such that no trail intersects with any
 --   other. `explodePath` where additionally each trail is split at all it's
 --   intersections.
-explodeIntersections :: (InSpace V2 n t, TrailLike t) => Path V2 n -> [[[t]]]
+explodeIntersections :: (Real n, InSpace V2 n t, TrailLike t) => Path V2 n -> [[[t]]]
 explodeIntersections = explodeIntersections' defEps
 
 -- | `explodeIntersections` with intersections calculated within the given
 --   tolerance.
-explodeIntersections' :: (InSpace V2 n t, TrailLike t) => n -> Path V2 n -> [[[t]]]
-explodeIntersections' eps path = map (map $ map toTrailLike . cut) explodedPath
+explodeIntersections' :: (Real n, InSpace V2 n t, TrailLike t) => n -> Path V2 n -> [[[t]]]
+explodeIntersections' eps path = map (map (map trailLike . cut)) explodedPath
   where
     explodedPath = explodePath path
-    toTrailLike  = fromLocSegments . mapLoc (:[]) . fromFixedSeg
-    toFixedSeg   = mkFixedSeg . mapLoc (head . trailSegments)
-    cut t = foldr (\(a, b) cs -> sliceSeg (toFixedSeg t) a b : cs) [] $ zip isects (tail isects)
+    cut t = zipWith (section t) isects (tail isects)
       where
         isects         = exactEndpoints . sort . avoidEmptySegs . subSegs $ concat explodedPath
         exactEndpoints = (0:) . (++[1]) . filter (\p -> (p > eps) && (p < 1-eps))

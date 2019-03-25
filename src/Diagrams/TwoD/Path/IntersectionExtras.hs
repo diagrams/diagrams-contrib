@@ -37,7 +37,6 @@ module Diagrams.TwoD.Path.IntersectionExtras
 import Data.List
 
 import Diagrams.Prelude
-import Diagrams.Trail
 import Diagrams.TwoD.Segment
 
 -- defEps uses the value from Diagrams.TwoD.Path
@@ -51,8 +50,6 @@ defEps = 1e-8
 -- | Find the intersect parameters for each component trail of two pathlike
 --   objects when the objects are intersected, returning a seperate list for
 --   each trail.
---
---   Returns empty lists for any equal trails.
 intersectParams :: (InSpace V2 n t, SameSpace t s, ToPath t, ToPath s, OrderedField n) =>
   t -> s -> ([[n]], [[n]])
 intersectParams = intersectParams' defEps
@@ -65,8 +62,6 @@ intersectParams' eps as bs = intersectParamsP' eps (toPath as) (toPath bs)
 -- | Find the intersect parameters for each component trail of two
 --   paths when the paths are intersected, returning a seperate list for
 --   each trail.
---
---   Returns empty lists for any equal trails.
 intersectParamsP :: OrderedField n => Path V2 n -> Path V2 n -> ([[n]], [[n]])
 intersectParamsP = intersectParamsP' defEps
 
@@ -79,8 +74,6 @@ intersectParamsP' eps as bs = (ps, qs)
     qs = map (concat . map snd) (transpose is)
 
 -- | Find the intersect parameters between two located trails.
---
---   Returns empty lists if the trails are equal.
 intersectParamsT :: OrderedField n =>
   Located (Trail V2 n) -> Located (Trail V2 n) -> ([n], [n])
 intersectParamsT = intersectParamsT' defEps
@@ -98,8 +91,6 @@ intersectParamsT' eps as bs = (reparam ps, reparam qs)
 --   located trails when the trails are intersected, returning a
 --   list for each trail containing a list of intersections for
 --   each segemnt of that trail.
---
---   Returns empty lists if the trails are equal.
 intersectParamsTS :: OrderedField n =>
   Located (Trail V2 n) -> Located (Trail V2 n) -> ([[n]], [[n]])
 intersectParamsTS = intersectParamsTS' defEps
@@ -107,13 +98,19 @@ intersectParamsTS = intersectParamsTS' defEps
 -- | `intersectParamsTS` using the given tolerance.
 intersectParamsTS' :: OrderedField n =>
   n -> Located (Trail V2 n) -> Located (Trail V2 n) -> ([[n]], [[n]])
-intersectParamsTS' eps as bs
-  | as == bs  = ([], [])
-  | otherwise = (ps, qs)
+intersectParamsTS' eps as bs = (ps, qs)
   where
-    is = map (flip map (fixTrail bs) . isect) (fixTrail as)
-    isect a b | a == b    = []
-              | otherwise = map (\(p, q, _) -> (p, q)) $ segmentSegment eps a b
+    (as', bs') = (as, bs) & both %~ (zip [0..] . fixTrail)
+    is = map (flip map bs' . isect) as'
+    isect (i, a) (j, b)
+      | a == b    = []
+      | otherwise = filter (not . ends)
+                  . map (\(p, q, _) -> (p, q))
+                  $ segmentSegment eps a b
+      where
+        ends (p, q) = adjacent && min p q `near` 0 && max p q `near` 1
+        adjacent = as == bs && (abs (i - j) == 1 || min i j == 0 && max i j == length as' - 1)
+        near x n = abs (x - n) < eps
     ps = map (map fst . concat) is
     qs = map (map snd . concat) (transpose is)
 
@@ -172,8 +169,8 @@ cutTBy' eps t p
     (notNearEnds, nearEnds) = partition (\p -> (eps < p) && (p < 1-eps)) rawIsects
     rawIsects = concatMap (fst . intersectParamsT' eps t) (pathTrails p)
 
-    start = head . trailPoints . head $ subsections
-    end   = last . trailPoints . last $ subsections
+    start = head subsections `atParam` 0
+    end   = last subsections `atParam` 1
     gluedEnds = unfixTrail (fixTrail (last subsections) ++ fixTrail (head subsections))
               : init (tail subsections)
 

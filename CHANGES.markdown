@@ -1,3 +1,9 @@
+1.4.4 (12 Nov 2019)
+-------------------
+
+- Updated to build on GHC 8.8
+- New module `Diagrams.TwoD.Path.IntersectionExtras`
+
 1.4.3 (14 May 2018)
 -------------------
 

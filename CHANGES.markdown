@@ -4,6 +4,16 @@
 - Updated to build on GHC 8.8
 - New module `Diagrams.TwoD.Path.IntersectionExtras`
 
+- Hackage revisions (latest revision 12 June 2021)
+    - r1: allow lens-4.19 and linear-1.21
+    - r2: allow
+        - base-4.15
+        - monoid-extras-0.6
+        - diagrams-core-1.5
+        - lens-5.0
+        - random-1.2
+        - QuickCheck-2.14
+
 1.4.3 (14 May 2018)
 -------------------
 

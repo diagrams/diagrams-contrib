@@ -13,6 +13,13 @@
         - lens-5.0
         - random-1.2
         - QuickCheck-2.14
+    - r3: update homepage URL
+    - r4: allow
+        - `base-4.16`
+        - `hashable-1.4`
+        - `lens-5.1`
+        - `semigroups-0.20`
+
 
 1.4.3 (14 May 2018)
 -------------------

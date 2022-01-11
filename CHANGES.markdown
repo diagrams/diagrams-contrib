@@ -19,7 +19,7 @@
         - `hashable-1.4`
         - `lens-5.1`
         - `semigroups-0.20`
-
+    - r5: allow `text-2.0`
 
 1.4.3 (14 May 2018)
 -------------------

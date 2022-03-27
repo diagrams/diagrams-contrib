@@ -1,11 +1,15 @@
-{-# LANGUAGE DeriveGeneric    #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE Rank2Types       #-}
-{-# LANGUAGE TemplateHaskell  #-}
-{-# LANGUAGE TupleSections    #-}
-{-# LANGUAGE ViewPatterns     #-}
+{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TupleSections #-}
+{-# LANGUAGE TypeApplications #-}
+{-# LANGUAGE ViewPatterns #-}
 
 -----------------------------------------------------------------------------
+
+-----------------------------------------------------------------------------
+
 -- |
 -- Module      :  Diagrams.TwoD.Layout.Constrained
 -- Copyright   :  (c) 2015 Brent Yorgey
@@ -102,58 +106,71 @@
 --   systems.
 --
 -- I am also open to other suggestions and/or pull requests!
------------------------------------------------------------------------------
-
 module Diagrams.TwoD.Layout.Constrained
-       ( -- * Basic types
-         Expr, mkExpr, Constrained, ConstrainedState, DiaID
+  ( -- * Basic types
+    Expr,
+    mkExpr,
+    Constrained,
+    ConstrainedState,
+    DiaID,
 
-         -- * Layout
-       , layout
-       , runLayout
+    -- * Layout
+    layout,
+    runLayout,
 
-         -- * Creating constrainable things
+    -- * Creating constrainable things
 
-         -- | Diagrams, points, /etc./ which will participate in a
-         --   system of constraints must first be explicitly
-         --   introduced using one of the functions in this section.
-       , newDia, newDias, newScalableDia
-       , newPoint, newPointOn
-       , newScalar
+    -- | Diagrams, points, /etc./ which will participate in a
+    --   system of constraints must first be explicitly
+    --   introduced using one of the functions in this section.
+    newDia,
+    newDias,
+    newScalableDia,
+    newScalableRotatableDia,
+    newPoint,
+    newPointOn,
+    newScalar,
+    newRotation,
 
-         -- * Diagram accessors
+    -- * Diagram accessors
 
-         -- | Combinators for extracting constrainable attributes of
-         --   an introduced diagram.
-       , centerOf, xOf, yOf, scaleOf
+    -- | Combinators for extracting constrainable attributes of
+    --   an introduced diagram.
+    centerOf,
+    xOf,
+    yOf,
+    scaleOf,
+    rotationOf,
 
-         -- * Constraints
-       , (====), (=.=), (=^=)
-       , sameX, sameY
-       , allSame
-       , constrainWith
-       , constrainDir
-       , along
+    -- * Constraints
+    (====),
+    (=.=),
+    (=^=),
+    sameX,
+    sameY,
+    sameR,
+    allSame,
+    constrainWith,
+    constrainDir,
+    along,
+  )
+where
 
-       )
-       where
-
-import qualified Control.Lens         as L
-import qualified Control.Lens.Extras  as L
-import           Control.Monad.Except
-import           Control.Monad.State
-import qualified Data.Foldable        as F
-import           Data.Hashable
-import           Data.List            (sortBy)
-import qualified Data.Map             as M
-import           Data.Maybe           (fromJust)
-import           Data.Ord             (comparing)
-import           GHC.Generics
-
-import qualified Math.MFSolve         as MFS
-
-import           Diagrams.Coordinates
-import           Diagrams.Prelude
+import qualified Control.Lens as L
+import qualified Control.Lens.Extras as L
+import Control.Monad.Except
+import Control.Monad.State
+import qualified Data.Foldable as F
+import Data.Hashable
+import Data.List (sortBy)
+import qualified Data.Map as M
+import Data.Maybe (fromJust)
+import Data.Ord (comparing)
+import Diagrams.Angle
+import Diagrams.Coordinates
+import Diagrams.Prelude
+import GHC.Generics
+import qualified Math.MFSolve as MFS
 
 ------------------------------------------------------------
 -- Variables and expressions
@@ -169,22 +186,31 @@ newtype DiaID s = DiaID Int
 
 -- | Variables can track one of four things: an x-coordinate, a
 --   y-coordinate, a scaling factor, or a length.
-data VarType = S   -- ^ scaling factor
-             | L   -- ^ length
-             | X   -- ^ X-coordinate of a point
-             | Y   -- ^ Y-coordinate of a point
+data VarType
+  = -- | scaling factor
+    S
+  | -- | rotation factor
+    R
+  | -- | length
+    L
+  | -- | X-coordinate of a point
+    X
+  | -- | Y-coordinate of a point
+    Y
   deriving (Eq, Ord, Read, Show, Generic)
 
 -- | A variable has a name and a type, and may optionally be
 --   associated to some particular diagram.
-data Var s = Var { _varID :: Maybe (DiaID s), _varName :: String, _varType :: VarType }
+data Var s = Var {_varID :: Maybe (DiaID s), _varName :: String, _varType :: VarType}
   deriving (Eq, Ord, Generic, Show)
 
 makeLensesWith (lensRulesFor [("_varType", "varType")]) ''Var
 
 -- Auto-derive Hashable instances using Generic
 instance Hashable (DiaID s)
+
 instance Hashable VarType
+
 instance Hashable (Var s)
 
 -- | The type of reified expressions over @Vars@, with
@@ -266,14 +292,14 @@ type Constraints s n = MFS.MFSolver (Var s) n ()
 --   is a phantom parameter, used in a similar fashion to the @ST@
 --   monad, to ensure that generated diagram IDs do not leak.
 data ConstrainedState s b n m = ConstrainedState
-  { _equations  :: Constraints s n
-                   -- ^ Current set of constraints
-  , _diaCounter :: Int
-                   -- ^ Global counter for unique diagram IDs
-  , _varCounter :: Int
-                   -- ^ Global counter for unique variable IDs
-  , _diagrams   :: M.Map (DiaID s) (QDiagram b V2 n m)
-                   -- ^ Map from diagram IDs to diagrams
+  { -- | Current set of constraints
+    _equations :: Constraints s n,
+    -- | Global counter for unique diagram IDs
+    _diaCounter :: Int,
+    -- | Global counter for unique variable IDs
+    _varCounter :: Int,
+    -- | Map from diagram IDs to diagrams
+    _diagrams :: M.Map (DiaID s) (QDiagram b V2 n m)
   }
 
 makeLenses ''ConstrainedState
@@ -281,12 +307,13 @@ makeLenses ''ConstrainedState
 -- | The initial ConstrainedState: no equations, no diagrams, and
 --   counters at 0.
 initConstrainedState :: ConstrainedState s b n m
-initConstrainedState = ConstrainedState
-  { _equations  = return ()
-  , _diaCounter = 0
-  , _varCounter = 0
-  , _diagrams   = M.empty
-  }
+initConstrainedState =
+  ConstrainedState
+    { _equations = return (),
+      _diaCounter = 0,
+      _varCounter = 0,
+      _diagrams = M.empty
+    }
 
 -- | A monad for constrained systems.  It suffices to think of it as
 --   an abstract monadic type; the constructor for the internal state
@@ -313,9 +340,10 @@ type Constrained s b n m a = State (ConstrainedState s b n m) a
 --   unconstrained, the origin will default to (0,0).  For a diagram
 --   whose scaling factor may also be constrained, see
 --   'newScalableDia'.
-newDia
-  :: (Hashable n, Floating n, RealFrac n)
-  => QDiagram b V2 n m -> Constrained s b n m (DiaID s)
+newDia ::
+  (Hashable n, Floating n, RealFrac n) =>
+  QDiagram b V2 n m ->
+  Constrained s b n m (DiaID s)
 newDia dia = do
   d <- newScalableDia dia
   scaleOf d ==== 1
@@ -327,8 +355,24 @@ newDia dia = do
 --   Both the position of the diagram's origin and its scaling factor
 --   may be constrained.  If unconstrained, the origin will default to
 --   (0,0), and the scaling factor to 1, respectively.
-newScalableDia :: QDiagram b V2 n m -> Constrained s b n m (DiaID s)
+newScalableDia ::
+  (Hashable n, Floating n, RealFrac n) =>
+  QDiagram b V2 n m ->
+  Constrained s b n m (DiaID s)
 newScalableDia dia = do
+  d <- DiaID <$> (diaCounter <+= 1)
+  diagrams . L.at d ?= dia
+  view rad (rotationOf d) ==== 0
+  return d
+
+-- | Introduce a new diagram into the constrained system.  Returns a
+--   unique ID for use in referring to the diagram later.
+--
+--   The position of the diagram's origin, its rotation, and its scaling factor
+--   may be constrained.  If unconstrained, the origin will default to
+--   (0,0), the rotation will default to 0, and the scaling factor to 1, respectively.
+newScalableRotatableDia :: QDiagram b V2 n m -> Constrained s b n m (DiaID s)
+newScalableRotatableDia dia = do
   d <- DiaID <$> (diaCounter <+= 1)
   diagrams . L.at d ?= dia
   return d
@@ -336,9 +380,10 @@ newScalableDia dia = do
 -- | Introduce a list of diagrams into the constrained system.
 --   Returns a corresponding list of unique IDs for use in referring
 --   to the diagrams later.
-newDias
-  :: (Hashable n, Floating n, RealFrac n)
-  => [QDiagram b V2 n m] -> Constrained s b n m [DiaID s]
+newDias ::
+  (Hashable n, Floating n, RealFrac n) =>
+  [QDiagram b V2 n m] ->
+  Constrained s b n m [DiaID s]
 newDias = mapM newDia
 
 --------------------------------------------------
@@ -389,9 +434,20 @@ yOf d = mkDVar d "center" Y
 --   constrains @d1@ to be scaled twice as much as @d2@. (It does not,
 --   however, guarantee anything about their actual relative sizes;
 --   that depends on their relative size when unscaled.)
---
 scaleOf :: Num n => DiaID s -> Expr s n
 scaleOf d = mkDVar d "scale" S
+
+-- | The rotation factor applied to this diagram.
+--
+--   For example,
+--
+--   @rotationOf d1 =/\= 2 * rotationOf d2@
+--
+--   constrains @d1@ to be rotated twice as much as @d2@. (It does not,
+--   however, guarantee anything about their actual relative rotation;
+--   that depends on their relative rotations when before being transformed.)
+rotationOf :: Num n => DiaID s -> Angle (Expr s n)
+rotationOf d = pure $ mkDVar d "rotation" R
 
 -- | Create a new (constrainable) point attached to the given diagram,
 --   using a function that picks a point given a diagram.
@@ -429,12 +485,11 @@ scaleOf d = mkDVar d "scale" S
 --   >   constrainWith hcat [a,c2,b]
 --
 --   <<diagrams/src_Diagrams_TwoD_Layout_Constrained_circleWithCircle.svg#diagram=circleWithCircle&width=300>>
-
-newPointOn
-  :: (Hashable n, Floating n, RealFrac n)
-  => DiaID s
-  -> (QDiagram b V2 n m -> P2 n)
-  -> Constrained s b n m (P2 (Expr s n))
+newPointOn ::
+  (Hashable n, Floating n, RealFrac n) =>
+  DiaID s ->
+  (QDiagram b V2 n m -> P2 n) ->
+  Constrained s b n m (P2 (Expr s n))
 newPointOn d getP = do
   -- the fromJust is justified, because the type discipline on DiaIDs ensures
   -- they will always represent a valid index in the Map.
@@ -446,7 +501,14 @@ newPointOn d getP = do
 
   -- constrain the new point to move relative to the diagram origin,
   -- taking possible scaling into account
-  centerOf d .+^ (scaleOf d *^ (mkExpr <$> (p .-. origin))) =.= newPt
+  centerOf d
+    .+^ ( scaleOf d
+            *^ rotate
+              (rotationOf d)
+              ( mkExpr <$> (p .-. origin)
+              )
+        )
+      =.= newPt
 
   return newPt
 
@@ -465,36 +527,59 @@ newScalar = do
   v <- varCounter <+= 1
   return $ mkVar ("s" ++ show v) S
 
+-- | Introduce a new scalar value which can be constrained.  If still
+--   unconstrained at the end, it will default to 1.
+newRotation :: Num n => Constrained s b n m (Angle (Expr s n))
+newRotation = do
+  v <- varCounter <+= 1
+  return $ pure $ mkVar ("r" ++ show v) R
+
 --------------------------------------------------
 -- Specifying constraints
 
 -- | Apply some constraints.
 constrain :: Constraints s n -> Constrained s b n m ()
 constrain newConstraints = equations %= (>> newConstraints)
-  -- XXX should this be right-nested instead?  Does it matter?
+
+-- XXX should this be right-nested instead?  Does it matter?
 
 infix 1 =.=, =^=, ====
 
 -- | Constrain two scalar expressions to be equal.
 --   Note that you need not worry about introducing redundant
 --   constraints; they are ignored.
-(====)
-  :: (Floating n, RealFrac n, Hashable n)
-  => Expr s n -> Expr s n -> Constrained s b n m ()
+(====) ::
+  (Floating n, RealFrac n, Hashable n) =>
+  Expr s n ->
+  Expr s n ->
+  Constrained s b n m ()
 a ==== b = constrain $ MFS.ignore (a MFS.=== b)
 
 -- | Constrain two points to be equal.
-(=.=)
-  :: (Hashable n, Floating n, RealFrac n)
-  => P2 (Expr s n) -> P2 (Expr s n) -> Constrained s b n m ()
+(=.=) ::
+  (Hashable n, Floating n, RealFrac n) =>
+  P2 (Expr s n) ->
+  P2 (Expr s n) ->
+  Constrained s b n m ()
 (coords -> px :& py) =.= (coords -> qx :& qy) = do
   px ==== qx
   py ==== qy
 
+-- | Constrain two angles to be equal.
+(=/\=) ::
+  (Hashable n, Floating n, RealFrac n) =>
+  Angle (Expr s n) ->
+  Angle (Expr s n) ->
+  Constrained s b n m ()
+a =/\= b = do
+  view rad a ==== view rad b
+
 -- | Constrain two vectors to be equal.
-(=^=)
-  :: (Hashable n, Floating n, RealFrac n)
-  => V2 (Expr s n) -> V2 (Expr s n) -> Constrained s b n m ()
+(=^=) ::
+  (Hashable n, Floating n, RealFrac n) =>
+  V2 (Expr s n) ->
+  V2 (Expr s n) ->
+  Constrained s b n m ()
 (coords -> px :& py) =^= (coords -> qx :& qy) = do
   px ==== qx
   py ==== qy
@@ -520,23 +605,23 @@ a ==== b = constrain $ MFS.ignore (a MFS.=== b)
 --   information about the function by observing its behavior.  In
 --   short, you do not need to know anything about @Located Envelope@s
 --   in order to call this function.
-constrainWith
-  :: (Hashable n, RealFrac n, Floating n, Monoid' m)
-  => -- (forall a. (...) => [a] -> a)
-     ([[Located (Envelope V2 n)]] -> [Located (Envelope V2 n)])
-  -> [DiaID s]
-  -> Constrained s b n m ()
+constrainWith ::
+  (Hashable n, RealFrac n, Floating n, Monoid' m) =>
+  -- (forall a. (...) => [a] -> a)
+  ([[Located (Envelope V2 n)]] -> [Located (Envelope V2 n)]) ->
+  [DiaID s] ->
+  Constrained s b n m ()
 constrainWith _ [] = return ()
 constrainWith f hs = do
   diaMap <- use diagrams
-  let dias  = map (fromJust . flip M.lookup diaMap) hs
-      envs  = map ((:[]) . (`at` origin) . getEnvelope) dias
+  let dias = map (fromJust . flip M.lookup diaMap) hs
+      envs = map ((: []) . (`at` origin) . getEnvelope) dias
       envs' = f envs
       eCtrs = map loc envs'
-      offs  = zipWith (.-.) (tail eCtrs) eCtrs
-      rtps  = zipWith envelopeP             offs (init envs')
-      ltps  = zipWith (envelopeP . negated) offs (tail envs')
-      gaps'  = (map . fmap) mkExpr $ zipWith (.-.) ltps rtps
+      offs = zipWith (.-.) (tail eCtrs) eCtrs
+      rtps = zipWith envelopeP offs (init envs')
+      ltps = zipWith (envelopeP . negated) offs (tail envs')
+      gaps' = (map . fmap) mkExpr $ zipWith (.-.) ltps rtps
   rts <- zipWithM newPointOn (init hs) (map envelopeP offs)
   lts <- zipWithM newPointOn (tail hs) (map (envelopeP . negated) offs)
   zipWithM3_ (\r g l -> r .+^ g =.= l) rts gaps' lts
@@ -546,22 +631,35 @@ zipWithM3_ f as bs cs = sequence_ $ zipWith3 f as bs cs
 
 -- | Constrain the origins of two diagrams to have the same
 --   x-coordinate.
-sameX
-  :: (Hashable n, Floating n, RealFrac n)
-  => DiaID s -> DiaID s -> Constrained s b n m ()
+sameX ::
+  (Hashable n, Floating n, RealFrac n) =>
+  DiaID s ->
+  DiaID s ->
+  Constrained s b n m ()
 sameX h1 h2 = xOf h1 ==== xOf h2
 
 -- | Constrain the origins of two diagrams to have the same
 --   y-coordinate.
-sameY
-  :: (Hashable n, Floating n, RealFrac n)
-  => DiaID s -> DiaID s -> Constrained s b n m ()
+sameY ::
+  (Hashable n, Floating n, RealFrac n) =>
+  DiaID s ->
+  DiaID s ->
+  Constrained s b n m ()
 sameY h1 h2 = yOf h1 ==== yOf h2
 
+-- | Constrain the rotations of two diagrams to be the same.
+sameR ::
+  (Hashable n, Floating n, RealFrac n) =>
+  DiaID s ->
+  DiaID s ->
+  Constrained s b n m ()
+sameR h1 h2 = view rad (rotationOf h1) ==== view rad (rotationOf h2)
+
 -- | Constrain a list of scalar expressions to be all equal.
-allSame
-  :: (Hashable n, Floating n, RealFrac n)
-  => [Expr s n] -> Constrained s b n m ()
+allSame ::
+  (Hashable n, Floating n, RealFrac n) =>
+  [Expr s n] ->
+  Constrained s b n m ()
 allSame as = zipWithM_ (====) as (tail as)
 
 -- | @constrainDir d p q@ constrains the direction from @p@ to @q@ to
@@ -584,7 +682,7 @@ along dir ps = zipWithM_ (constrainDir dir) ps (tail ps)
 -- | A data type holding a variable together with its resolution
 --   status: its solved value, if it exists, or Nothing if the
 --   variable is still unresolved.
-data VarResolution s n = VR { _resolvedVar :: Var s, _resolution :: Maybe n }
+data VarResolution s n = VR {_resolvedVar :: Var s, _resolution :: Maybe n}
 
 makeLenses ''VarResolution
 
@@ -594,16 +692,18 @@ isResolved = L.is _Just . view resolution
 
 -- | Get the three variables associated with a diagram: X, Y, and
 --   Scale.
-getDiaVars
-  :: MFS.Dependencies (Var s) n -> DiaID s -> M.Map VarType (VarResolution s n)
-getDiaVars deps d = M.fromList $
-  [ (X, getRes (diaVar d "center" X))
-  , (Y, getRes (diaVar d "center" Y))
-  , (S, getRes (diaVar d "scale"  S))
-  ]
+getDiaVars ::
+  MFS.Dependencies (Var s) n -> DiaID s -> M.Map VarType (VarResolution s n)
+getDiaVars deps d =
+  M.fromList $
+    [ (X, getRes (diaVar d "center" X)),
+      (Y, getRes (diaVar d "center" Y)),
+      (S, getRes (diaVar d "scale" S)),
+      (R, getRes (diaVar d "rotation" R))
+    ]
   where
-    getRes v
-      = VR v (either (const Nothing) Just $ MFS.getKnown v deps)
+    getRes v =
+      VR v (either (const Nothing) Just $ MFS.getKnown v deps)
 
 -- | Solve a constrained system, combining the resulting diagrams with
 --   'mconcat'.  This is the top-level function for introducing a
@@ -618,62 +718,68 @@ getDiaVars deps d = M.fromList $
 --   An overconstrained system will cause 'layout' to simply crash.
 --   This is obviously not ideal.  A future version may do something
 --   more reasonable.
-layout
-  :: (Monoid' m, Hashable n, Floating n, RealFrac n, Show n)
-  => (forall s. Constrained s b n m a)
-  -> QDiagram b V2 n m
+layout ::
+  (Monoid' m, Hashable n, Floating n, RealFrac n, Show n) =>
+  (forall s. Constrained s b n m a) ->
+  QDiagram b V2 n m
 layout constr = snd $ runLayout constr
 
 -- | Like 'layout', but also allows the caller to retrieve the result of the
 --   'Constrained' computation.
-runLayout
-  :: (Monoid' m, Hashable n, Floating n, RealFrac n, Show n)
-  => (forall s. Constrained s b n m a)
-  -> (a, QDiagram b V2 n m)
+runLayout ::
+  (Monoid' m, Hashable n, Floating n, RealFrac n, Show n) =>
+  (forall s. Constrained s b n m a) ->
+  (a, QDiagram b V2 n m)
 runLayout constr =
   case MFS.execSolver (MFS.ignore $ s ^. equations) MFS.noDeps of
     Left _depError -> error "overconstrained"
-    Right deps    ->
+    Right deps ->
       let deps' = resolve (map fst dias) deps
-      in  (a, ) . mconcat . flip map dias $ \(d, dia) ->
-        let vars = getDiaVars deps' d
-            expectedRes ty = vars ^?! L.at ty . _Just . resolution . _Just
-        in
-          case F.all (isResolved) vars of
-            True -> dia # scale (expectedRes S)
-                        # translate (expectedRes X ^& expectedRes Y)
-            _ -> error . unlines $
-                 [ "Diagrams.TwoD.Layout.Constrained.layout: impossible!"
-                 , "Diagram variables not resolved. Please report this as a bug:"
-                 , "  https://github.com/diagrams/diagrams-contrib/issues"
-                 ]
-                 -- 'resolve' should always set the S, X, and Y variables for
-                 -- a diagram if they aren't already constrained, so getDiaVars
-                 -- should return three resolved variables
+       in (a,) . mconcat . flip map dias $ \(d, dia) ->
+            let vars = getDiaVars deps' d
+                expectedRes ty = vars ^?! L.at ty . _Just . resolution . _Just
+             in case F.all (isResolved) vars of
+                  True ->
+                    dia # rotate (expectedRes R @@ rad)
+                      # scale (expectedRes S)
+                      # translate (expectedRes X ^& expectedRes Y)
+                  _ ->
+                    error . unlines $
+                      [ "Diagrams.TwoD.Layout.Constrained.layout: impossible!",
+                        "Diagram variables not resolved. Please report this as a bug:",
+                        "  https://github.com/diagrams/diagrams-contrib/issues"
+                      ]
   where
+    -- 'resolve' should always set the R, S, X, and Y variables for
+    -- a diagram if they aren't already constrained, so getDiaVars
+    -- should return four resolved variables
+
     (a, s) = runState constr initConstrainedState
     dias = M.assocs (s ^. diagrams)
 
-resolve
-  :: (Hashable n, RealFrac n, Floating n, Show n)
-  => [DiaID s] -> MFS.Dependencies (Var s) n -> MFS.Dependencies (Var s) n
+resolve ::
+  (Hashable n, RealFrac n, Floating n, Show n) =>
+  [DiaID s] ->
+  MFS.Dependencies (Var s) n ->
+  MFS.Dependencies (Var s) n
 resolve diaIDs deps =
   case unresolved of
     [] -> deps
     ((VR v _) : _) ->
-      let eq = MFS.makeVariable v - (if v^.varType == S then 1 else 0)
-      in case MFS.addEquation deps eq of
-               Right deps' -> resolve diaIDs deps'
-               Left err    -> error . unlines $
-                 [ "Diagrams.TwoD.Layout.Constrained.layout: impossible!"
-                 , "Adding equation for unconstrained variable produced an error:"
-                 , show err
-                 , "Please report this as a bug:"
-                 , "  https://github.com/diagrams/diagrams-contrib/issues"
-                 ]
+      let eq = MFS.makeVariable v - (if v ^. varType == S then 1 else 0)
+       in case MFS.addEquation deps eq of
+            Right deps' -> resolve diaIDs deps'
+            Left err ->
+              error . unlines $
+                [ "Diagrams.TwoD.Layout.Constrained.layout: impossible!",
+                  "Adding equation for unconstrained variable produced an error:",
+                  show err,
+                  "Please report this as a bug:",
+                  "  https://github.com/diagrams/diagrams-contrib/issues"
+                ]
   where
     diaVars = diaIDs >>= (M.elems . getDiaVars deps)
-    unresolved
-      = sortBy (comparing (view (resolvedVar.varType)))
-      . filter (not . isResolved)
-      $ diaVars
+    unresolved =
+      sortBy (comparing (view (resolvedVar . varType)))
+        . filter (not . isResolved)
+        $ diaVars

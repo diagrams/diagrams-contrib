@@ -146,6 +146,7 @@ module Diagrams.TwoD.Layout.Constrained
     (====),
     (=.=),
     (=^=),
+    (=/\=),
     sameX,
     sameY,
     sameR,
@@ -543,7 +544,7 @@ constrain newConstraints = equations %= (>> newConstraints)
 
 -- XXX should this be right-nested instead?  Does it matter?
 
-infix 1 =.=, =^=, ====
+infix 1 =.=, =^=, ====, =/\=
 
 -- | Constrain two scalar expressions to be equal.
 --   Note that you need not worry about introducing redundant

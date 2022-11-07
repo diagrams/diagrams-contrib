@@ -4,7 +4,7 @@
 - Updated to build on GHC 8.8
 - New module `Diagrams.TwoD.Path.IntersectionExtras`
 
-- Hackage revisions (latest revision 12 June 2021)
+- Hackage revisions (latest revision 7 Nov 2022)
     - r1: allow lens-4.19 and linear-1.21
     - r2: allow
         - base-4.15
@@ -21,6 +21,7 @@
         - `semigroups-0.20`
     - r5: allow `text-2.0`
     - r6: allow `base-4.17`, `lens-5.2`, and test with GHC 9.4
+    - r7: allow `MonadRandom-0.6`
 
 1.4.3 (14 May 2018)
 -------------------

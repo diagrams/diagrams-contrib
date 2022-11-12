@@ -48,6 +48,7 @@ gridCat
   :: TypeableFloat n
   => [QDiagram b V2 n Any]
   -> QDiagram b V2 n Any
+gridCat [] = mempty
 gridCat diagrams = gridCat' (intSqrt $ length diagrams) diagrams
 
 -- | Same as 'gridCat', but with a specified number of columns.
@@ -76,6 +77,7 @@ gridSnake
   :: TypeableFloat n
   => [QDiagram b V2 n Any]
   -> QDiagram b V2 n Any
+gridSnake [] = mempty
 gridSnake diagrams = gridSnake' (intSqrt $ length diagrams) diagrams
 
 -- | Same as 'gridSnake', but with a specified number of columns.

@@ -4,6 +4,9 @@
 - `TwoD.Layout.Grid`: Return `mempty` in `gridCat` and `gridSnake` on
   empty input ([#89](https://github.com/diagrams/diagrams-contrib/pull/89))
 
+- Hackage revisions
+    - r1 (3 Dec 2022): allow `linear-1.22`
+
 1.4.4 (12 Nov 2019)
 -------------------
 

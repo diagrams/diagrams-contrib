@@ -15,7 +15,7 @@ build-type:          Simple
 cabal-version:       1.18
 extra-source-files:  README.markdown, CHANGES.markdown, diagrams/*.svg, CONTRIBUTORS
 extra-doc-files:     diagrams/*.svg
-tested-with:         GHC ==8.4.4 || ==8.6.5 || ==8.8.4 || ==8.10.7 || ==9.0.2 || ==9.2.4 || ==9.4.1
+tested-with:         GHC ==8.4.4 || ==8.6.5 || ==8.8.4 || ==8.10.7 || ==9.0.2 || ==9.2.7 || ==9.4.5 || ==9.6.1
 Source-repository head
   type:     git
   location: http://github.com/diagrams/diagrams-contrib.git
@@ -51,8 +51,8 @@ library
                        Diagrams.TwoD.Path.Metafont.Internal
                        Diagrams.TwoD.Path.Metafont.Combinators
                        Diagrams.TwoD.Path.Metafont.Parser
-  build-depends:       base >= 4.8 && < 4.18,
-                       mtl >= 2.0 && < 2.3,
+  build-depends:       base >= 4.8 && < 4.19,
+                       mtl >= 2.0 && < 2.4,
                        mtl-compat >= 0.2.1 && < 0.3,
                        containers > 0.4 && < 0.7,
                        split >= 0.2.1 && < 0.3,

@@ -8,7 +8,7 @@ module Diagrams.TwoD.Path.Metafont.Parser
 import           Text.Parsec
 import           Text.Parsec.Text
 
-import           Diagrams.Prelude
+import           Diagrams.Prelude hiding (option)
 import           Diagrams.TwoD.Path.Metafont.Types
 
 num :: Read n => Parser n

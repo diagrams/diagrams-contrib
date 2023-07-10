@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP                       #-}
 {-# LANGUAGE DeriveFoldable            #-}
 {-# LANGUAGE DeriveFunctor             #-}
 {-# LANGUAGE DeriveTraversable         #-}
@@ -170,14 +169,6 @@ import           Control.Lens        (makeLenses, view, (+=), (-=), (^.))
 import           Diagrams
 import           Linear              ((*^))
 import           Linear.Affine
-
-#if !MIN_VERSION_base(4,11,0)
-import           Data.Semigroup
-#endif
-
-#if __GLASGOW_HASKELL__ < 710
-import           Control.Applicative
-#endif
 
 ------------------------------------------------------------
 --  Binary trees

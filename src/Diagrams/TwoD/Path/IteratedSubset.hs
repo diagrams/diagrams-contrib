@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP                   #-}
 {-# LANGUAGE ExplicitForAll        #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -535,10 +534,6 @@ data IterTrailConfig n = ITC { seed :: Trail' Line V2 n -- ^ The seed trail
 --   code and modify it to suit.
 randITC ::
   (MonadRandom m,
-#if MIN_VERSION_base(4,9,0)
-#else
-   Applicative m,
-#endif
    Ord n, Floating n, Random n) =>
            m (IterTrailConfig n)
 randITC = do

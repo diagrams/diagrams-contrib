@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP                       #-}
 {-# LANGUAGE DefaultSignatures         #-}
 {-# LANGUAGE TemplateHaskell           #-}
 {-# LANGUAGE TypeFamilies              #-}
@@ -59,9 +58,6 @@ import qualified Data.Map         as Map
 import           Data.Maybe       (fromJust, fromMaybe)
 import qualified Data.Set         as Set
 import           Data.Typeable    (Typeable)
-#if !MIN_VERSION_base(4,11,0)
-import           Data.Semigroup
-#endif
 
 import           Linear.Vector
 import           Linear.V2

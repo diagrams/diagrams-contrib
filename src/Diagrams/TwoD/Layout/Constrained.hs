@@ -140,7 +140,7 @@ module Diagrams.TwoD.Layout.Constrained
 
 import qualified Control.Lens         as L
 import qualified Control.Lens.Extras  as L
-import           Control.Monad.Except
+import           Control.Monad        (zipWithM, zipWithM_)
 import           Control.Monad.State
 import qualified Data.Foldable        as F
 import           Data.Hashable

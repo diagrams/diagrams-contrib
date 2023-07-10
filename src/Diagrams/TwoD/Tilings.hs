@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP                   #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE ScopedTypeVariables   #-}
@@ -69,12 +68,9 @@ module Diagrams.TwoD.Tilings (
 
   ) where
 
+import           Control.Monad        (when, zipWithM_)
 import           Control.Monad.State
-#if __GLASGOW_HASKELL__ >= 704
-import           Control.Monad.Writer hiding ((<>))
-#else
 import           Control.Monad.Writer
-#endif
 
 import           Data.Function        (on)
 import           Data.List            (mapAccumL, sort)

@@ -1,4 +1,3 @@
-{-# LANGUAGE CPP               #-}
 {-# LANGUAGE DeriveFunctor     #-}
 {-# LANGUAGE EmptyDataDecls    #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -8,13 +7,6 @@
 module Diagrams.TwoD.Path.Metafont.Types where
 
 import Control.Lens hiding (( # ))
-#if __GLASGOW_HASKELL__ < 710
-import Data.Monoid
-#endif
-
-#if !MIN_VERSION_base(4,11,0)
-import           Data.Semigroup
-#endif
 
 import Diagrams.Direction
 import Diagrams.TwoD.Types
@@ -111,11 +103,10 @@ makeLenses ''MFPath
 instance Monoid (PathJoin (Maybe (PathDir n)) (Maybe (BasicJoin n))) where
     -- | The default join, with no directions specified, and both tensions 1.
     mempty = PJ Nothing Nothing Nothing
-    l `mappend` r = PJ (c (l^.d1) (r^.d1)) (c (l^.j) (r^.j)) (c (l^.d2) (r^.d2))
+
+instance Semigroup (PathJoin (Maybe (PathDir n)) (Maybe (BasicJoin n))) where
+    l <> r = PJ (c (l^.d1) (r^.d1)) (c (l^.j) (r^.j)) (c (l^.d2) (r^.d2))
       where
         c a b = case b of
             Nothing -> a
             Just _  -> b
-
-instance Semigroup (PathJoin (Maybe (PathDir n)) (Maybe (BasicJoin n))) where
-    (<>) = mappend

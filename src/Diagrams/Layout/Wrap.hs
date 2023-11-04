@@ -21,6 +21,7 @@ import qualified Data.Foldable    as F
 import           Data.List        (find, inits, tails)
 import           Diagrams.Prelude hiding (start)
 import           Linear.Epsilon
+import           Data.Typeable
 
 -- TODO: Take into account the negative bounds, and iteratively refine
 --   the list selection.
@@ -30,7 +31,7 @@ import           Linear.Epsilon
 -- | @wrapDiagram@ post-processes the results of @wrapOutside@ /
 --   @wrapInside@ into a Diagram of the result.  This only works when
 --   applying them to a list of diagrams.
-wrapDiagram :: (Metric v, OrderedField n)
+wrapDiagram :: (Metric v, OrderedField n, Typeable n)
             => ([(v n, QDiagram b v n Any)], [QDiagram b v n Any]) -> QDiagram b v n Any
 wrapDiagram = F.foldMap (uncurry translate) . fst
 

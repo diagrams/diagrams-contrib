@@ -164,6 +164,7 @@ import qualified Data.Map            as M
 import           Data.Maybe
 import qualified Data.Traversable    as T
 import           Data.Tree
+import           Data.Typeable
 
 import           Control.Lens        (makeLenses, view, (+=), (-=), (^.))
 import           Diagrams
@@ -618,7 +619,7 @@ decorate' d (Node a ts) = Node (a, info) ts'
 
 -- | Draw a tree annotated with node positions, given functions
 --   specifying how to draw nodes and edges.
-renderTree :: (Monoid' m, Floating n, Ord n)
+renderTree :: (Monoid' m, Floating n, Ord n, Typeable n)
            => (a -> QDiagram b V2 n m) -> (P2 n -> P2 n -> QDiagram b V2 n m)
            -> Tree (a, P2 n) -> QDiagram b V2 n m
 renderTree n e = renderTree' n (e `on` snd)
@@ -627,7 +628,7 @@ renderTree n e = renderTree' n (e `on` snd)
 --   specifying how to draw nodes and edges.  Unlike 'renderTree',
 --   this version gives the edge-drawing function access to the actual
 --   values stored at the nodes rather than just their positions.
-renderTree' :: (Monoid' m, Floating n, Ord n)
+renderTree' :: (Monoid' m, Floating n, Ord n, Typeable n)
            => (a -> QDiagram b V2 n m) -> ((a,P2 n) -> (a,P2 n) -> QDiagram b V2 n m)
            -> Tree (a, P2 n) -> QDiagram b V2 n m
 renderTree' renderNode renderEdge = alignT . centerX . renderTreeR

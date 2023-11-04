@@ -41,6 +41,7 @@ module Diagrams.TwoD.Layout.CirclePacking
        , circleRadius ) where
 
 import           Optimisation.CirclePacking
+import           Data.Typeable
 
 import           Diagrams.Core.Envelope
 import           Diagrams.Prelude
@@ -50,7 +51,8 @@ import           Diagrams.TwoD.Vector       (e)
 -- | Combines the passed objects, whose radius is estimated using the given
 -- 'RadiusFunction', so that they do not overlap (according to the radius
 -- function) and otherwise form, as far as possible, a tight circle.
-renderCirclePacking :: (Monoid' m, Floating (N b), Ord (N b)) => RadiusFunction b m -> [QDiagram b V2 (N b) m] -> QDiagram b V2 (N b) m
+renderCirclePacking :: (Monoid' m, Floating (N b), Ord (N b), Typeable (N b))
+  => RadiusFunction b m -> [QDiagram b V2 (N b) m] -> QDiagram b V2 (N b) m
 renderCirclePacking radiusFunc = createCirclePacking radiusFunc id
 
 toFractional :: (Real a, Fractional b) => a -> b
@@ -59,7 +61,8 @@ toFractional = fromRational . toRational
 -- | More general version of 'renderCirclePacking'. You can use this if you
 -- have more information available in the values of type @a@ that allows you to
 -- calculate the radius better (or even exactly).
-createCirclePacking :: (Monoid' m, Ord (N b), Floating (N b)) => (a -> Double) -> (a -> QDiagram b V2 (N b) m) -> [a] -> QDiagram b V2 (N b) m
+createCirclePacking :: (Monoid' m, Ord (N b), Floating (N b), Typeable (N b))
+  => (a -> Double) -> (a -> QDiagram b V2 (N b) m) -> [a] -> QDiagram b V2 (N b) m
 createCirclePacking radiusFunc diagramFunc =
     position .
     map (\(o,(x,y)) -> (p2 (toFractional x, toFractional y), diagramFunc o)) .
@@ -73,7 +76,8 @@ type RadiusFunction b m = QDiagram b V2 (N b) m -> Double
 -- | A safe approximation. Calculates the outer radius of the smallest
 -- axis-aligned polygon with the given number of edges that contains the
 -- object. A parameter of 4 up to 8 should be sufficient for most applications.
-approxRadius :: (Monoid' m, Floating (N b), Real (N b), Ord (N b)) => Int -> RadiusFunction b m
+approxRadius :: (Monoid' m, Floating (N b), Real (N b), Ord (N b), Typeable (N b))
+  => Int -> RadiusFunction b m
 approxRadius n =
     if n < 3
     then error "circleRadius: n needs to be at least 3"
@@ -91,5 +95,5 @@ approxRadius n =
 -- fits in the rectangular bounding box of the object, so it may be too small.
 -- It is, however, exact for circles, and there is no function that is safe for
 -- all diagrams and exact for circles.
-circleRadius :: (Monoid' m, Floating (N b), Real (N b)) => RadiusFunction b m
+circleRadius :: (Monoid' m, Floating (N b), Real (N b), Typeable (N b)) => RadiusFunction b m
 circleRadius o = toFractional $ maximum [ envelopeS (e (alpha @@ turn)) o | alpha <- [0,0.25,0.5,0.75]]

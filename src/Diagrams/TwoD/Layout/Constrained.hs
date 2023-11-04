@@ -148,6 +148,7 @@ import           Data.List            (sortBy)
 import qualified Data.Map             as M
 import           Data.Maybe           (fromJust)
 import           Data.Ord             (comparing)
+import           Data.Typeable
 import           GHC.Generics
 
 import qualified Math.MFSolve         as MFS
@@ -521,7 +522,7 @@ a ==== b = constrain $ MFS.ignore (a MFS.=== b)
 --   short, you do not need to know anything about @Located Envelope@s
 --   in order to call this function.
 constrainWith
-  :: (Hashable n, RealFrac n, Floating n, Monoid' m)
+  :: (Hashable n, RealFrac n, Floating n, Typeable n, Monoid' m)
   => -- (forall a. (...) => [a] -> a)
      ([[Located (Envelope V2 n)]] -> [Located (Envelope V2 n)])
   -> [DiaID s]
@@ -619,7 +620,7 @@ getDiaVars deps d = M.fromList $
 --   This is obviously not ideal.  A future version may do something
 --   more reasonable.
 layout
-  :: (Monoid' m, Hashable n, Floating n, RealFrac n, Show n)
+  :: (Monoid' m, Hashable n, Floating n, RealFrac n, Show n, Typeable n)
   => (forall s. Constrained s b n m a)
   -> QDiagram b V2 n m
 layout constr = snd $ runLayout constr
@@ -627,7 +628,7 @@ layout constr = snd $ runLayout constr
 -- | Like 'layout', but also allows the caller to retrieve the result of the
 --   'Constrained' computation.
 runLayout
-  :: (Monoid' m, Hashable n, Floating n, RealFrac n, Show n)
+  :: (Monoid' m, Hashable n, Floating n, RealFrac n, Show n, Typeable n)
   => (forall s. Constrained s b n m a)
   -> (a, QDiagram b V2 n m)
 runLayout constr =

@@ -153,7 +153,7 @@ makeLenses ''GridOpts
 makeLenses ''HighlightLineOpts
 
 -- | Name a point by grid co-ordinates.
-tick :: (Floating n, Ord n)
+tick :: (Floating n, Ord n, Typeable n)
      => (Int, Int) -> QDiagram b V2 n Any
 tick (n, m) = pointDiagram origin # named (n, m)
 
@@ -212,7 +212,7 @@ gridWithHalves' opts n m =
 
 -- | Place a diagram on a grid (which is itself a diagram) at all the
 -- co-ordinates specified.
-placeDiagramOnGrid :: (IsName nm, Floating n, Ord n) =>
+placeDiagramOnGrid :: (IsName nm, Floating n, Ord n, Typeable n) =>
                       QDiagram b V2 n Any -> [nm] -> QDiagram b V2 n Any -> QDiagram b V2 n Any
 placeDiagramOnGrid d = flip $ foldr (\n -> withName n (atop . place d . location))
 

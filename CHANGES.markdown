@@ -3,6 +3,9 @@
 
 - Allow `base-4.18`, `mtl-2.3`, and test with GHC 9.6
 
+- Hackage revisions
+    - r1 (26 Jan 2024): allow `base-4.19`, `text-2.1`, and test with GHC 9.8
+
 1.4.5 (12 Nov 2022)
 -------------------
 

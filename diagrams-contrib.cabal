@@ -95,7 +95,7 @@ test-suite turtle-tests
                        test-framework-hunit       >= 0.2 && < 0.4,
                        test-framework-quickcheck2 >= 0.2 && < 0.4,
 
-                       base,
+                       base >= 4.8 && < 5,
                        diagrams-lib >= 1.4 && < 1.5
 
   default-language:    Haskell2010

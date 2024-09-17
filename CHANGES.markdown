@@ -4,7 +4,11 @@
 - Allow `base-4.18`, `mtl-2.3`, and test with GHC 9.6
 
 - Hackage revisions
-    - r1 (26 Jan 2024): allow `base-4.19`, `text-2.1`, and test with GHC 9.8
+    - r1 (26 Jan 2024): allow `base-4.19`, `text-2.1`, and test with
+      GHC 9.8
+    - r2 (17 Sep 2024): Allow `base-4.20`, `containers-0.7`,
+      `lens-5.3`, `linear-1.23`, `hashable-1.5`, `QuickCheck-2.15`,
+      and test with GHC 9.10
 
 1.4.5 (12 Nov 2022)
 -------------------

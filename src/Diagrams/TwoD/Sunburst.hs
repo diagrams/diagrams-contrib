@@ -35,7 +35,7 @@ module Diagrams.TwoD.Sunburst
   , colors
   ) where
 
-import           Data.Default.Class
+import           Data.Default
 import qualified Data.Foldable as F
 import           Data.Tree
 import           Diagrams.Prelude   hiding (radius)

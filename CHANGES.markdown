@@ -1,3 +1,8 @@
+1.4.6 (29 Oct 2024)
+-------------------
+
+- Upgrade to require `data-default-0.8` and drop dependency on `data-default-class`
+
 1.4.5.1 (10 July 2023)
 ----------------------
 

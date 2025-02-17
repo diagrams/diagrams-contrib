@@ -3,6 +3,9 @@
 
 - Upgrade to require `data-default-0.8` and drop dependency on `data-default-class`
 
+- Hackage revisions
+    - r1 (17 Feb 2025): allow `random-1.3`, `diagrams-1.5`, and test on GHC 9.12
+
 1.4.5.1 (10 July 2023)
 ----------------------
 

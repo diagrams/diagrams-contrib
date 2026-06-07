@@ -30,6 +30,9 @@ import           Data.Maybe
 import           Diagrams.Prelude                  hiding (view)
 import           Diagrams.Solve.Tridiagonal
 
+import           Data.List.NonEmpty (NonEmpty (..))
+import qualified Data.List.NonEmpty as NE
+
 import           Diagrams.TwoD.Path.Metafont.Types
 
 
@@ -191,7 +194,7 @@ solveLoop ss = zipWith3 setDirs ss thetas phis where
 --   This is a system of (length ss) equations.  The first element of
 --   loopDirs ss is θ for the starting point of the first segment of ss.
 loopDirs :: RealFloat n => [MFS n] -> [n]
-loopDirs ss = solveCyclicTriDiagonal lower diag upper products ll ur where
+loopDirs ss = NE.toList $ solveCyclicTriDiagonal (NE.fromList lower) (NE.fromList diag) (NE.fromList upper) (NE.fromList products) ll ur where
   (lower, diag, upper, products, ll, ur) = loopEqs ss
 
 -- | Calculate the coefficients for the loop case, in the
@@ -256,11 +259,11 @@ psi (l,r) = normalizeTurns t where
 -- done by lineEqs and solveTriDiagonal, but lineDirs handles the separate cases
 -- of an empty list, and lists of length one.  See mf.web ¶ 280.
 lineDirs :: RealFloat n => [MFS n] -> [n]
-lineDirs ss | length ss > 1 = solveTriDiagonal lower diag upper products where
+lineDirs ss | length ss > 1 = NE.toList $ solveTriDiagonal (NE.fromList lower) (NE.fromList diag) (NE.fromList upper) (NE.fromList products) where
   (lower, diag, upper, products) = lineEqs ss
 lineDirs [] = []
 lineDirs [s] | leftCurl s && rightCurl s = [0, 0] where
-lineDirs [s] | rightCurl s = solveTriDiagonal [a] [1,c] [0] [normalizeTurns t, r] where
+lineDirs [s] | rightCurl s = NE.toList $ solveTriDiagonal (a :| []) (1 :| [c]) (0 :| []) (normalizeTurns t :| [r]) where
   (a,c,r) = solveOneSeg s
   (PathDirDir d) = s^.pj.d1.to fromJust
   t = view turn $ angleBetweenDirs d (direction $ s^.x2 .-. s^.x1)

@@ -64,16 +64,16 @@ library
                        lens,
                        linear,
                        force-layout,
-                       data-default >= 0.5.2 && < 0.8,
-                       MonadRandom >= 0.1.8 && < 0.6,
-                       random >= 1.0 && < 1.2,
+                       data-default >= 0.5.2 && < 0.9,
+                       MonadRandom >= 0.1.8 && < 0.7,
+                       random >= 1.0 && < 1.4,
                        circle-packing >= 0.1 && < 0.2,
                        parsec >= 3.1 && < 3.2,
-                       text >= 0.11 && < 1.3,
-                       data-default-class < 0.2,
-                       semigroups >= 0.3.4 && < 0.19,
+                       text >= 0.11 && < 2.2,
+                       data-default-class < 0.3,
+                       semigroups >= 0.3.4 && < 0.21,
                        cubicbezier >= 0.4.0.1 && < 0.7,
-                       hashable >= 0.1.2 && < 1.3,
+                       hashable >= 0.1.2 && < 1.6,
                        mfsolve >= 0.3 && < 0.4
   hs-source-dirs:      src
   default-language:    Haskell2010
@@ -87,13 +87,13 @@ test-suite turtle-tests
   other-modules:       Diagrams.TwoD.Path.Turtle.Tests
 
   build-depends:       HUnit                      >= 1.2 && < 1.7,
-                       QuickCheck                 >= 2.4 && < 2.13,
-                       containers                 >= 0.3 && < 0.7,
+                       QuickCheck                 >= 2.4 && < 2.19,
+                       containers                 >= 0.3 && < 0.8,
                        test-framework             >= 0.4 && < 0.9,
                        test-framework-hunit       >= 0.2 && < 0.4,
                        test-framework-quickcheck2 >= 0.2 && < 0.4,
 
-                       base >= 4.2 && < 4.13,
+                       base >= 4.2 && < 4.21,
                        diagrams >= 2.0
 
   default-language:    Haskell2010

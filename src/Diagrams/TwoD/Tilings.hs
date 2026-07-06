@@ -69,6 +69,7 @@ module Diagrams.TwoD.Tilings (
 
   ) where
 
+import           Control.Monad         (when, zipWithM_)
 import           Control.Monad.State
 -- #if __GLASGOW_HASKELL__ >= 704
 import           Control.Monad.Writer hiding ((<>))

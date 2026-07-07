@@ -165,7 +165,7 @@ import           Data.Default
 import qualified Data.Foldable       as F
 import           Data.Function       (on)
 import           Data.List           (mapAccumL)
--- import qualified Data.Map            as M
+import qualified Data.Map            as M
 import           Data.Maybe
 import qualified Data.Traversable    as T
 import           Data.Tree
@@ -175,10 +175,6 @@ import           Data.Semigroup
 import           Diagrams            hiding (extent, down)
 import           Linear              ((*^))
 -- import           Linear.Affine (Point)
-
--- import           Data.Vector (Vector)
-import qualified Data.Vector as V
-import qualified Data.Vector.Unboxed as U
 
 -- #if __GLASGOW_HASKELL__ < 710
 -- import           Control.Applicative
@@ -513,18 +509,15 @@ treeToEnsemble opts t =
   where lt :: Tree ((a,P2 n), PID)
         lt = label t
 
-        particleMap :: V.Vector (Particle V2 n)
-        particleMap = V.map (initParticle . snd) $ V.fromList $ F.toList t
-        -- particleMap = M.fromList
-        --             . map (second initParticle)
-        --             . F.toList
-        --             . fmap (swap . first snd)
-        --             $ lt
-        -- swap (x,y) = (y,x)
+        particleMap :: M.Map PID (Particle V2 n)
+        particleMap = M.fromList
+                    . F.toList
+                    . fmap (\((_,p),i) -> (i, initParticle p))
+                    $ lt
 
-        edges, sibs :: U.Vector Edge
-        edges       = U.fromList $ extractEdges (fmap snd lt)
-        sibs        = U.fromList $ extractSibs [fmap snd lt]
+        edges, sibs :: [Edge]
+        edges       = extractEdges (fmap snd lt)
+        sibs        = extractSibs [fmap snd lt]
 
         extractEdges :: Tree PID -> [Edge]
         extractEdges (Node i cs) = map (((,) i) . rootLabel) cs
@@ -546,9 +539,8 @@ label = flip evalState 0 . T.mapM (\a -> get >>= \i -> modify (+1) >> return (a,
 --   'Ensemble', given unique identifier annotations matching the
 --   identifiers used in the 'Ensemble'.
 reconstruct :: (Functor t, Num n) => Ensemble V2 n -> t (a, PID) -> t (a, P2 n)
-reconstruct e = (fmap . second) (view pos . ((e^.particles) V.!))
--- reconstruct e = (fmap . second)
---                   (fromMaybe origin . fmap (view pos) . flip M.lookup (e^.particles))
+reconstruct e = (fmap . second)
+                  (fromMaybe origin . fmap (view pos) . flip M.lookup (e^.particles))
 
 -- | Force-directed layout of rose trees, with default parameters (for
 --   more options, see 'forceLayoutTree'').  In particular,

@@ -20,11 +20,14 @@ module Diagrams.TwoD.Path.Boolean
          loopUnion, loopDifference,
          loopIntersection, loopExclusion,)
        where
-import           Control.Lens       hiding (at)
+import           Control.Lens       hiding (at, contains)
 import           Data.Maybe
+import           Data.Tree
 import           Geometry.Located
+import           Geometry.Parametric
 import           Geometry.Path
 import           Geometry.Points
+import           Geometry.Query
 import           Geometry.Segment
 import           Geometry.Trail
 -- import           Geometry.TrailLike
@@ -231,7 +234,7 @@ exclusion' tol fill path1 path2 =
 loopUnion :: Double -> FillRule
           -> [Located (Loop V2 Double)]
           -> [Located (Loop V2 Double)]
-loopUnion tol fill p  =
+loopUnion tol fill p  = normalizeWindings fill $
   map path2loop $ C.union (map loop2path p) (fillrule fill) tol
 
 -- | Difference between loops.  The loops in both lists are first merged using `union`.
@@ -239,7 +242,7 @@ loopDifference :: Double -> FillRule
                -> [Located (Loop V2 Double)]
                -> [Located (Loop V2 Double)]
                -> [Located (Loop V2 Double)]
-loopDifference tol fill path1 path2  =
+loopDifference tol fill path1 path2  = normalizeWindings fill $
   map path2loop $ C.difference (map loop2path path1)
   (map loop2path path2) (fillrule fill) tol
 
@@ -248,7 +251,7 @@ loopIntersection :: Double -> FillRule
                  -> [Located (Loop V2 Double)]
                  -> [Located (Loop V2 Double)]
                  -> [Located (Loop V2 Double)]
-loopIntersection tol fill path1 path2 =
+loopIntersection tol fill path1 path2 = normalizeWindings fill $
   map path2loop $ C.intersection (map loop2path path1)
   (map loop2path path2) (fillrule fill) tol
 
@@ -257,6 +260,36 @@ loopExclusion :: Double -> FillRule
               -> [Located (Loop V2 Double)]
               -> [Located (Loop V2 Double)]
               -> [Located (Loop V2 Double)]
-loopExclusion tol fill path1 path2 =
+loopExclusion tol fill path1 path2 = normalizeWindings fill $
   map path2loop $ C.exclusion (map loop2path path1)
   (map loop2path path2) (fillrule fill) tol
+
+-- Force all top level loops to wind counterclockwise and revese inner loops as needed.
+normalizeWindings :: FillRule -> [Located (Loop V2 Double)] -> [Located (Loop V2 Double)]
+normalizeWindings fill = concat . map forceCC . nestedGroups fill where
+  forceCC ls | (l:_) <- ls, isClockwise l = map reverseLocLoop ls
+             | otherwise                  = ls
+
+-- Group a list of loops such that the first element of each group contains all the others.
+nestedGroups :: FillRule -> [Located (Loop V2 Double)] -> [[Located (Loop V2 Double)]]
+nestedGroups fill = map flatten . go [] where
+  go ts               []                      = ts
+  go []               (l:ls)                  = go [Node l []]                      ls
+  go ((Node n ns):ts) (l:ls) | l `contains` n = go [Node l [Node n ns]]             ls
+                             | n `contains` l = go (Node n (go ns [l]) : ts)        ls
+                             | otherwise      = go (Node n ns          : go ts [l]) ls
+  contains = containsBy fill
+
+-- To test if s contains t, we can merely test if any point of t is within s
+-- because the binary operations guarantee that the loops do not intersect.
+containsBy :: FillRule -> Located (Loop V2 Double) -> Located (Loop V2 Double) -> Bool
+containsBy Winding s t = isInsideWinding s (atStart t)
+containsBy EvenOdd s t = isInsideEvenOdd s (atStart t)
+
+-- Test if a loop winds clockwise.
+isClockwise :: Located (Loop V2 Double) -> Bool
+isClockwise l = sample l (atStart l) < 0
+
+-- 2.0 replacement for diagrams-lib 1.x reverseLocLoop
+reverseLocLoop :: Located (Loop V2 Double) -> Located (Loop V2 Double)
+reverseLocLoop = over located reversing

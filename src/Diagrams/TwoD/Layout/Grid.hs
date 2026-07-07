@@ -46,6 +46,7 @@ import           Diagrams.Prelude
 
 gridCat
   :: [Diagram V2] -> Diagram V2
+gridCat [] = mempty
 gridCat diagrams = gridCat' (intSqrt $ length diagrams) diagrams
 
 -- | Same as 'gridCat', but with a specified number of columns.
@@ -68,6 +69,7 @@ gridCat' = gridAnimal id
 -- <<diagrams/src_Diagrams_TwoD_Layout_Grid_gridSnakeExample.svg#diagram=gridSnakeExample&width=200>>
 
 gridSnake :: [Diagram V2] -> Diagram V2
+gridSnake [] = mempty
 gridSnake diagrams = gridSnake' (intSqrt $ length diagrams) diagrams
 
 -- | Same as 'gridSnake', but with a specified number of columns.

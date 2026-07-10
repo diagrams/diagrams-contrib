@@ -1,3 +1,4 @@
+-- {-# LANGUAGE CPP                        #-}
 {-# LANGUAGE DeriveFunctor     #-}
 {-# LANGUAGE EmptyDataDecls    #-}
 {-# LANGUAGE FlexibleInstances #-}
@@ -7,9 +8,13 @@
 module Diagrams.TwoD.Path.Metafont.Types where
 
 import Control.Lens hiding (( # ))
+-- #if __GLASGOW_HASKELL__ < 710
+-- import Data.Monoid
+-- #endif
+import Data.Semigroup
 
-import Diagrams.Direction
-import Diagrams.TwoD.Types
+import Geometry.Direction hiding (dir)
+import Diagrams.Prelude hiding (dir)
 
 -- | A @PathJoin@ specifies the directions at both ends of a segment,
 -- and a join which describes the control points explicitly or implicitly.
@@ -103,10 +108,11 @@ makeLenses ''MFPath
 instance Monoid (PathJoin (Maybe (PathDir n)) (Maybe (BasicJoin n))) where
     -- | The default join, with no directions specified, and both tensions 1.
     mempty = PJ Nothing Nothing Nothing
-
-instance Semigroup (PathJoin (Maybe (PathDir n)) (Maybe (BasicJoin n))) where
-    l <> r = PJ (c (l^.d1) (r^.d1)) (c (l^.j) (r^.j)) (c (l^.d2) (r^.d2))
+    l `mappend` r = PJ (c (l^.d1) (r^.d1)) (c (l^.j) (r^.j)) (c (l^.d2) (r^.d2))
       where
         c a b = case b of
             Nothing -> a
             Just _  -> b
+
+instance Semigroup (PathJoin (Maybe (PathDir n)) (Maybe (BasicJoin n))) where
+    (<>) = mappend

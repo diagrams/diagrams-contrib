@@ -23,7 +23,7 @@ import           Diagrams.Prelude
 
 import           Data.Monoid.SemiDirectProduct.Strict
 
--- | @Following@ is just like @Trail' Line V2@, except that it has a
+-- | @Following@ is just like @Line V2@, except that it has a
 --   different 'Monoid' instance.  @Following@ values are
 --   concatenated, just like regular lines, except that they are also
 --   rotated so the tangents match at the join point.  In addition,
@@ -38,10 +38,9 @@ import           Data.Monoid.SemiDirectProduct.Strict
 --
 --   This is illustrated in the example below.
 --
---   <<diagrams/src_Diagrams_TwoD_Path_Follow_followExample.svg#diagram=followExample&width=400>>
+--   <<#dia=followExample&width=400>>
 --
 --   > import Control.Lens (ala)
---   > import Diagrams.TwoD.Path.Follow
 --   >
 --   > wibble :: Trail' Line V2 Double
 --   > wibble = hrule 1 <> hrule 0.5 # rotateBy (1/6) <> hrule 0.5 # rotateBy (-1/6) <> a
@@ -60,13 +59,13 @@ import           Data.Monoid.SemiDirectProduct.Strict
 --   >   # frame 0.5
 --
 newtype Following n
-  = Following { unFollowing :: Semi (Trail' Line V2 n) (Angle n) }
-  deriving (Monoid, Semigroup)
+  = Following { unFollowing :: Semi (Line V2 n) (Angle n) }
+  deriving (Semigroup, Monoid)
 
 -- | Note this is only an iso when considering trails equivalent up to
 --   rotation.
 instance RealFloat n => Wrapped (Following n) where
-  type Unwrapped (Following n) = Trail' Line V2 n
+  type Unwrapped (Following n) = Line V2 n
 
   _Wrapped' = iso unfollow follow
 
@@ -74,7 +73,7 @@ instance RealFloat n => Rewrapped (Following n) (Following n')
 
 -- | Create a @Following@ from a line, normalizing it (by rotation)
 --   so that it starts in the positive x direction.
-follow :: RealFloat n => Trail' Line V2 n -> Following n
+follow :: RealFloat n => Line V2 n -> Following n
 follow t = Following $ (t # rotate (signedAngleBetween unitX s)) `tag` theta
   where
     s     = tangentAtStart t
@@ -85,5 +84,5 @@ follow t = Following $ (t # rotate (signedAngleBetween unitX s)) `tag` theta
 --
 --   If trails are considered equivalent up to rotation, then
 --   'unfollow' and 'follow' are inverse.
-unfollow :: Following n -> Trail' Line V2 n
+unfollow :: Following n -> Line V2 n
 unfollow = untag . unFollowing

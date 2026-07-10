@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                   #-}
 {-# LANGUAGE ConstraintKinds       #-}
 {-# LANGUAGE FlexibleContexts      #-}
 {-# LANGUAGE FlexibleInstances     #-}
@@ -34,6 +35,10 @@ module Diagrams.Lens
   , _lineSegments
   ) where
 
+#if __GLASGOW_HASKELL__ < 710
+import           Control.Applicative
+import           Data.Foldable
+#endif
 import           Diagrams.BoundingBox
 import           Diagrams.Prelude
 

@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                       #-}
 {-# LANGUAGE DeriveFoldable            #-}
 {-# LANGUAGE DeriveFunctor             #-}
 {-# LANGUAGE DeriveTraversable         #-}
@@ -23,14 +24,18 @@
 -- > import Data.Tree
 -- > import Diagrams.TwoD.Layout.Tree
 -- >
--- > t1 = Node 'A' [Node 'B' (map lf "CDE"), Node 'F' [Node 'G' (map lf "HIJKLM"), Node 'N' (map lf "OPQR")]]
+-- > t = Node 'A' [Node 'B' (map lf "CDE"), Node 'F' [Node 'G' (map lf "HIJKLM"), Node 'N' (map lf "OPQR")]]
 -- >   where lf x = Node x []
 -- >
--- > exampleSymmTree =
--- >   renderTree ((<> circle 1 # fc white) . text . (:[]))
--- >              (~~)
--- >              (symmLayout' (with & slHSep .~ 4 & slVSep .~ 4) t1)
--- >   # centerXY # pad 1.1
+-- > radialEx =
+-- >    renderTree
+-- >      (\n -> (text [n] # fontSizeL 0.7
+-- >              <> circle 0.7 # fc white
+-- >             )
+-- >      )
+-- >      (~~)
+-- >      (radialLayout t)
+-- >    # centerXY # pad 1.1
 --
 -- <<diagrams/src_Diagrams_TwoD_Layout_Tree_exampleSymmTree.svg#diagram=exampleSymmTree&width=300>>
 --
@@ -105,7 +110,7 @@
 -- >              (~~) (radialLayout t)
 -- >    # centerXY # pad 1.1
 --
--- <<diagrams/src_Diagrams_TwoD_Layout_Tree_radialEx.svg#diagram=radialEx&width=300>>
+-- <<#diagram=radialEx&width=300>>
 
 module Diagrams.TwoD.Layout.Tree
        ( -- * Binary trees
@@ -166,9 +171,14 @@ import qualified Data.Traversable    as T
 import           Data.Tree
 
 import           Control.Lens        (makeLenses, view, (+=), (-=), (^.))
-import           Diagrams
+import           Data.Semigroup
+import           Diagrams            hiding (extent, down)
 import           Linear              ((*^))
-import           Linear.Affine
+-- import           Linear.Affine (Point)
+
+-- #if __GLASGOW_HASKELL__ < 710
+-- import           Control.Applicative
+-- #endif
 
 ------------------------------------------------------------
 --  Binary trees
@@ -501,11 +511,9 @@ treeToEnsemble opts t =
 
         particleMap :: M.Map PID (Particle V2 n)
         particleMap = M.fromList
-                    . map (second initParticle)
                     . F.toList
-                    . fmap (swap . first snd)
+                    . fmap (\((_,p),i) -> (i, initParticle p))
                     $ lt
-        swap (x,y) = (y,x)
 
         edges, sibs :: [Edge]
         edges       = extractEdges (fmap snd lt)
@@ -582,7 +590,7 @@ assignPos alpha beta theta k w (Node (a, info) ts1 : ts2)
     where
       lambda  = nodeLeaves info
       u       = theta + (beta - alpha) * fromIntegral lambda / fromIntegral k
-      pt      = (1 ^& 0)
+      pt      = P2 1 0
               # rotate (theta + u @@ rad)
               # scale (w * fromIntegral (nodeDepth info) / 2)
 
@@ -618,18 +626,18 @@ decorate' d (Node a ts) = Node (a, info) ts'
 
 -- | Draw a tree annotated with node positions, given functions
 --   specifying how to draw nodes and edges.
-renderTree :: (Monoid' m, Floating n, Ord n)
-           => (a -> QDiagram b V2 n m) -> (P2 n -> P2 n -> QDiagram b V2 n m)
-           -> Tree (a, P2 n) -> QDiagram b V2 n m
+renderTree :: Monoid m
+           => (a -> QDiagram V2 Double m) -> (P2 Double -> P2 Double -> QDiagram V2 Double m)
+           -> Tree (a, P2 Double) -> QDiagram V2 Double m
 renderTree n e = renderTree' n (e `on` snd)
 
 -- | Draw a tree annotated with node positions, given functions
 --   specifying how to draw nodes and edges.  Unlike 'renderTree',
 --   this version gives the edge-drawing function access to the actual
 --   values stored at the nodes rather than just their positions.
-renderTree' :: (Monoid' m, Floating n, Ord n)
-           => (a -> QDiagram b V2 n m) -> ((a,P2 n) -> (a,P2 n) -> QDiagram b V2 n m)
-           -> Tree (a, P2 n) -> QDiagram b V2 n m
+renderTree' :: Monoid m
+           => (a -> QDiagram V2 Double m) -> ((a,P2 Double) -> (a,P2 Double) -> QDiagram V2 Double m)
+           -> Tree (a, P2 Double) -> QDiagram V2 Double m
 renderTree' renderNode renderEdge = alignT . centerX . renderTreeR
   where
     renderTreeR (Node (a,p) cs) =

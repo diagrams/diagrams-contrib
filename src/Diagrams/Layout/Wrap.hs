@@ -1,7 +1,6 @@
 {-# LANGUAGE FlexibleContexts    #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies        #-}
-{-# LANGUAGE TypeOperators       #-}
 
 ------------------------------------------------------------------------
 -- |
@@ -19,20 +18,32 @@ module Diagrams.Layout.Wrap where
 import           Control.Arrow    (first, (&&&))
 import qualified Data.Foldable    as F
 import           Data.List        (find, inits, tails)
-import           Diagrams.Prelude hiding (start)
+import           Diagrams.Prelude
 import           Linear.Epsilon
+import Geometry.Transform (translate)
 
--- TODO: Take into account the negative bounds, and iteratively refine
---   the list selection.
+---- TODO: Take into account the negative bounds, and iteratively refine
+----   the list selection.
 
--- TODO: Search for a region before / after the target pick.
+---- TODO: Search for a region before / after the target pick.
 
 -- | @wrapDiagram@ post-processes the results of @wrapOutside@ /
 --   @wrapInside@ into a Diagram of the result.  This only works when
 --   applying them to a list of diagrams.
-wrapDiagram :: (Metric v, OrderedField n)
-            => ([(v n, QDiagram b v n Any)], [QDiagram b v n Any]) -> QDiagram b v n Any
+wrapDiagram
+  :: HasLinearMap v
+  => ([(v Double, Diagram v)], [Diagram v]) -> Diagram v
 wrapDiagram = F.foldMap (uncurry translate) . fst
+
+-- | Given a vector, return a vector that extends to the edge of the
+--   envelope in the same direction.
+envV
+  :: (InSpace v n a, Enveloped a)
+  => v n -> a -> v n
+envV v a =
+  case extent v a of
+    Just (_,b) -> (b / norm v) *^ v
+    Nothing    -> zero
 
 -- | @wrapOutside@ is the same as @wrapInside@, but with an inverted
 --   predicate.
@@ -68,7 +79,7 @@ wrapInside f axis start = rec zeros
   boundsScalars :: a -> [[v n]]
   boundsScalars d
     = flip map norms
-    $ \v -> map (.-. origin) [envelopeP (negated v) d, envelopeP v d]
+    $ \v -> [envV (negated v) d, envV v d]
 
 -- Recurses on the list of items to lay out, maintaing a current set of
 -- coefficients for the different axii, each paired with the maximum
@@ -101,12 +112,6 @@ wrapInside f axis start = rec zeros
 
     dupFirstY ((_,x):xs) = (x,x):xs
     dupFirstY _          = error "Diagrams.Layout.Wrap.wrapInside:dupFirstY: pattern-match failure.  Please report this as a bug."
-
--- [6.12.3]: It should be possible to infer the Metric v and
---   OrderedField n constraints from Enveloped a, v ~ V a,
---   but GHC 6.12.3 cannot, so we redundantly list them here to
---   preserve support for 6.12.3.
--- TODO this comment is obsolete; we certainly do not support GHC 6.12.3
 
 --   Attempt at diagrams-haddock example, but I don't understand how Wrap works
 --

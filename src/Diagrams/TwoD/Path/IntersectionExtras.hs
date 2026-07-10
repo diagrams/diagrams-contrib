@@ -37,11 +37,20 @@ module Diagrams.TwoD.Path.IntersectionExtras
 import Data.List
 
 import Diagrams.Prelude
-import Diagrams.TwoD.Segment
+import Diagrams.Types      (TypeableFloat)
 
--- defEps uses the value from Diagrams.TwoD.Path
+-- defEps uses the value from Geometry.TwoD.Path
 defEps :: Fractional n => n
 defEps = 1e-8
+
+-- 2.0 replacement for diagrams-lib 1.x pathTrails
+pathTrails :: Path v n -> [Located (Trail v n)]
+pathTrails = toListOf each
+
+-- 2.0 replacement for diagrams-lib 1.x unfixTrail
+unfixTrail :: (Metric v, OrderedField n) => [FixedSegment v n] -> Located (Trail v n)
+unfixTrail []   = fromLocSegments ([] `at` origin)
+unfixTrail segs = fromLocSegments (map (unLoc . view fixed) segs `at` loc (head segs ^. fixed))
 
 -----------------------------------------------------------------------------
 -- Intersection Parameters --------------------------------------------------
@@ -235,52 +244,60 @@ explodeBoth' eps path = map (map (flip (cutTBy' eps) path)) $ explodePath path
 -----------------------------------------------------------------------------
 --  Consuming Cut Paths -----------------------------------------------------
 -----------------------------------------------------------------------------
-class OnSections ps fs b n | ps b -> fs n, fs -> b n where
+class OnSections ps fs n | ps -> fs n, fs -> n where
   -- | Zipply apply an arbitrarily nested list of attributes to the same shape
   --   of lists of pathlike objects, monoidally combining the results.
   --
   --   See examples for `cutBy`, `explodeSegments`, `explodeIntersections`, and `explodeBoth`.
-  onSections :: ps -> fs -> QDiagram b V2 n Any
+  onSections :: ps -> fs -> QDiagram V2 n Any
 
 -- Need to list out the instances rather than using overlaping instances
--- with ToPath in order to use the fundep (ps b -> fs).
+-- with ToPath in order to use the fundep (ps -> fs).
 
-instance (TypeableFloat n, OnSections ps fs b n) =>
-  OnSections [ps] [fs] b n where
+instance (TypeableFloat n, OnSections ps fs n) =>
+  OnSections [ps] [fs] n where
   onSections ps fs = mconcat $ zipWith onSections ps fs
 
-instance (TypeableFloat n, Renderable (Path V2 n) b) =>
-  OnSections (Path V2 n) (QDiagram b V2 n Any -> QDiagram b V2 n Any) b n where
+instance TypeableFloat n =>
+  OnSections (Path V2 n) (QDiagram V2 n Any -> QDiagram V2 n Any) n where
   onSections ps fs = fs $ stroke ps
 
-instance (TypeableFloat n, Renderable (Path V2 n) b) =>
-  OnSections (Located (Trail V2 n)) (QDiagram b V2 n Any -> QDiagram b V2 n Any) b n where
+instance TypeableFloat n =>
+  OnSections (Located (Trail V2 n)) (QDiagram V2 n Any -> QDiagram V2 n Any) n where
   onSections ps fs = fs $ stroke ps
 
-instance (TypeableFloat n, Renderable (Path V2 n) b) =>
-  OnSections (Located (Trail' l V2 n)) (QDiagram b V2 n Any -> QDiagram b V2 n Any) b n where
+instance TypeableFloat n =>
+  OnSections (Located (Line V2 n)) (QDiagram V2 n Any -> QDiagram V2 n Any) n where
   onSections ps fs = fs $ stroke ps
 
-instance (TypeableFloat n, Renderable (Path V2 n) b) =>
-  OnSections (Located [Segment Closed V2 n]) (QDiagram b V2 n Any -> QDiagram b V2 n Any) b n where
+instance TypeableFloat n =>
+  OnSections (Located (Loop V2 n)) (QDiagram V2 n Any -> QDiagram V2 n Any) n where
   onSections ps fs = fs $ stroke ps
 
-instance (TypeableFloat n, Renderable (Path V2 n) b) =>
-  OnSections (Located (Segment Closed V2 n)) (QDiagram b V2 n Any -> QDiagram b V2 n Any) b n where
+instance TypeableFloat n =>
+  OnSections (Located [Segment V2 n]) (QDiagram V2 n Any -> QDiagram V2 n Any) n where
   onSections ps fs = fs $ stroke ps
 
-instance (TypeableFloat n, Renderable (Path V2 n) b) =>
-  OnSections (Trail V2 n) (QDiagram b V2 n Any -> QDiagram b V2 n Any) b n where
+instance TypeableFloat n =>
+  OnSections (Located (Segment V2 n)) (QDiagram V2 n Any -> QDiagram V2 n Any) n where
   onSections ps fs = fs $ stroke ps
 
-instance (TypeableFloat n, Renderable (Path V2 n) b) =>
-  OnSections (Trail' l V2 n) (QDiagram b V2 n Any -> QDiagram b V2 n Any) b n where
+instance TypeableFloat n =>
+  OnSections (Trail V2 n) (QDiagram V2 n Any -> QDiagram V2 n Any) n where
   onSections ps fs = fs $ stroke ps
 
-instance (TypeableFloat n, Renderable (Path V2 n) b) =>
-  OnSections (FixedSegment V2 n) (QDiagram b V2 n Any -> QDiagram b V2 n Any) b n where
+instance TypeableFloat n =>
+  OnSections (Line V2 n) (QDiagram V2 n Any -> QDiagram V2 n Any) n where
   onSections ps fs = fs $ stroke ps
 
-instance (TypeableFloat n, Renderable (Path V2 n) b) =>
-  OnSections (QDiagram b V2 n Any) (QDiagram b V2 n Any -> QDiagram b V2 n Any) b n where
+instance TypeableFloat n =>
+  OnSections (Loop V2 n) (QDiagram V2 n Any -> QDiagram V2 n Any) n where
+  onSections ps fs = fs $ stroke ps
+
+instance TypeableFloat n =>
+  OnSections (FixedSegment V2 n) (QDiagram V2 n Any -> QDiagram V2 n Any) n where
+  onSections ps fs = fs $ stroke ps
+
+instance TypeableFloat n =>
+  OnSections (QDiagram V2 n Any) (QDiagram V2 n Any -> QDiagram V2 n Any) n where
   onSections ps fs = fs ps

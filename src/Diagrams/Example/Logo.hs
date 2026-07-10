@@ -22,28 +22,31 @@ module Diagrams.Example.Logo where
 -- > diaLogo = logo
 
 import           Diagrams.Prelude
+import           Diagrams.TwoD.Text
 
 import           Diagrams.TwoD.Layout.Tree
-import           Diagrams.TwoD.Path.Turtle
+-- import           Diagrams.TwoD.Path.Turtle
 
-import           Control.Monad
+-- import           Control.Monad
 
 ------------------------------------------------------------
 -- D
 ------------------------------------------------------------
 
-d = (stroke $
+d :: Diagram V2
+d = ((stroke :: Path V2 Double -> Diagram V2) $
    circle 2 # alignBR # translateX (-0.5)
-   <> (hcat' (with & sep.~ 0.2) . map (vcat' (with & sep .~ 0.2))
-        $ (replicate 2 (replicate 9 (reversePath $ circle 0.3)))) # alignBR)
+   <> (hsep 0.2 . map (vsep 0.2)
+        $ (replicate 2 (replicate 9 (reversing $ circle 0.3)))) # alignBR)
     # fc red
     # lwG 0
 
 -- an icon-ish version of the d
 
-ico_d = (stroke $
+ico_d :: Diagram V2
+ico_d = ((stroke :: Path V2 Double -> Diagram V2) $
         circle 2 # alignBR # translateX (-0.5)
-        <> (vcat' (with & sep.~ 0.3) $ replicate 5 (reversePath $ circle 0.5)) # alignBR)
+        <> (vsep 0.3 $ replicate 5 (reversing $ circle 0.5)) # alignBR)
         # fc red
         # lwG 0
 
@@ -73,18 +76,19 @@ a1 = sierpinski (4 :: Integer)
 -- G
 ------------------------------------------------------------
 
+grid :: Diagram V2
 grid = verts # centerXY <> horiz # centerXY
-  where verts = hcat' (with & sep.~0.5) $ replicate 20 (vrule 10)
+  where verts = hsep 0.5 $ replicate 20 (vrule 10)
         horiz = rotateBy (1/4) verts
 
-gbkg :: forall b n m. (TrailLike (QDiagram b V2 n m), Monoid m, Semigroup m,
-                       TypeableFloat n) =>
-        QDiagram b V2 n m
+-- gbkg :: forall b n m. (Monoid m, Semigroup m) => QDiagram V2 Double m
+gbkg :: Diagram V2
 gbkg = grid
     # lc gray
     # rotateBy (-1/20)
-    # clipBy p
-    # withEnvelope (p :: Path V2 n)
+    -- # clipBy p
+    # clip p
+    # withEnvelope (p :: Path V2 Double)
     # lwG 0.05
   where p = square 5
 
@@ -94,20 +98,21 @@ g = (text "G" # fontSizeG 4 # rotateBy (-1/20)) <> gbkg
 -- R
 ------------------------------------------------------------
 
-r = sketchTurtle (setHeading 90 >> forward 5 >> right 90
-                 >> replicateM 5 (forward 0.9 >> right 36)
-                 >> forward 0.9 >> left 135 >> forward 3
-                 )
-  # reversePath
-  # stroke' (with & vertexNames .~ [["end"]] )
-  # lwG 0.3
-  # lineJoin LineJoinRound
-  # lineCap LineCapRound
-  # lc orange
-  # (withName "end" $ atop . place turtle . location)
-  where
-    turtle = eqTriangle 1 # scaleY 1.3 # rotate (-135 @@ deg)
-             # lwG 0.1
+r = undefined
+-- r = sketchTurtle (setHeading 90 >> forward 5 >> right 90
+--                  >> replicateM 5 (forward 0.9 >> right 36)
+--                  >> forward 0.9 >> left 135 >> forward 3
+--                  )
+--   # reversing
+--   # stroke' (with & vertexNames .~ [["end"]] )
+--   # lwG 0.3
+--   # lineJoin LineJoinRound
+--   # lineCap LineCapRound
+--   # lc orange
+--   # (withName "end" $ atop . place turtle . location)
+--   where
+--     turtle = eqTriangle 1 # scaleY 1.3 # rotate (-135 @@ deg)
+--              # lwG 0.1
 
 ------------------------------------------------------------
 -- A
@@ -143,5 +148,5 @@ disk c = circle 0.4 # fc c # lwG 0
 -- Logo
 ------------------------------------------------------------
 
-logo = (hcat' (with & sep .~ 0.5) . map alignB $ [ d, i, a1, g, r, a2, m, s ])
+logo = (hsep 0.5 . map alignB $ [ d, i, a1, g, r, a2, m, s ])
        # centerXY

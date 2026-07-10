@@ -145,8 +145,7 @@ lSystemPath n delta axiom rules = getTurtlePath $ lSystem n delta axiom rules
 -- | Create a diagram using n iterations of the rules with given axiom symbols
 --   and the angle increment, delta. The first segment is in the unitX direction.
 --   The styles in the 'TurtleState' are applied to the trails in the diagram.
-lSystemDiagram :: (TypeableFloat n, Renderable (Path V2 n) b)
-                => Int -> Angle n -> [Symbol n] -> Rules n -> QDiagram b V2 n Any
+lSystemDiagram :: Int -> Angle Double -> [Symbol Double] -> Rules Double -> Diagram V2
 lSystemDiagram n delta axiom rules = getTurtleDiagram $ lSystem n delta axiom rules
 
 symbol :: Fractional n => Char -> Symbol n
@@ -181,7 +180,7 @@ rule c cs = (symbol c, symbols cs)
 -- Examples
 
 -- > import Diagrams.TwoD.Path.LSystem
--- > sierpinskiEx = pad 1.1 . centerXY . lwO 4 . stroke . getTurtlePath $ sierpinski 6 :: Diagram B
+-- > sierpinskiEx = lwO 4 . stroke . getTurtlePath $ sierpinski 6 :: Diagram B
 
 -- | Sierpinski triangle.
 --
@@ -194,12 +193,12 @@ sierpinski n = lSystem n (60 @@ deg) (symbols "FX") rules
                      , rule 'Y' "-FX+FY+FX-" ]
 
 -- > import Diagrams.TwoD.Path.LSystem
--- > cantorEx = pad 1.1 . centerXY $ cantor 4 :: Diagram B
+-- > cantorEx = cantor 4 :: Diagram B
 
 -- | Cantor dust
 --
 --   <<diagrams/src_Diagrams_TwoD_Path_LSystem_cantorEx.svg#diagram=cantorEx&width=400>>
-cantor :: (Renderable (Path V2 n) b, TypeableFloat n) => Int -> QDiagram b V2 n Any
+cantor :: Int -> Diagram V2
 cantor n = vsep 0.05 $ map dust [0..n]
   where
   dust i =  scaleToX 1 . lw ultraThick $ lSystemDiagram i (0 @@ turn) (symbols "F") rules
@@ -207,8 +206,7 @@ cantor n = vsep 0.05 $ map dust [0..n]
                      , rule 'f' "fff" ]
 
 -- > import Diagrams.TwoD.Path.LSystem
--- > dragonEx =
--- >   pad 1.1 . centerXY . rotateBy (1/4) . getTurtleDiagram $ dragon 10 :: Diagram B
+-- > dragonEx = rotateBy (1/4) . getTurtleDiagram $ dragon 10 :: Diagram B
 
 -- | Dragon curve
 --
@@ -246,8 +244,7 @@ kochIsland n = lSystem n (90 @@ deg) axiom koch
   axiom = symbols "F-F-F-F"
 
 -- > import Diagrams.TwoD.Path.LSystem
--- > kochLakeEx =
--- >   pad 1.1 . centerXY . rotateBy (1/4) . getTurtleDiagram $ kochLake 2 :: Diagram B
+-- > kochLakeEx = rotateBy (1/4) . getTurtleDiagram $ kochLake 2 :: Diagram B
 
 -- | Koch lake
 --
@@ -283,7 +280,7 @@ koch2 n = lSystem n (1/4 @@ turn) axiom koch
   axiom = symbols "F-F-F-F"
 
 -- > import Diagrams.TwoD.Path.LSystem
--- > koch3Ex = pad 1.1 . centerXY . getTurtleDiagram $ koch3 3 :: Diagram B
+-- > koch3Ex =  getTurtleDiagram $ koch3 3 :: Diagram B
 
 -- | Koch curve 3
 --
@@ -295,7 +292,7 @@ koch3 n = lSystem n (1/4 @@ turn) axiom koch
   axiom = symbols "F-F-F-F"
 
 -- > import Diagrams.TwoD.Path.LSystem
--- > koch4Ex = pad 1.1 . centerXY . getTurtleDiagram $ koch4 4 :: Diagram B
+-- > koch4Ex =  getTurtleDiagram $ koch4 4 :: Diagram B
 
 -- | Koch curve 4
 --

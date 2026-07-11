@@ -73,7 +73,6 @@ library
                        text >= 0.11 && < 2.2,
                        data-default-class < 0.3,
                        semigroups >= 0.3.4 && < 0.21,
-                       cubicbezier >= 0.4.0.1 && < 0.7,
                        hashable >= 0.1.2 && < 1.6,
                        mfsolve >= 0.3 && < 0.4
   hs-source-dirs:      src

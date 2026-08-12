@@ -51,17 +51,17 @@ library
                        Diagrams.TwoD.Path.Metafont.Internal
                        Diagrams.TwoD.Path.Metafont.Combinators
                        Diagrams.TwoD.Path.Metafont.Parser
-  build-depends:       base >= 4.8 && < 4.22,
+  build-depends:       base >= 4.8 && < 4.23,
                        mtl >= 2.0 && < 2.4,
                        mtl-compat >= 0.2.1 && < 0.3,
-                       containers > 0.4 && < 0.8,
+                       containers > 0.4 && < 0.9,
                        split >= 0.2.1 && < 0.3,
                        colour >= 2.3.1 && < 2.4,
                        split >= 0.2.1 && < 0.3,
                        monoid-extras >= 0.4.2 && < 0.8,
                        diagrams-core >= 1.4 && < 1.6,
-                       diagrams-lib >= 1.4 && < 1.6,
-                       diagrams-solve >= 0.1 && < 0.2,
+                       diagrams-lib >= 1.4 && < 1.7,
+                       diagrams-solve >= 0.1 && < 0.4,
                        lens >= 4.0 && < 5.4,
                        linear >= 1.11.3 && < 1.24,
                        force-layout >= 0.4 && < 0.5,
@@ -88,13 +88,13 @@ test-suite turtle-tests
                        Diagrams.TwoD.Path.Turtle.Internal
 
   build-depends:       HUnit                      >= 1.2 && < 1.7,
-                       QuickCheck                 >= 2.4 && < 2.17,
-                       containers                 >= 0.3 && < 0.8,
+                       QuickCheck                 >= 2.4 && < 2.19,
+                       containers                 >= 0.3 && < 0.9,
                        test-framework             >= 0.4 && < 0.9,
                        test-framework-hunit       >= 0.2 && < 0.4,
                        test-framework-quickcheck2 >= 0.2 && < 0.4,
 
                        base >= 4.8 && < 5,
-                       diagrams-lib >= 1.4 && < 1.6
+                       diagrams-lib >= 1.4 && < 1.7
 
   default-language:    Haskell2010

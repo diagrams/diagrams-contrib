@@ -1,19 +1,19 @@
-{-# LANGUAGE DeriveFunctor     #-}
-{-# LANGUAGE EmptyDataDecls    #-}
+{-# LANGUAGE DeriveFunctor #-}
+{-# LANGUAGE EmptyDataDecls #-}
 {-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE GADTs             #-}
-{-# LANGUAGE TemplateHaskell   #-}
+{-# LANGUAGE GADTs #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Diagrams.TwoD.Path.Metafont.Types where
 
-import Control.Lens hiding (( # ))
+import Control.Lens hiding ((#))
 
 import Diagrams.Direction
 import Diagrams.TwoD.Types
 
 -- | A @PathJoin@ specifies the directions at both ends of a segment,
 -- and a join which describes the control points explicitly or implicitly.
-data PathJoin d j = PJ { _d1 :: d, _j :: j, _d2 :: d }
+data PathJoin d j = PJ {_d1 :: d, _j :: j, _d2 :: d}
   deriving (Functor, Show)
 
 makeLenses ''PathJoin
@@ -23,8 +23,8 @@ makeLenses ''PathJoin
 -- to curl 1 if not set.
 data PathDir n
   = PathDirCurl n
-  | PathDirDir  (Dir n)
-    deriving Show
+  | PathDirDir (Dir n)
+  deriving (Show)
 
 -- | A predicate to determine the constructor used.
 isCurl :: PathDir n -> Bool
@@ -44,20 +44,20 @@ type BasicJoin n = Either (TensionJoin n) (ControlJoin n)
 data Tension n
   = TensionAmt n
   | TensionAtLeast n
-  deriving Show
+  deriving (Show)
 
 getTension :: Tension n -> n
-getTension (TensionAmt t)     = t
+getTension (TensionAmt t) = t
 getTension (TensionAtLeast t) = t
 
 -- | Two tensions and two directions completely determine the control
 -- points of a segment.
-data TensionJoin n = TJ { _t1 :: Tension n, _t2 :: Tension n }
-                 deriving Show
+data TensionJoin n = TJ {_t1 :: Tension n, _t2 :: Tension n}
+  deriving (Show)
 
 -- | The two intermediate control points of a segment, specified directly.
-data ControlJoin n = CJ { _c1 :: P2 n, _c2 :: P2 n}
-                 deriving Show
+data ControlJoin n = CJ {_c1 :: P2 n, _c2 :: P2 n}
+  deriving (Show)
 
 makeLenses ''TensionJoin
 makeLenses ''ControlJoin
@@ -67,16 +67,16 @@ data J
 
 -- | @MFPathData@ is the type manipulated by the metafont combinators.
 data MFPathData a n where
-  MFPathCycle:: MFPathData P n
-  MFPathEnd  :: P2 n -> MFPathData P n
-  MFPathPt   :: P2 n -> MFPathData J n -> MFPathData P n
+  MFPathCycle :: MFPathData P n
+  MFPathEnd :: P2 n -> MFPathData P n
+  MFPathPt :: P2 n -> MFPathData J n -> MFPathData P n
   MFPathJoin :: PathJoin (Maybe (PathDir n)) (Maybe (BasicJoin n)) -> MFPathData P n -> MFPathData J n
 
 -- | @MetafontSegment@ is used internally in solving the metafont
 -- equations.  It represents a segment with two known endpoints, and a
 -- /join/, which may be specified in various ways.
-data MetafontSegment d j n = MFS { _x1 :: P2 n, _pj :: (PathJoin d j ), _x2 :: P2 n }
-                         deriving (Functor, Show)
+data MetafontSegment d j n = MFS {_x1 :: P2 n, _pj :: PathJoin d j, _x2 :: P2 n}
+  deriving (Functor, Show)
 
 -- | @MFPath@ is the type used internally in solving the metafont
 -- equations.  The direction and join types are progressively refined
@@ -85,8 +85,8 @@ data MetafontSegment d j n = MFS { _x1 :: P2 n, _pj :: (PathJoin d j ), _x2 :: P
 -- If constructing an @MFPath@ in new code, the responsibility rests
 -- on the user to ensure that successive @MetafontSegment@s share an
 -- endpoint.  If this is not true, the result is undefined.
-data MFPath d j n = MFP { _loop :: Bool, _segs :: [MetafontSegment d j n] }
-                deriving Show
+data MFPath d j n = MFP {_loop :: Bool, _segs :: [MetafontSegment d j n]} -- XXX NonSingleton (MetafontSegment d j n) ?
+  deriving (Show)
 
 -- | MFP is a type synonym to clarify signatures in Metafont.Internal.
 -- Note that the type permits segments which are \"overspecified\",
@@ -101,12 +101,12 @@ makeLenses ''MetafontSegment
 makeLenses ''MFPath
 
 instance Monoid (PathJoin (Maybe (PathDir n)) (Maybe (BasicJoin n))) where
-    -- | The default join, with no directions specified, and both tensions 1.
-    mempty = PJ Nothing Nothing Nothing
+  -- \| The default join, with no directions specified, and both tensions 1.
+  mempty = PJ Nothing Nothing Nothing
 
 instance Semigroup (PathJoin (Maybe (PathDir n)) (Maybe (BasicJoin n))) where
-    l <> r = PJ (c (l^.d1) (r^.d1)) (c (l^.j) (r^.j)) (c (l^.d2) (r^.d2))
-      where
-        c a b = case b of
-            Nothing -> a
-            Just _  -> b
+  l <> r = PJ (c (l ^. d1) (r ^. d1)) (c (l ^. j) (r ^. j)) (c (l ^. d2) (r ^. d2))
+   where
+    c a b = case b of
+      Nothing -> a
+      Just _ -> b

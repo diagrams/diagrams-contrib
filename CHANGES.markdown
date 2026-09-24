@@ -1,3 +1,12 @@
+1.4.7 (24 Sep 2026)
+-------------------
+
+- Add support for GHC 9.14
+- Drop support for GHC 8.4
+- Remove unused dependencies
+- Fix many (though not all (yet)) warnings
+- Allow `containers-0.8`, `diagrams-lib-1.6`, `diagrams-solve-0.3`, `QuickCheck-2.18`
+
 1.4.6 (29 Oct 2024)
 -------------------
 

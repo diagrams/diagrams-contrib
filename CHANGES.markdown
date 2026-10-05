@@ -1,5 +1,12 @@
-1.4.7 (24 Sep 2026)
--------------------
+1.4.8 (5 Oct 2026)
+------------------
+
+- Add `diagrams-lib-1.6` as a lower bound.
+- Deprecate version 1.4.7, which caused build failures due to trying
+  to build with older diagrams-lib.
+
+1.4.7 (24 Sep 2026) (DEPRECATED)
+--------------------------------
 
 - Add support for GHC 9.14
 - Drop support for GHC 8.4
